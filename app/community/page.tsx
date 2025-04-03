@@ -74,6 +74,13 @@ export default async function CommunityPage() {
     }
   }) as CategoryWithThreads[]
 
+  // Filter announcements to only show those from admins
+  const adminAnnouncements = announcements.filter(announcement => 
+    announcement.threads.every(thread => 
+      ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(thread.author.role)
+    )
+  )
+
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <div className="space-y-8">
@@ -94,7 +101,7 @@ export default async function CommunityPage() {
 
         {/* Announcements */}
         <div className="space-y-6">
-          {announcements.map((announcement) => (
+          {adminAnnouncements.map((announcement) => (
             <Card key={announcement.id}>
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -136,7 +143,7 @@ export default async function CommunityPage() {
             </Card>
           ))}
 
-          {announcements.length === 0 && (
+          {adminAnnouncements.length === 0 && (
             <Card>
               <CardContent className="p-6">
                 <p className="text-muted-foreground text-center">No announcements yet</p>
