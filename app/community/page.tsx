@@ -53,33 +53,28 @@ export default async function CommunityPage() {
   const isAdmin = session?.user?.role && ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(session.user.role as Role)
 
   const announcements = await prisma.category.findMany({
+    where: {
+      minRole: {
+        in: [Role.HEAD_ADMIN, Role.SENIOR_ADMIN, Role.ADMIN]
+      }
+    },
     include: {
       threads: {
         take: 5,
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc'
         },
         include: {
           author: {
             select: {
               name: true,
-              role: true,
-            },
-          },
-        },
-      },
-    },
-    orderBy: {
-      order: "asc",
-    },
+              role: true
+            }
+          }
+        }
+      }
+    }
   }) as CategoryWithThreads[]
-
-  // Filter announcements to only show those from admins
-  const adminAnnouncements = announcements.filter(announcement => 
-    announcement.threads.every(thread => 
-      ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(thread.author.role)
-    )
-  )
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
@@ -101,7 +96,7 @@ export default async function CommunityPage() {
 
         {/* Announcements */}
         <div className="space-y-6">
-          {adminAnnouncements.map((announcement) => (
+          {announcements.map((announcement) => (
             <Card key={announcement.id}>
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -143,7 +138,7 @@ export default async function CommunityPage() {
             </Card>
           ))}
 
-          {adminAnnouncements.length === 0 && (
+          {announcements.length === 0 && (
             <Card>
               <CardContent className="p-6">
                 <p className="text-muted-foreground text-center">No announcements yet</p>
