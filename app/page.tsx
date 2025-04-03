@@ -6,8 +6,20 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
+interface CategoryWithCount {
+  id: string
+  name: string
+  description: string | null
+  slug: string
+  order: number
+  _count: {
+    threads: number
+  }
+  postCount: number
+}
+
 // We'll keep this function for the categories
-async function getCategories() {
+async function getCategories(): Promise<CategoryWithCount[]> {
   try {
     const categories = await prisma.category.findMany({
       include: {
@@ -22,7 +34,7 @@ async function getCategories() {
       },
     })
 
-    return categories.map((category) => ({
+    return categories.map((category: any): CategoryWithCount => ({
       ...category,
       postCount: 0, // Simplified for now
     }))
