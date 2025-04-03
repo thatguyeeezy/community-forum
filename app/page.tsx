@@ -42,7 +42,7 @@ export default async function HomePage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-4xl font-bold mb-2">Welcome to FCRP</h1>
-            <p className="text-muted-foreground">Join us, share knowledge, and connect with others</p>
+            <p className="text-muted-foreground">Join fcrp, share knowledge, and connect with others</p>
           </div>
           <Button asChild size="lg">
             <Link href="https://discord.gg/DaPzAREBGp">Join the Discord</Link>
