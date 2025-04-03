@@ -54,9 +54,7 @@ export default async function CommunityPage() {
 
   const announcements = await prisma.category.findMany({
     where: {
-      minRole: {
-        in: [Role.HEAD_ADMIN, Role.SENIOR_ADMIN, Role.ADMIN]
-      }
+      isAnnouncement: true
     },
     include: {
       threads: {
