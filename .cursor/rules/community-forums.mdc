@@ -7,6 +7,10 @@ alwaysApply: false
 
 You are assisting with a Next.js community forum application using App Router, TypeScript, Prisma ORM with MySQL, NextAuth.js, shadcn/ui, and Tailwind CSS.
 
+## Commit Messages
+
+Lets keep commit messages sweet and simple
+
 ## Project Structure
 - `/app`: Next.js App Router pages and routes
 - `/components`: Reusable React components

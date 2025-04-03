@@ -12,7 +12,8 @@ const createCategorySchema = z.object({
   description: z.string().optional(),
   slug: z.string().min(1, "Slug is required"),
   order: z.number().default(0),
-  parentId: z.number().optional(),
+  isAnnouncement: z.boolean().default(false),
+  minRole: z.enum(["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "JUNIOR_ADMIN", "SENIOR_STAFF", "STAFF", "STAFF_IN_TRAINING", "MEMBER", "APPLICANT"]).default("APPLICANT"),
 })
 
 const updateCategorySchema = createCategorySchema.partial()
@@ -36,14 +37,18 @@ export async function createCategory(formData: FormData) {
       description: formData.get("description")?.toString(),
       slug: formData.get("slug")?.toString() ?? "",
       order: Number(formData.get("order") || 0),
-      parentId: formData.get("parentId") ? Number(formData.get("parentId")) : undefined,
+      isAnnouncement: formData.get("isAnnouncement") === "true",
+      minRole: formData.get("minRole")?.toString() || "APPLICANT",
     }
 
     const validatedData = createCategorySchema.parse(data)
 
     // 4. Perform database operation
     const category = await prisma.category.create({
-      data: validatedData,
+      data: {
+        ...validatedData,
+        updatedAt: new Date(),
+      },
     })
 
     // 5. Revalidate affected paths
@@ -79,7 +84,8 @@ export async function updateCategory(id: number, formData: FormData) {
       description: formData.get("description")?.toString(),
       slug: formData.get("slug")?.toString(),
       order: formData.get("order") ? Number(formData.get("order")) : undefined,
-      parentId: formData.get("parentId") ? Number(formData.get("parentId")) : undefined,
+      isAnnouncement: formData.get("isAnnouncement") === "true",
+      minRole: formData.get("minRole")?.toString(),
     }
 
     const validatedData = updateCategorySchema.parse(data)
@@ -87,7 +93,10 @@ export async function updateCategory(id: number, formData: FormData) {
     // 4. Perform database operation
     const category = await prisma.category.update({
       where: { id },
-      data: validatedData,
+      data: {
+        ...validatedData,
+        updatedAt: new Date(),
+      },
     })
 
     // 5. Revalidate affected paths
@@ -140,7 +149,7 @@ export async function getCategories() {
       include: {
         _count: {
           select: {
-            threads: true,
+            thread: true,
           },
         },
       },
