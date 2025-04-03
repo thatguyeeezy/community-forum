@@ -1,48 +1,13 @@
 // app/page.tsx
-import { prisma } from "@/lib/prisma"
 import { OnlineUsers } from "@/components/online-users"
-import { Stats } from "@/components/stats" // Import the Stats component
+import { Stats } from "@/components/stats"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
-interface CategoryWithCount {
-  id: string
-  name: string
-  description: string | null
-  slug: string
-  order: number
-  _count: {
-    threads: number
-  }
-  postCount: number
-}
-
-// We'll keep this function for the categories
-async function getCategories(): Promise<CategoryWithCount[]> {
-  try {
-    const categories = await prisma.category.findMany({
-      include: {
-        _count: {
-          select: {
-            threads: true,
-          },
-        },
-      },
-      orderBy: {
-        order: "asc",
-      },
-    })
-
-    return categories.map((category: any): CategoryWithCount => ({
-      ...category,
-      postCount: 0, // Simplified for now
-    }))
-  } catch (error) {
-    console.error("Error fetching categories:", error)
-    return []
-  }
-}
+import { getCategories } from "@/app/actions/category"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { CategoryLoading } from "@/components/loading"
+import { Suspense } from "react"
 
 export default async function HomePage() {
   const categories = await getCategories()
@@ -61,8 +26,10 @@ export default async function HomePage() {
           </Button>
         </div>
 
-        {/* Stats - Replace the hardcoded stats with the Stats component */}
-        <Stats />
+        {/* Stats */}
+        <Suspense fallback={<CategoryLoading />}>
+          <Stats />
+        </Suspense>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Categories */}
@@ -73,39 +40,45 @@ export default async function HomePage() {
                 <Link href="/community">View All Categories</Link>
               </Button>
             </div>
-            <div className="space-y-4">
-              {categories.length > 0 ? (
-                categories.map((category) => (
-                  <Link key={category.id} href={`/community/${category.slug}`}>
-                    <Card className="hover:bg-accent transition-colors">
+            <ErrorBoundary>
+              <Suspense fallback={<CategoryLoading />}>
+                <div className="space-y-4">
+                  {categories.length > 0 ? (
+                    categories.map((category) => (
+                      <Link key={category.id} href={`/community/${category.slug}`}>
+                        <Card className="hover:bg-accent transition-colors">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-semibold text-lg">{category.name}</h3>
+                                <p className="text-muted-foreground text-sm">{category.description}</p>
+                              </div>
+                              <div className="text-right text-sm text-muted-foreground">
+                                <p>{category._count.threads} threads</p>
+                                <p>{category.postCount} posts</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))
+                  ) : (
+                    <Card>
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold text-lg">{category.name}</h3>
-                            <p className="text-muted-foreground text-sm">{category.description}</p>
-                          </div>
-                          <div className="text-right text-sm text-muted-foreground">
-                            <p>{category._count.threads} threads</p>
-                            <p>{category.postCount} posts</p>
-                          </div>
-                        </div>
+                        <p className="text-muted-foreground">No categories found</p>
                       </CardContent>
                     </Card>
-                  </Link>
-                ))
-              ) : (
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-muted-foreground">No categories found</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                  )}
+                </div>
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           {/* Online Users */}
           <div>
-            <OnlineUsers />
+            <Suspense fallback={<CategoryLoading />}>
+              <OnlineUsers />
+            </Suspense>
           </div>
         </div>
       </div>

@@ -1,0 +1,97 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Community Forum Project
+
+You are assisting with a Next.js community forum application using App Router, TypeScript, Prisma ORM with MySQL, NextAuth.js, shadcn/ui, and Tailwind CSS.
+
+## Project Structure
+- `/app`: Next.js App Router pages and routes
+- `/components`: Reusable React components
+- `/lib`: Utility functions
+- `/prisma`: Prisma schema and migrations
+- `/public`: Static assets
+
+## Naming & Style
+- Use kebab-case for files
+- PascalCase for components
+- camelCase for variables/functions
+- Prefer functional components with hooks
+- Strong TypeScript typing
+- Server actions for form submissions
+
+## Community Module
+- Categories → Subcategories → Threads → Posts
+- Departments and Subdivisions for organizational units
+- Permission structure varies by category
+- Use server components for data fetching
+- Server actions for mutations
+
+## User Roles (descending permissions)
+- HEAD_ADMIN (Cyan)
+- SENIOR_ADMIN (Purple)
+- ADMIN (Dark Red)
+- JUNIOR_ADMIN (Dark Blue)
+- SENIOR_STAFF (Dark Green)
+- STAFF (Yellow)
+- STAFF_IN_TRAINING (Light Red)
+- MEMBER (Light Blue)
+- APPLICANT (Grey, default)
+
+## Database Patterns
+- Import prisma client from `@/lib/prisma.ts`
+- Database operations in server actions under `app/actions/`
+- Use transactions for multi-table operations
+- Include error handling and validation
+- Optimize queries with select/include
+
+## UI Components
+- Use shadcn/ui components from `@/components/ui/...`
+- Tailwind CSS for styling
+- Mobile-first responsive design
+- Use cn utility for conditional classes
+- Implement proper accessibility attributes
+
+## Server Actions Pattern
+@app/actions/example.ts
+```ts
+"use server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
+
+export async function doAction(formData: FormData) {
+  // 1. Get session for auth check
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    return { error: "Authentication required" }
+  }
+
+  // 2. Extract and validate data
+  const data = formData.get("data") as string
+  if (!data) {
+    return { error: "Missing required fields" }
+  }
+
+  // 3. Perform database operation
+  try {
+    const result = await prisma.model.create({
+      data: {
+        value: data,
+        userId: session.user.id
+      }
+    })
+
+    // 4. Revalidate affected paths
+    revalidatePath("/affected/path")
+    
+    // 5. Return success result
+    return { success: true, result }
+  } catch (error) {
+    console.error("Action error:", error)
+    return { error: "Operation failed" }
+  }
+}

@@ -130,9 +130,8 @@ model Category {
   description String?  @db.Text
   slug        String   @unique
   order       Int      @default(0)
-  parentId    Int?     
-  parent      Category? @relation("SubCategories", fields: [parentId], references: [id], onDelete: SetNull)
-  children    Category[] @relation("SubCategories")
+  isAnnouncement Boolean @default(false)
+  minRole     Role     @default(APPLICANT)
   threads     Thread[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
