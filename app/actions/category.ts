@@ -147,11 +147,11 @@ export async function getCategories() {
   try {
     const categories = await prisma.category.findMany({
       include: {
-        _count: {
+        thread: {
           select: {
-            thread: true,
-          },
-        },
+            id: true
+          }
+        }
       },
       orderBy: {
         order: "asc",
@@ -161,6 +161,7 @@ export async function getCategories() {
     return categories.map((category) => ({
       ...category,
       postCount: 0, // Simplified for now
+      threadCount: category.thread.length
     }))
   } catch (error) {
     console.error("Get categories error:", error)
