@@ -7,17 +7,17 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { Badge } from "@/components/ui/badge"
-import { Role, Category, Thread, User } from "@prisma/client"
+import { category, thread, user, user_role } from "@prisma/client"
 
-interface ThreadWithAuthor extends Thread {
-  author: {
+interface ThreadWithAuthor extends thread {
+  user: {
     name: string | null
-    role: Role
+    role: user_role
   }
 }
 
-interface CategoryWithThreads extends Category {
-  threads: ThreadWithAuthor[]
+interface CategoryWithThreads extends category {
+  thread: ThreadWithAuthor[]
 }
 
 // Helper function to get the appropriate icon
@@ -50,20 +50,20 @@ function canCreateInCategory(categoryId: string, userRole?: string, userDepartme
 
 export default async function CommunityPage() {
   const session = await getServerSession(authOptions)
-  const isAdmin = session?.user?.role && ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(session.user.role as Role)
+  const isAdmin = session?.user?.role && ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(session.user.role as user_role)
 
   const announcements = await prisma.category.findMany({
     where: {
       isAnnouncement: true
     },
     include: {
-      threads: {
+      thread: {
         take: 5,
         orderBy: {
           createdAt: 'desc'
         },
         include: {
-          author: {
+          user: {
             select: {
               name: true,
               role: true
@@ -76,8 +76,8 @@ export default async function CommunityPage() {
 
   // Filter announcements to only show those from admins
   const adminAnnouncements = announcements.filter(announcement => 
-    announcement.threads.every(thread => 
-      ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(thread.author.role)
+    announcement.thread.every(thread => 
+      ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(thread.user.role)
     )
   )
 
@@ -116,16 +116,16 @@ export default async function CommunityPage() {
                   {/* Recent Threads */}
                   <div className="space-y-2">
                     <h3 className="font-semibold">Recent Updates</h3>
-                    {announcement.threads.length > 0 ? (
+                    {announcement.thread.length > 0 ? (
                       <div className="space-y-2">
-                        {announcement.threads.map((thread) => (
+                        {announcement.thread.map((thread) => (
                           <div key={thread.id} className="flex items-center justify-between p-2 hover:bg-accent rounded-lg">
                             <div>
                               <Link href={`/community/${announcement.slug}/${thread.slug}`} className="font-medium hover:underline">
                                 {thread.title}
                               </Link>
                               <p className="text-sm text-muted-foreground">
-                                By {thread.author.name} ({thread.author.role})
+                                By {thread.user.name} ({thread.user.role})
                               </p>
                             </div>
                             <span className="text-sm text-muted-foreground">
