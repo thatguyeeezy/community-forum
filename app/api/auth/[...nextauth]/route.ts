@@ -8,7 +8,7 @@ import { Role } from "@prisma/client"
 import { NextAuthOptions } from "next-auth"
 
 // Export the authOptions for use in other files
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     DiscordProvider({

@@ -7,8 +7,7 @@ import { useSession } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-
-type Role = "HEAD_ADMIN" | "SENIOR_ADMIN" | "ADMIN" | "JUNIOR_ADMIN" | "SENIOR_STAFF" | "STAFF" | "STAFF_IN_TRAINING" | "MEMBER"
+import type { Role } from "@prisma/client"
 
 interface OnlineUser {
   id: number
