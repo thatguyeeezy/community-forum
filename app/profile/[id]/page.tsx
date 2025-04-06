@@ -46,7 +46,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="flex items-center gap-2">{user.name}</CardTitle>
-                    <CardDescription>{user.discordId && `@${user.discordId}`}</CardDescription>
+                    <CardDescription>{user.discordId && `Discord ID: ${user.discordId}`}</CardDescription>
                   </div>
                   {isOwnProfile && (
                     <EditProfileDialog

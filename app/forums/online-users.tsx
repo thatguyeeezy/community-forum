@@ -25,14 +25,16 @@ export async function OnlineUsers() {
     <Card>
       <CardHeader>
         <CardTitle>Online Users</CardTitle>
-        <CardDescription>
-          {recentUsers.length} users currently online
-        </CardDescription>
+        <CardDescription>{recentUsers.length} users currently online</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {recentUsers.map((user) => (
-            <Link key={user.id} href={`/members/${user.id}`} className="flex items-center space-x-4 rounded-md p-2 hover:bg-muted">
+            <Link
+              key={user.id}
+              href={`/members/${user.id}`}
+              className="flex items-center space-x-4 rounded-md p-2 hover:bg-muted"
+            >
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name || ""} />
                 <AvatarFallback>{user.name?.substring(0, 2).toUpperCase() || "UN"}</AvatarFallback>
@@ -41,14 +43,10 @@ export async function OnlineUsers() {
                 <div className="flex items-center">
                   <p className="text-sm font-medium leading-none">{user.name}</p>
                   {user.role === "ADMIN" && (
-                    <Badge className="ml-2 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                      Admin
-                    </Badge>
+                    <Badge className="ml-2 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Admin</Badge>
                   )}
                   {user.role === "MODERATOR" && (
-                    <Badge className="ml-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                      Mod
-                    </Badge>
+                    <Badge className="ml-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Mod</Badge>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">{user.status || "Online"}</p>
@@ -61,3 +59,4 @@ export async function OnlineUsers() {
     </Card>
   )
 }
+

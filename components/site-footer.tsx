@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="border-t bg-background">
       <div className="container flex flex-col items-center justify-between gap-4 py-6 md:h-16 md:flex-row md:py-0">
         <div className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-        © 2025 {" "}
+          © 2025{" "}
           <Link
             href="https://discord.gg/DaPzAREBGp"
             target="_blank"

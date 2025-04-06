@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -15,7 +17,7 @@ function AdminSignInForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-  
+
   // Import useSearchParams inside the component
   const { useSearchParams } = require("next/navigation")
   const searchParams = useSearchParams()
@@ -51,15 +53,11 @@ function AdminSignInForm() {
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Admin Sign In</CardTitle>
-        <CardDescription>
-          Sign in to access the admin dashboard
-        </CardDescription>
+        <CardDescription>Sign in to access the admin dashboard</CardDescription>
         {error && (
           <div className="rounded-md bg-red-50 p-4 mt-4">
             <div className="flex">
-              <div className="text-sm text-red-700">
-                {error}
-              </div>
+              <div className="text-sm text-red-700">{error}</div>
             </div>
           </div>
         )}
@@ -118,9 +116,7 @@ function AdminSignInFallback() {
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Admin Sign In</CardTitle>
-        <CardDescription>
-          Loading sign-in form...
-        </CardDescription>
+        <CardDescription>Loading sign-in form...</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="h-[200px] flex items-center justify-center">
@@ -148,3 +144,4 @@ export default function AdminSignInPage() {
     </div>
   )
 }
+

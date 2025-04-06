@@ -10,7 +10,7 @@ import Link from "next/link"
 // Create a separate component that uses useSearchParams
 function SignInContent() {
   const [isLoading, setIsLoading] = useState(false)
-  
+
   // Import useSearchParams inside the component
   const { useSearchParams } = require("next/navigation")
   const searchParams = useSearchParams()
@@ -26,14 +26,12 @@ function SignInContent() {
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-        <CardDescription>
-          Sign in to your account using Discord
-        </CardDescription>
+        <CardDescription>Sign in to your account using Discord</CardDescription>
         {error && (
           <div className="rounded-md bg-red-50 p-4 mt-4">
             <div className="flex">
               <div className="text-sm text-red-700">
-                {error === "OAuthAccountNotLinked" 
+                {error === "OAuthAccountNotLinked"
                   ? "There was an issue with your Discord sign-in. Please try again."
                   : "An error occurred during sign in. Please try again."}
               </div>
@@ -45,12 +43,7 @@ function SignInContent() {
         <div className="text-sm text-muted-foreground mb-2">
           Clicking the button below will redirect you to Discord to authorize access to your basic profile information.
         </div>
-        <Button 
-          variant="outline" 
-          onClick={handleDiscordSignIn}
-          disabled={isLoading}
-          className="w-full"
-        >
+        <Button variant="outline" onClick={handleDiscordSignIn} disabled={isLoading} className="w-full">
           {isLoading ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -88,9 +81,7 @@ function SignInFallback() {
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-        <CardDescription>
-          Loading sign-in options...
-        </CardDescription>
+        <CardDescription>Loading sign-in options...</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="h-[100px] flex items-center justify-center">
@@ -118,3 +109,4 @@ export default function SignInPage() {
     </div>
   )
 }
+

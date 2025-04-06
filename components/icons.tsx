@@ -1,4 +1,4 @@
-import { Loader2, LightbulbIcon as LucideProps } from 'lucide-react'
+import { Loader2, type LightbulbIcon as LucideProps } from "lucide-react"
 
 export const Icons = {
   spinner: Loader2,
@@ -25,3 +25,4 @@ export const Icons = {
     </svg>
   ),
 }
+

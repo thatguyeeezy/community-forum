@@ -1,4 +1,4 @@
-'use server'
+"use server"
 
 import { hash } from "bcryptjs"
 import { prisma } from "@/lib/prisma"
@@ -48,3 +48,4 @@ export async function registerUser(formData: FormData) {
     return { error: "Failed to register user" }
   }
 }
+

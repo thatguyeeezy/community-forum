@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MessageSquare, Eye, Clock } from 'lucide-react'
+import { MessageSquare, Eye, Clock } from "lucide-react"
 
 export async function RecentThreads() {
   // Get recent threads from the database
@@ -44,12 +44,18 @@ export async function RecentThreads() {
                       {thread.category.name}
                     </Badge>
                     {thread.pinned && (
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+                      <Badge
+                        variant="secondary"
+                        className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
+                      >
                         Pinned
                       </Badge>
                     )}
                     {thread.locked && (
-                      <Badge variant="secondary" className="ml-2 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                      >
                         Locked
                       </Badge>
                     )}
@@ -83,3 +89,4 @@ export async function RecentThreads() {
     </div>
   )
 }
+

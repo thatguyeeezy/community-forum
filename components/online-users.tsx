@@ -29,26 +29,12 @@ export function OnlineUsers() {
   // Update user activity when component mounts
   useEffect(() => {
     if (session?.user) {
-      const updateActivity = async () => {
-        try {
-          await fetch("/api/users/update-activity", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
-        } catch (err) {
-          console.error("Failed to update activity:", err)
-        }
-      }
-
-      // Update immediately
-      updateActivity()
-      
-      // Then update every minute
-      const interval = setInterval(updateActivity, 60 * 1000)
-      
-      return () => clearInterval(interval)
+      fetch("/api/users/update-activity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).catch((err) => console.error("Failed to update activity:", err))
     }
   }, [session])
 
@@ -124,9 +110,6 @@ export function OnlineUsers() {
     }
 
     fetchOnlineUsers()
-    // Refresh online users every 30 seconds
-    const interval = setInterval(fetchOnlineUsers, 30 * 1000)
-    return () => clearInterval(interval)
   }, [status, session]) // Re-fetch when session status changes
 
   if (loading) {

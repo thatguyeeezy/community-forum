@@ -1,15 +1,15 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare, Users, FileText, Shield } from 'lucide-react'
+import { MessageSquare, Users, FileText, Shield } from "lucide-react"
 
 // Helper function to get the appropriate icon
 function getCategoryIcon(name: string) {
   const lowerName = name.toLowerCase()
-  if (lowerName.includes('general') || lowerName.includes('discussion')) return MessageSquare
-  if (lowerName.includes('introduction') || lowerName.includes('member')) return Users
-  if (lowerName.includes('tutorial') || lowerName.includes('resource')) return FileText
-  if (lowerName.includes('announcement') || lowerName.includes('admin')) return Shield
+  if (lowerName.includes("general") || lowerName.includes("discussion")) return MessageSquare
+  if (lowerName.includes("introduction") || lowerName.includes("member")) return Users
+  if (lowerName.includes("tutorial") || lowerName.includes("resource")) return FileText
+  if (lowerName.includes("announcement") || lowerName.includes("admin")) return Shield
   return MessageSquare // Default icon
 }
 
@@ -39,11 +39,11 @@ export async function CategoryList() {
       order: "asc",
     },
   })
-  
+
   // Get post counts for each category
-  const categoryIds = categories.map(cat => cat.id)
+  const categoryIds = categories.map((cat) => cat.id)
   const threadCounts = await prisma.thread.groupBy({
-    by: ['categoryId'],
+    by: ["categoryId"],
     _count: {
       _all: true,
     },
@@ -53,13 +53,16 @@ export async function CategoryList() {
       },
     },
   })
-  
+
   // Create a map of category ID to thread count
-  const threadCountMap = threadCounts.reduce((acc, curr) => {
-    acc[curr.categoryId] = curr._count._all
-    return acc
-  }, {} as Record<string, number>)
-  
+  const threadCountMap = threadCounts.reduce(
+    (acc, curr) => {
+      acc[curr.categoryId] = curr._count._all
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
   // Get post counts
   const postCounts = await prisma.post.count({
     where: {
@@ -83,7 +86,7 @@ export async function CategoryList() {
         {categories.map((category) => {
           const Icon = getCategoryIcon(category.name)
           const threadCount = category._count.threads
-          
+
           return (
             <Link key={category.id} href={`/forums/${category.id}`}>
               <Card className="hover:bg-muted/50 transition-colors">
@@ -111,12 +114,12 @@ export async function CategoryList() {
                       </div>
                     )}
                   </div>
-                  
+
                   {category.children.length > 0 && (
                     <div className="mt-4 space-y-2">
                       {category.children.map((subcategory) => (
-                        <Link 
-                          key={subcategory.id} 
+                        <Link
+                          key={subcategory.id}
                           href={`/forums/${subcategory.id}`}
                           className="block rounded-md p-2 hover:bg-muted"
                         >
@@ -125,9 +128,7 @@ export async function CategoryList() {
                               <p className="font-medium">{subcategory.name}</p>
                               <p className="text-xs text-muted-foreground">{subcategory.description}</p>
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {subcategory._count.threads} threads
-                            </div>
+                            <div className="text-xs text-muted-foreground">{subcategory._count.threads} threads</div>
                           </div>
                         </Link>
                       ))}
@@ -142,3 +143,4 @@ export async function CategoryList() {
     </div>
   )
 }
+

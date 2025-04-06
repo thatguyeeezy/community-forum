@@ -12,19 +12,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, LogOut, Settings, User, Shield } from 'lucide-react'
+import { Bell, LogOut, Settings, User, Shield } from "lucide-react"
 import Link from "next/link"
 
 export function UserNav() {
   const { data: session } = useSession()
-  
+
   if (!session?.user) {
     return null
   }
-  
+
   const isAdmin = session.user.role === "ADMIN"
   const isModerator = session.user.role === "MODERATOR"
-  
+
   return (
     <div className="flex items-center gap-4">
       <Button variant="ghost" size="icon">
@@ -44,9 +44,7 @@ export function UserNav() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">{session.user.name}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {session.user.email}
-              </p>
+              <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
@@ -82,3 +80,4 @@ export function UserNav() {
     </div>
   )
 }
+

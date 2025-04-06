@@ -12,13 +12,13 @@ export async function GET() {
         createdAt: true,
       },
       orderBy: {
-        name: 'asc',
+        name: "asc",
       },
     })
 
-    const formattedUsers = users.map(user => ({
+    const formattedUsers = users.map((user) => ({
       id: user.id,
-      name: user.name || 'Anonymous',
+      name: user.name || "Anonymous",
       image: user.image,
       role: user.role,
       joinDate: user.createdAt.toISOString(),
@@ -26,10 +26,8 @@ export async function GET() {
 
     return NextResponse.json(formattedUsers)
   } catch (error) {
-    console.error('Failed to fetch users:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    )
+    console.error("Failed to fetch users:", error)
+    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 }
+

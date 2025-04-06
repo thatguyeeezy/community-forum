@@ -1,17 +1,17 @@
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent } from "@/components/ui/card"
-import { Users, MessageSquare, FileText, Activity } from 'lucide-react'
+import { Users, MessageSquare, FileText, Activity } from "lucide-react"
 
 export async function AdminStats() {
   // Get real stats from the database
   const userCount = await prisma.user.count()
   const threadCount = await prisma.thread.count()
   const postCount = await prisma.post.count()
-  
+
   // Get active users in the last 24 hours
   const oneDayAgo = new Date()
   oneDayAgo.setDate(oneDayAgo.getDate() - 1)
-  
+
   const activeUsers = await prisma.user.count({
     where: {
       OR: [
@@ -70,3 +70,4 @@ export async function AdminStats() {
     </div>
   )
 }
+
