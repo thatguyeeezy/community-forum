@@ -1,4 +1,3 @@
-// components/edit-profile-dialog.tsx
 "use client"
 
 import type React from "react"
@@ -13,13 +12,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { updateProfile } from "@/app/actions/profile"
 import { useToast } from "@/hooks/use-toast"
+import { Pencil } from "lucide-react"
 
 interface EditProfileDialogProps {
   open: boolean
@@ -52,10 +54,8 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
       setName(defaultValues.name || "")
       setBio(defaultValues.bio || "")
       setRank(defaultValues.rank || "")
-      setDepartment(defaultValues.department || "N_A")
+      setDepartment(defaultValues.department || "")
       setDiscordId(defaultValues.discordId || "")
-
-      console.log("Default values in dialog:", defaultValues) // Debug log
     }
   }, [open, defaultValues])
 
@@ -76,14 +76,6 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
     formData.append("rank", rank)
     formData.append("department", department)
     formData.append("discordId", discordId)
-
-    console.log("Submitting form data:", {
-      name,
-      bio,
-      rank,
-      department,
-      discordId,
-    }) // Debug log
 
     const result = await updateProfile(formData)
 
@@ -114,6 +106,12 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Pencil className="h-4 w-4" />
+          <span className="sr-only">Edit profile</span>
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
@@ -147,7 +145,21 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
 
             <div className="grid gap-2">
               <Label htmlFor="department">Primary Department</Label>
-              <Input id="department" value={department === "N_A" ? "N/A" : department} readOnly className="bg-muted" />
+              <Select disabled value={department} onValueChange={setDepartment}>
+                <SelectTrigger id="department" className="bg-muted">
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BSFR">BSFR</SelectItem>
+                  <SelectItem value="BSO">BSO</SelectItem>
+                  <SelectItem value="MPD">MPD</SelectItem>
+                  <SelectItem value="FHP">FHP</SelectItem>
+                  <SelectItem value="COMMS">COMMS</SelectItem>
+                  <SelectItem value="FWC">FWC</SelectItem>
+                  <SelectItem value="CIV">CIV</SelectItem>
+                  <SelectItem value="Dev">Dev</SelectItem>
+                </SelectContent>
+              </Select>
               <p className="text-xs text-muted-foreground">
                 Department can only be changed by staff members in the Staff Panel
               </p>
@@ -155,14 +167,7 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
 
             <div className="grid gap-2">
               <Label htmlFor="discordId">Discord ID</Label>
-              <Input
-                id="discordId"
-                value={discordId}
-                onChange={(e) => setDiscordId(e.target.value)}
-                placeholder="Your Discord ID"
-                readOnly
-                className="bg-muted"
-              />
+              <Input id="discordId" value={discordId} readOnly className="bg-muted" />
               <p className="text-xs text-muted-foreground">
                 Discord ID is automatically set when you sign in with Discord
               </p>
