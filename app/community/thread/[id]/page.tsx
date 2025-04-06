@@ -49,7 +49,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
             Community
           </Link>
           <span>/</span>
-          <Link href={`/community/${thread.category.id}`} className="hover:underline">
+          <Link href={`/community/${thread.category.slug}`} className="hover:underline">
             {thread.category.name}
           </Link>
         </div>

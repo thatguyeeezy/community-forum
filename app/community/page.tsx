@@ -199,7 +199,7 @@ export default async function CommunityPage() {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <CardTitle>
-                          <Link href={`/community/${category.id}`} className="hover:underline">
+                          <Link href={`/community/${category.slug}`} className="hover:underline">
                             {category.name}
                           </Link>
                         </CardTitle>
@@ -240,7 +240,7 @@ export default async function CommunityPage() {
                             return (
                               <Link
                                 key={subcategory.id}
-                                href={`/community/${category.id}/${subcategory.id}`}
+                                href={`/community/${subcategory.slug}`}
                                 className="flex items-center justify-between rounded-md p-2 hover:bg-muted"
                               >
                                 <div className="flex-1">

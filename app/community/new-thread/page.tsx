@@ -54,7 +54,7 @@ export default async function NewThreadPage() {
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <h1 className="text-3xl font-bold tracking-tight mb-6">Create New Thread</h1>
-      <CreateThreadForm categories={categories} />
+      <CreateThreadForm categories={categories} redirectUrl={`/community/${categories[0]?.id}`} />
     </div>
   )
 }

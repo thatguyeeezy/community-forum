@@ -16,6 +16,7 @@ import { createThread } from "@/app/actions/thread"
 interface Category {
   id: string
   name: string
+  slug: string
 }
 
 interface CreateThreadFormProps {
@@ -54,7 +55,11 @@ export function CreateThreadForm({ categories, defaultCategoryId }: CreateThread
           title: "Success",
           description: "Thread created successfully",
         })
-        router.push(`/community/thread/${result.threadId}`)
+
+        const category = categories.find((cat) => cat.id === categoryId)
+        const categorySlug = category ? category.slug : "community"
+
+        router.push(`/community/${categorySlug}/thread/${result.threadId}`)
       }
     } catch (error) {
       toast({
