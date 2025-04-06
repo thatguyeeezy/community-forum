@@ -18,7 +18,7 @@ export default function EditDepartmentPage({ params }: { params: { id: string } 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // In a real application, you would fetch the department data here
-  const departmentId = params.id
+  const departmentId = params.id.toUpperCase()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,12 +32,12 @@ export default function EditDepartmentPage({ params }: { params: { id: string } 
     })
 
     setIsSubmitting(false)
-    router.push(`/departments/${departmentId}`)
+    router.push(`/departments/${departmentId.toLowerCase()}`)
   }
 
   return (
     <div className="container py-10">
-      <h1 className="text-3xl font-bold mb-6">Edit Department: {departmentId.toUpperCase()}</h1>
+      <h1 className="text-3xl font-bold mb-6">Edit Department: {departmentId}</h1>
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -57,7 +57,7 @@ export default function EditDepartmentPage({ params }: { params: { id: string } 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Department Name</Label>
-                  <Input id="name" defaultValue={departmentId.toUpperCase()} />
+                  <Input id="name" defaultValue={departmentId} />
                 </div>
 
                 <div className="grid gap-2">
@@ -101,10 +101,10 @@ export default function EditDepartmentPage({ params }: { params: { id: string } 
             <CardContent>
               <div className="space-y-4">
                 <div className="border rounded-md p-4">
-                  <h3 className="font-medium mb-2">Patrol Bureau</h3>
+                  <h3 className="font-medium mb-2">Bureau 1</h3>
                   <Textarea
                     placeholder="Enter bureau description"
-                    defaultValue="The Patrol Bureau is the backbone of the department, providing 24/7 coverage throughout the jurisdiction."
+                    defaultValue="Description of Bureau 1"
                     rows={4}
                     className="mb-2"
                   />
@@ -116,10 +116,10 @@ export default function EditDepartmentPage({ params }: { params: { id: string } 
                 </div>
 
                 <div className="border rounded-md p-4">
-                  <h3 className="font-medium mb-2">Investigations Bureau</h3>
+                  <h3 className="font-medium mb-2">Bureau 2</h3>
                   <Textarea
                     placeholder="Enter bureau description"
-                    defaultValue="The Investigations Bureau handles all criminal investigations, from property crimes to homicides."
+                    defaultValue="Description of Bureau 2"
                     rows={4}
                     className="mb-2"
                   />
@@ -166,29 +166,11 @@ export default function EditDepartmentPage({ params }: { params: { id: string } 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="leader1-name">Name</Label>
-                      <Input id="leader1-name" defaultValue="John Doe" />
+                      <Input id="leader1-name" defaultValue="Leader 1" />
                     </div>
                     <div>
                       <Label htmlFor="leader1-position">Position</Label>
-                      <Input id="leader1-position" defaultValue="Chief of Police" />
-                    </div>
-                  </div>
-                  <div className="flex justify-end mt-2">
-                    <Button variant="destructive" size="sm">
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="border rounded-md p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="leader2-name">Name</Label>
-                      <Input id="leader2-name" defaultValue="Jane Smith" />
-                    </div>
-                    <div>
-                      <Label htmlFor="leader2-position">Position</Label>
-                      <Input id="leader2-position" defaultValue="Assistant Chief" />
+                      <Input id="leader1-position" defaultValue="Position 1" />
                     </div>
                   </div>
                   <div className="flex justify-end mt-2">

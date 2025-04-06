@@ -157,7 +157,7 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
                   <SelectItem value="COMMS">COMMS</SelectItem>
                   <SelectItem value="FWC">FWC</SelectItem>
                   <SelectItem value="CIV">CIV</SelectItem>
-                  <SelectItem value="Dev">Dev</SelectItem>
+                  <SelectItem value="DEV">Dev</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
