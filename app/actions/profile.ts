@@ -23,7 +23,9 @@ export async function updateProfile(formData: FormData) {
   }
 
   try {
-    const userId = typeof session.user.id === "string" ? Number.parseInt(session.user.id, 10) : session.user.id
+    const userId = typeof session.user.id === 'string' 
+      ? parseInt(session.user.id, 10) 
+      : session.user.id
 
     console.log("Updating profile for user:", userId, {
       name,
@@ -39,7 +41,7 @@ export async function updateProfile(formData: FormData) {
         name,
         bio: bio || "",
         rank: rank || null,
-        department: department ? (department as any) : "N_A", // Cast to any to handle enum
+        department: department ? department as any : "N_A", // Cast to any to handle enum
         // Don't update discordId here as it should only be set via OAuth
       },
     })
@@ -55,21 +57,23 @@ export async function updateProfile(formData: FormData) {
 
 export async function followUser(userId: string) {
   const session = await auth()
-
+  
   if (!session?.user) {
     return { error: "You must be logged in to follow users" }
   }
-
+  
   if (session.user.id === userId) {
     return { error: "You cannot follow yourself" }
   }
-
+  
   try {
     // Convert the user IDs to numbers
-    const followerId = typeof session.user.id === "string" ? Number.parseInt(session.user.id, 10) : session.user.id
-
-    const followingId = Number.parseInt(userId, 10)
-
+    const followerId = typeof session.user.id === 'string' 
+      ? parseInt(session.user.id, 10) 
+      : session.user.id
+    
+    const followingId = parseInt(userId, 10)
+    
     // Check if already following
     const existingFollow = await prisma.follow.findFirst({
       where: {
@@ -77,13 +81,13 @@ export async function followUser(userId: string) {
         followingId,
       },
     })
-
+    
     if (existingFollow) {
       // Unfollow
       await prisma.follow.delete({
         where: { id: existingFollow.id },
       })
-
+      
       revalidatePath(`/members/${userId}`)
       return { success: true, followed: false, message: "User unfollowed" }
     } else {
@@ -94,7 +98,7 @@ export async function followUser(userId: string) {
           followingId,
         },
       })
-
+      
       // Create notification
       await prisma.notification.create({
         data: {
@@ -104,7 +108,7 @@ export async function followUser(userId: string) {
           link: `/members/${followerId}`,
         },
       })
-
+      
       revalidatePath(`/members/${userId}`)
       return { success: true, followed: true, message: "User followed" }
     }
@@ -113,4 +117,3 @@ export async function followUser(userId: string) {
     return { error: "Failed to follow/unfollow user" }
   }
 }
-

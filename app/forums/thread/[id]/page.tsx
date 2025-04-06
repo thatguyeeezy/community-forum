@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { MessageSquare, Eye, Clock, Pin, Lock } from "lucide-react"
+import { MessageSquare, Eye, Clock, Pin, Lock } from 'lucide-react'
 
 export default async function ThreadPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
-
+  
   // Increment view count
   try {
     await prisma.thread.update({
@@ -23,7 +23,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
   } catch (error) {
     console.error("Error incrementing view count:", error)
   }
-
+  
   const thread = await prisma.thread.findUnique({
     where: { id: params.id },
     include: {
@@ -50,24 +50,22 @@ export default async function ThreadPage({ params }: { params: { id: string } })
       },
     },
   })
-
+  
   if (!thread) {
     notFound()
   }
-
+  
   const isAdmin = session?.user?.role === "ADMIN"
   const isModerator = session?.user?.role === "MODERATOR"
   const canModerate = isAdmin || isModerator
-
+  
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <div className="mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <Link href="/forums" className="hover:underline">
-                Forums
-              </Link>
+              <Link href="/forums" className="hover:underline">Forums</Link>
               <span>/</span>
               <Link href={`/forums/${thread.category.id}`} className="hover:underline">
                 {thread.category.name}
@@ -88,10 +86,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                 {thread.views} views
               </div>
               {thread.pinned && (
-                <Badge
-                  variant="secondary"
-                  className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
-                >
+                <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
                   <Pin className="mr-1 h-3 w-3" /> Pinned
                 </Badge>
               )}
@@ -110,7 +105,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
             </div>
           )}
         </div>
-
+        
         <Card>
           <CardHeader className="flex flex-row items-start space-y-0">
             <div className="flex items-start space-x-4">
@@ -124,10 +119,14 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                 </Link>
                 <p className="text-xs text-muted-foreground">
                   {thread.author.role === "ADMIN" && (
-                    <Badge className="mr-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Admin</Badge>
+                    <Badge className="mr-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                      Admin
+                    </Badge>
                   )}
                   {thread.author.role === "MODERATOR" && (
-                    <Badge className="mr-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Mod</Badge>
+                    <Badge className="mr-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                      Mod
+                    </Badge>
                   )}
                   Posted {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
                 </p>
@@ -151,12 +150,14 @@ export default async function ThreadPage({ params }: { params: { id: string } })
               </Button>
             </div>
             <div className="text-xs text-muted-foreground">
-              {thread.reactions.length > 0 && <span>{thread.reactions.length} likes</span>}
+              {thread.reactions.length > 0 && (
+                <span>{thread.reactions.length} likes</span>
+              )}
             </div>
           </CardFooter>
         </Card>
       </div>
-
+      
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-4">Replies ({thread._count.posts})</h2>
         <div className="space-y-4">
@@ -174,7 +175,9 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                     </Link>
                     <p className="text-xs text-muted-foreground">
                       {post.author.role === "ADMIN" && (
-                        <Badge className="mr-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Admin</Badge>
+                        <Badge className="mr-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                          Admin
+                        </Badge>
                       )}
                       {post.author.role === "MODERATOR" && (
                         <Badge className="mr-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
@@ -203,21 +206,26 @@ export default async function ThreadPage({ params }: { params: { id: string } })
                   </Button>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {post.reactions.length > 0 && <span>{post.reactions.length} likes</span>}
+                  {post.reactions.length > 0 && (
+                    <span>{post.reactions.length} likes</span>
+                  )}
                 </div>
               </CardFooter>
             </Card>
           ))}
         </div>
       </div>
-
+      
       {session?.user && !thread.locked && (
         <div>
           <Separator className="my-6" />
           <h2 className="text-xl font-bold mb-4">Post a Reply</h2>
           <Card>
             <CardContent className="p-4">
-              <textarea className="w-full min-h-[150px] p-3 border rounded-md" placeholder="Write your reply here..." />
+              <textarea
+                className="w-full min-h-[150px] p-3 border rounded-md"
+                placeholder="Write your reply here..."
+              />
             </CardContent>
             <CardFooter className="flex justify-end border-t p-4">
               <Button>Post Reply</Button>
@@ -225,16 +233,18 @@ export default async function ThreadPage({ params }: { params: { id: string } })
           </Card>
         </div>
       )}
-
+      
       {!session?.user && (
         <Card className="p-6 text-center">
           <p className="mb-4">You need to be signed in to reply to this thread.</p>
           <Button asChild>
-            <Link href={`/auth/signin?callbackUrl=/forums/thread/${thread.id}`}>Sign In</Link>
+            <Link href={`/auth/signin?callbackUrl=/forums/thread/${thread.id}`}>
+              Sign In
+            </Link>
           </Button>
         </Card>
       )}
-
+      
       {session?.user && thread.locked && (
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">This thread is locked. No new replies can be posted.</p>
@@ -243,4 +253,3 @@ export default async function ThreadPage({ params }: { params: { id: string } })
     </div>
   )
 }
-

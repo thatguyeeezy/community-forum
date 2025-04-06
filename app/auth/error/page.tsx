@@ -4,7 +4,7 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle } from 'lucide-react'
 
 // Create a separate component that uses useSearchParams
 function AuthErrorContent() {
@@ -44,7 +44,9 @@ function AuthErrorContent() {
         <CardDescription>{errorDescription}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">You can try signing in again or return to the home page.</p>
+        <p className="text-sm text-muted-foreground">
+          You can try signing in again or return to the home page.
+        </p>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <Button className="w-full" asChild>
@@ -67,7 +69,9 @@ function AuthErrorFallback() {
         <CardDescription>Loading error details...</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">Please wait while we load the error details.</p>
+        <p className="text-sm text-muted-foreground">
+          Please wait while we load the error details.
+        </p>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <Button variant="outline" className="w-full" asChild>
@@ -88,4 +92,3 @@ export default function AuthErrorPage() {
     </div>
   )
 }
-

@@ -64,15 +64,7 @@ export async function createThread(formData: FormData) {
       },
     })
 
-    // Fetch category to get the slug for revalidation
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
-      select: { slug: true },
-    })
-
-    if (category) {
-      revalidatePath(`/community/${category.slug}`)
-    }
+    revalidatePath(`/community/${categoryId}`)
     revalidatePath(`/community`)
     return { success: true, threadId: thread.id }
   } catch (error) {

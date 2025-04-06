@@ -11,7 +11,9 @@ export async function GET() {
   }
 
   try {
-    const userId = typeof session.user.id === "string" ? Number.parseInt(session.user.id, 10) : session.user.id
+    const userId = typeof session.user.id === 'string' 
+      ? parseInt(session.user.id, 10) 
+      : session.user.id
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -39,4 +41,3 @@ export async function GET() {
     return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 })
   }
 }
-

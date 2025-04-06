@@ -21,14 +21,21 @@ function SignUpContent() {
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-        <CardDescription>Sign up for an account using your Discord account</CardDescription>
+        <CardDescription>
+          Sign up for an account using your Discord account
+        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="text-sm text-muted-foreground mb-2">
           Clicking the button below will redirect you to Discord to authorize access to your basic profile information.
           After authorization, you'll be redirected back and automatically signed in.
         </div>
-        <Button variant="outline" onClick={handleDiscordSignUp} disabled={isLoading} className="w-full">
+        <Button 
+          variant="outline" 
+          onClick={handleDiscordSignUp}
+          disabled={isLoading}
+          className="w-full"
+        >
           {isLoading ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -60,7 +67,9 @@ function SignUpFallback() {
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-        <CardDescription>Loading sign-up options...</CardDescription>
+        <CardDescription>
+          Loading sign-up options...
+        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="h-[100px] flex items-center justify-center">
@@ -88,4 +97,3 @@ export default function SignUpPage() {
     </div>
   )
 }
-

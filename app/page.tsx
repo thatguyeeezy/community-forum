@@ -1,9 +1,40 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+// app/page.tsx
+import { prisma } from "@/lib/prisma"
+import { OnlineUsers } from "@/components/online-users"
+import { Stats } from "@/components/stats" // Import the Stats component
 import Link from "next/link"
-import { Building2, Users, FileText } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
-export default function HomePage() {
+// We'll keep this function for the categories
+async function getCategories() {
+  try {
+    const categories = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: {
+            threads: true,
+          },
+        },
+      },
+      orderBy: {
+        order: "asc",
+      },
+    })
+
+    return categories.map((category) => ({
+      ...category,
+      postCount: 0, // Simplified for now
+    }))
+  } catch (error) {
+    console.error("Error fetching categories:", error)
+    return []
+  }
+}
+
+export default async function HomePage() {
+  const categories = await getCategories()
+
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <div className="space-y-8">
@@ -11,147 +42,60 @@ export default function HomePage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-4xl font-bold mb-2">Welcome to FCRP</h1>
-            <p className="text-muted-foreground">Your central hub for department information and community resources</p>
+            <p className="text-muted-foreground">Join FCRP, share knowledge, and connect with others</p>
           </div>
           <Button asChild size="lg">
             <Link href="https://discord.gg/DaPzAREBGp">Join the Discord</Link>
           </Button>
         </div>
 
-        {/* Hero Section */}
-        <section className="py-12 md:py-24 bg-muted/50 rounded-lg">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  Florida Coast Roleplay Community
-                </h2>
-                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                  Explore our departments, meet our members, and discover what makes our community special.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                <Button asChild>
-                  <Link href="/departments/bso">Explore Departments</Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/members">View Members</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Stats - Replace the hardcoded stats with the Stats component */}
+        <Stats />
 
-        {/* Features Section */}
-        <section className="py-12">
-          <div className="container px-4 md:px-6">
-            <h2 className="text-2xl font-bold mb-8">What We Offer</h2>
-            <div className="grid gap-6 lg:grid-cols-3 lg:gap-12">
-              <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Building2 className="h-10 w-10 text-primary" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold">Department Information</h3>
-                  <p className="text-muted-foreground">
-                    Explore detailed information about each department, their mission, and structure.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="h-10 w-10 text-primary" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold">Member Profiles</h3>
-                  <p className="text-muted-foreground">View member profiles, badges, and department affiliations.</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-10 w-10 text-primary" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold">Resources</h3>
-                  <p className="text-muted-foreground">
-                    Access important community resources, guidelines, and documentation.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Departments Preview */}
-        <section className="py-12">
-          <div className="container px-4 md:px-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Our Departments</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Categories */}
+          <div className="md:col-span-3 space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Categories</h2>
               <Button variant="link" asChild>
-                <Link href="/departments">View All</Link>
+                <Link href="/community">View All Categories</Link>
               </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* BSO Card */}
-              <Link href="/departments/bso">
-                <Card className="hover:bg-accent transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">BSO</h3>
-                        <p className="text-sm text-muted-foreground">Broward Sheriff's Office</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      County law enforcement agency serving Broward County.
-                    </p>
+            <div className="space-y-4">
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <Link key={category.id} href={`/community/${category.slug}`}>
+                    <Card className="hover:bg-accent transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold text-lg">{category.name}</h3>
+                            <p className="text-muted-foreground text-sm">{category.description}</p>
+                          </div>
+                          <div className="text-right text-sm text-muted-foreground">
+                            <p>{category._count.threads} threads</p>
+                            <p>{category.postCount} posts</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-muted-foreground">No categories found</p>
                   </CardContent>
                 </Card>
-              </Link>
-
-              {/* MPD Card */}
-              <Link href="/departments/mpd">
-                <Card className="hover:bg-accent transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">MPD</h3>
-                        <p className="text-sm text-muted-foreground">Miami Police Department</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground">City law enforcement agency serving Miami.</p>
-                  </CardContent>
-                </Card>
-              </Link>
-
-              {/* FHP Card */}
-              <Link href="/departments/fhp">
-                <Card className="hover:bg-accent transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">FHP</h3>
-                        <p className="text-sm text-muted-foreground">Florida Highway Patrol</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      State law enforcement agency patrolling Florida's highways.
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
+              )}
             </div>
           </div>
-        </section>
+
+          {/* Online Users */}
+          <div>
+            <OnlineUsers />
+          </div>
+        </div>
       </div>
     </div>
   )

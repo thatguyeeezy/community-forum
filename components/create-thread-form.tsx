@@ -16,16 +16,14 @@ import { createThread } from "@/app/actions/thread"
 interface Category {
   id: string
   name: string
-  slug?: string
 }
 
 interface CreateThreadFormProps {
   categories: Category[]
   defaultCategoryId?: string
-  redirectUrl?: string
 }
 
-export function CreateThreadForm({ categories, defaultCategoryId, redirectUrl }: CreateThreadFormProps) {
+export function CreateThreadForm({ categories, defaultCategoryId }: CreateThreadFormProps) {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [categoryId, setCategoryId] = useState(defaultCategoryId || "")
@@ -56,21 +54,7 @@ export function CreateThreadForm({ categories, defaultCategoryId, redirectUrl }:
           title: "Success",
           description: "Thread created successfully",
         })
-
-        // Find the selected category to get its slug
-        const category = categories.find((cat) => cat.id === categoryId)
-
-        if (result.threadId) {
-          if (category?.slug) {
-            router.push(`/community/${category.slug}/thread/${result.threadId}`)
-          } else {
-            router.push(`/community/thread/${result.threadId}`)
-          }
-        } else if (redirectUrl) {
-          router.push(redirectUrl)
-        } else {
-          router.push("/community")
-        }
+        router.push(`/community/thread/${result.threadId}`)
       }
     } catch (error) {
       toast({
