@@ -1,8 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { EditProfileDialog } from "@/components/edit-profile-dialog"
+import { UserBadges } from "@/components/user-badges"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -85,14 +86,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                   </div>
 
                   <div className="flex flex-wrap justify-center gap-2">
-                    {isEarlyAdopter && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                      >
-                        Early Adopter
-                      </Badge>
-                    )}
+                    <UserBadges isEarlyAdopter={isEarlyAdopter} />
                     <Badge variant="outline">{user.role}</Badge>
                   </div>
                 </div>
@@ -113,7 +107,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                     <CardTitle>About Me</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p>{user.bio || "No bio provided."}</p>
+                    <p className="whitespace-pre-wrap break-words">{user.bio || "No bio provided."}</p>
                   </CardContent>
                 </Card>
 

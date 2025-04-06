@@ -55,7 +55,7 @@ export default async function ThreadPage({ params }: { params: { id: string } })
         </div>
         <div className="flex justify-between items-start">
           <h1 className="text-3xl font-bold tracking-tight">{thread.title}</h1>
-          {canModerate && <ThreadActions thread={thread} />}
+          {canModerate && <ThreadActions threadId={thread.id} isPinned={thread.pinned} isLocked={thread.locked} />}
         </div>
         <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
           <span>Started by {thread.author.name}</span>

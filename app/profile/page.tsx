@@ -19,3 +19,4 @@ export default function ProfileRedirect() {
 
   return <div className="flex justify-center p-8">Redirecting...</div>
 }
+
