@@ -49,13 +49,13 @@ export default async function ThreadPage({ params }: { params: { id: string } })
             Community
           </Link>
           <span>/</span>
-          <Link href={`/community/${thread.category.slug}`} className="hover:underline">
+          <Link href={`/community/${thread.category.id}`} className="hover:underline">
             {thread.category.name}
           </Link>
         </div>
         <div className="flex justify-between items-start">
           <h1 className="text-3xl font-bold tracking-tight">{thread.title}</h1>
-          {canModerate && <ThreadActions threadId={thread.id} isPinned={thread.pinned} isLocked={thread.locked} />}
+          {canModerate && <ThreadActions thread={thread} />}
         </div>
         <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
           <span>Started by {thread.author.name}</span>

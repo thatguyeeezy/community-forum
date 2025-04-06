@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
@@ -14,7 +15,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Florida Coast Roleplay",
   description: "",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -41,6 +41,3 @@ export default function RootLayout({
   )
 }
 
-
-
-import './globals.css'
