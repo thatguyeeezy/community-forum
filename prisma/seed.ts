@@ -6,155 +6,116 @@ async function main() {
   console.log("Starting to seed categories...")
 
   try {
-    // First, check if the Category table exists and has the parentId column
-    let hasParentIdColumn = true
-    try {
-      // Try to query a category with parentId to see if the column exists
-      await prisma.$queryRaw`SELECT parentId FROM Category LIMIT 1`
-    } catch (error) {
-      console.log("parentId column might not exist yet, will create categories without parent references first")
-      hasParentIdColumn = false
-    }
+    // Create main categories first
+    console.log("Creating main categories...")
 
-    // Create main categories
-    const announcements = await prisma.category.upsert({
-      where: { slug: "announcements" },
-      update: {},
-      create: {
+    // Community Announcements
+    const announcements = await prisma.category.create({
+      data: {
         name: "Community Announcements",
         description: "Official announcements from the team",
         slug: "announcements",
         order: 1,
       },
     })
-    console.log("Created category:", announcements.name)
+    console.log("Created category:", announcements.name, "with ID:", announcements.id)
 
-    // Create Recruitment category
-    const recruitment = await prisma.category.upsert({
-      where: { slug: "recruitment" },
-      update: {},
-      create: {
+    // Recruitment and Retention
+    const recruitment = await prisma.category.create({
+      data: {
         name: "Recruitment and Retention",
         description: "Information about joining and staying with us",
         slug: "recruitment",
         order: 2,
       },
     })
-    console.log("Created category:", recruitment.name)
+    console.log("Created category:", recruitment.name, "with ID:", recruitment.id)
 
-    // Create General Discussion category
-    const general = await prisma.category.upsert({
-      where: { slug: "general" },
-      update: {},
-      create: {
+    // General Discussion
+    const general = await prisma.category.create({
+      data: {
         name: "General Discussion",
         description: "General topics and community discussions",
         slug: "general",
         order: 3,
       },
     })
-    console.log("Created category:", general.name)
+    console.log("Created category:", general.name, "with ID:", general.id)
 
-    // If parentId column exists, create subcategories
-    if (hasParentIdColumn) {
-      // Create subcategories for Announcements
-      const updates = await prisma.category.upsert({
-        where: { slug: "updates" },
-        update: {
-          parentId: announcements.id,
-        },
-        create: {
-          name: "Latest Updates",
-          description: "Recent updates and news",
-          slug: "updates",
-          order: 1,
-          parentId: announcements.id,
-        },
-      })
-      console.log("Created subcategory:", updates.name)
+    // Create subcategories using parent IDs
+    console.log("Creating subcategories...")
 
-      const changelogs = await prisma.category.upsert({
-        where: { slug: "changelogs" },
-        update: {
-          parentId: announcements.id,
-        },
-        create: {
-          name: "Server Changelogs",
-          description: "Detailed server update logs",
-          slug: "changelogs",
-          order: 2,
-          parentId: announcements.id,
-        },
-      })
-      console.log("Created subcategory:", changelogs.name)
+    // Subcategories for Announcements
+    await prisma.category.create({
+      data: {
+        name: "Latest Updates",
+        description: "Recent updates and news",
+        slug: "updates",
+        order: 1,
+        parentId: announcements.id,
+      },
+    })
+    console.log("Created subcategory: Latest Updates")
 
-      // Create subcategories for Recruitment
-      const recruitmentAnnouncements = await prisma.category.upsert({
-        where: { slug: "recruitment-announcements" },
-        update: {
-          parentId: recruitment.id,
-        },
-        create: {
-          name: "Announcements",
-          description: "Recruitment announcements",
-          slug: "recruitment-announcements",
-          order: 1,
-          parentId: recruitment.id,
-        },
-      })
-      console.log("Created subcategory:", recruitmentAnnouncements.name)
+    await prisma.category.create({
+      data: {
+        name: "Server Changelogs",
+        description: "Detailed server update logs",
+        slug: "changelogs",
+        order: 2,
+        parentId: announcements.id,
+      },
+    })
+    console.log("Created subcategory: Server Changelogs")
 
-      const recruitmentInfo = await prisma.category.upsert({
-        where: { slug: "recruitment-info" },
-        update: {
-          parentId: recruitment.id,
-        },
-        create: {
-          name: "Important Info",
-          description: "Essential information for applicants",
-          slug: "recruitment-info",
-          order: 2,
-          parentId: recruitment.id,
-        },
-      })
-      console.log("Created subcategory:", recruitmentInfo.name)
+    // Subcategories for Recruitment
+    await prisma.category.create({
+      data: {
+        name: "Announcements",
+        description: "Recruitment announcements",
+        slug: "recruitment-announcements",
+        order: 1,
+        parentId: recruitment.id,
+      },
+    })
+    console.log("Created subcategory: Recruitment Announcements")
 
-      // Create subcategories for General Discussion
-      const chat = await prisma.category.upsert({
-        where: { slug: "chat" },
-        update: {
-          parentId: general.id,
-        },
-        create: {
-          name: "Community Chat",
-          description: "General chat about anything and everything",
-          slug: "chat",
-          order: 1,
-          parentId: general.id,
-        },
-      })
-      console.log("Created subcategory:", chat.name)
+    await prisma.category.create({
+      data: {
+        name: "Important Info",
+        description: "Essential information for applicants",
+        slug: "recruitment-info",
+        order: 2,
+        parentId: recruitment.id,
+      },
+    })
+    console.log("Created subcategory: Important Info")
 
-      const introductions = await prisma.category.upsert({
-        where: { slug: "introductions" },
-        update: {
-          parentId: general.id,
-        },
-        create: {
-          name: "Introductions",
-          description: "Introduce yourself to the community",
-          slug: "introductions",
-          order: 2,
-          parentId: general.id,
-        },
-      })
-      console.log("Created subcategory:", introductions.name)
-    } else {
-      console.log("Skipping subcategory creation due to missing parentId column")
-      console.log("Run migrations first, then run seed again to create subcategories")
-    }
+    // Subcategories for General Discussion
+    await prisma.category.create({
+      data: {
+        name: "Community Chat",
+        description: "General chat about anything and everything",
+        slug: "chat",
+        order: 1,
+        parentId: general.id,
+      },
+    })
+    console.log("Created subcategory: Community Chat")
+
+    await prisma.category.create({
+      data: {
+        name: "Introductions",
+        description: "Introduce yourself to the community",
+        slug: "introductions",
+        order: 2,
+        parentId: general.id,
+      },
+    })
+    console.log("Created subcategory: Introductions")
 
     // Create departments
+    console.log("Creating departments...")
     const departments = [
       {
         name: "CIV – Civilian",
@@ -199,59 +160,38 @@ async function main() {
     ]
 
     for (const dept of departments) {
-      // First, check if the department already exists
-      let department = await prisma.departmentInfo.findUnique({
-        where: { name: dept.name },
+      // Create the department
+      const department = await prisma.departmentInfo.create({
+        data: {
+          name: dept.name,
+          description: dept.description,
+        },
       })
-
-      // If it doesn't exist, create it
-      if (!department) {
-        department = await prisma.departmentInfo.create({
-          data: {
-            name: dept.name,
-            description: dept.description,
-          },
-        })
-        console.log("Created department:", department.name)
-      } else {
-        console.log("Department already exists:", department.name)
-      }
+      console.log("Created department:", department.name, "with ID:", department.id)
 
       // Create subdivisions for this department
       for (const subName of dept.subdivisions) {
-        // Check if the subdivision already exists
-        const existingSubdivision = await prisma.subdivisionInfo.findFirst({
-          where: {
+        const subdivision = await prisma.subdivisionInfo.create({
+          data: {
             name: subName,
+            description: `${subName} subdivision of ${department.name}`,
             departmentId: department.id,
           },
         })
-
-        // If it doesn't exist, create it
-        if (!existingSubdivision) {
-          const subdivision = await prisma.subdivisionInfo.create({
-            data: {
-              name: subName,
-              description: `${subName} subdivision of ${department.name}`,
-              departmentId: department.id,
-            },
-          })
-          console.log("Created subdivision:", subdivision.name)
-        } else {
-          console.log("Subdivision already exists:", subName)
-        }
+        console.log("Created subdivision:", subdivision.name, "for department:", department.name)
       }
     }
 
-    console.log("Seeding completed!")
+    console.log("Seeding completed successfully!")
   } catch (error) {
     console.error("Error during seeding:", error)
+    throw error // Re-throw to ensure the process exits with an error code
   }
 }
 
 main()
   .catch((e) => {
-    console.error(e)
+    console.error("Fatal error during seeding:", e)
     process.exit(1)
   })
   .finally(async () => {
