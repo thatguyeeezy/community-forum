@@ -51,4 +51,3 @@ export async function GET(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: "Failed to fetch Discord member information" }, { status: 500 })
   }
 }
-

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -9,26 +10,38 @@ import type { Role } from "@prisma/client"
 
 interface OnlineUser {
   id: number
-  name: string | null
+  name: string
   image: string | null
   role: Role
   discordId?: string
   discordJoinedAt?: string
-  status?: string
-  department?: string
 }
 
 export function OnlineUsers() {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([])
-  const [guestCount, setGuestCount] = useState(0)
+  const [guestCount, setGuestCount] = useState(0) // Add state for guest count
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
+  const { data: session, status } = useSession()
+
+  // Update user activity when component mounts
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/users/update-activity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).catch((err) => console.error("Failed to update activity:", err))
+    }
+  }, [session])
 
   useEffect(() => {
     const fetchOnlineUsers = async () => {
       try {
         setLoading(true)
-        const response = await fetch("/api/discord/online-users", {
+        const response = await fetch("/api/users/online", {
           cache: "no-store",
           headers: {
             pragma: "no-cache",
@@ -43,16 +56,53 @@ export function OnlineUsers() {
         const data = await response.json()
 
         if (Array.isArray(data.users)) {
-          setOnlineUsers(data.users)
+          // For each user, try to fetch their Discord join date if they have a discordId
+          const usersWithDiscordInfo = await Promise.all(
+            data.users.map(async (user: OnlineUser) => {
+              if (user.discordId) {
+                try {
+                  const discordResponse = await fetch(`/api/discord/member/${user.discordId}`, {
+                    cache: "no-store",
+                  })
+
+                  if (discordResponse.ok) {
+                    const discordData = await discordResponse.json()
+                    return {
+                      ...user,
+                      discordJoinedAt: discordData.joinedAt,
+                    }
+                  }
+                } catch (error) {
+                  console.error(`Failed to fetch Discord info for user ${user.id}:`, error)
+                }
+              }
+              return user
+            }),
+          )
+
+          setOnlineUsers(usersWithDiscordInfo)
         } else {
           setOnlineUsers([])
         }
 
+        // Set the guest count from the API response
         setGuestCount(data.guestCount || 0)
       } catch (error) {
         console.error("Failed to fetch online users:", error)
-        setOnlineUsers([])
-        setGuestCount(0)
+        // Use fallback data if API fails
+        if (session?.user) {
+          setOnlineUsers([
+            {
+              id: Number(session.user.id),
+              name: session.user.name || "User",
+              image: session.user.image || null,
+              role: (session.user.role as Role) || "MEMBER",
+            },
+          ])
+        } else {
+          setOnlineUsers([])
+        }
+        setGuestCount(0) // Reset guest count on error
       } finally {
         setLoading(false)
       }
@@ -63,7 +113,7 @@ export function OnlineUsers() {
     // Refresh online users every 60 seconds
     const interval = setInterval(fetchOnlineUsers, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [status, session]) // Re-fetch when session status changes
 
   if (loading) {
     return (
@@ -97,44 +147,6 @@ export function OnlineUsers() {
     )
   }
 
-  // Get role badge text and color
-  const getRoleBadge = (role: Role) => {
-    switch (role) {
-      case "HEAD_ADMIN":
-        return { text: "Head Admin", color: "bg-cyan-500 text-white" }
-      case "SENIOR_ADMIN":
-        return { text: "Sr Admin", color: "bg-purple-500 text-white" }
-      case "ADMIN":
-        return { text: "Admin", color: "bg-red-800 text-white" }
-      case "JUNIOR_ADMIN":
-        return { text: "Jr Admin", color: "bg-blue-800 text-white" }
-      case "SENIOR_STAFF":
-        return { text: "Sr Staff", color: "bg-green-800 text-white" }
-      case "STAFF":
-        return { text: "Staff", color: "bg-yellow-500 text-black" }
-      case "STAFF_IN_TRAINING":
-        return { text: "Trainee", color: "bg-red-400 text-white" }
-      case "MEMBER":
-        return { text: "Member", color: "bg-blue-400 text-white" }
-      default:
-        return { text: "Member", color: "bg-blue-400 text-white" }
-    }
-  }
-
-  // Get status indicator color
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "online":
-        return "bg-green-500"
-      case "idle":
-        return "bg-yellow-500"
-      case "dnd":
-        return "bg-red-500"
-      default:
-        return "bg-green-500" // Default to online
-    }
-  }
-
   return (
     <Card className="bg-background border-border">
       <CardHeader className="pb-2 space-y-1">
@@ -145,16 +157,37 @@ export function OnlineUsers() {
         <div className="space-y-4">
           {onlineUsers.map((user) => {
             const initials = user.name
-              ? user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)
-              : "??"
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)
 
-            const roleBadge = getRoleBadge(user.role)
-            const statusColor = getStatusColor(user.status)
+            // Get role badge text and color
+            const getRoleBadge = () => {
+              switch (user.role) {
+                case "HEAD_ADMIN":
+                  return { text: "Head Admin", color: "bg-cyan-500 text-white" }
+                case "SENIOR_ADMIN":
+                  return { text: "Sr Admin", color: "bg-purple-500 text-white" }
+                case "ADMIN":
+                  return { text: "Admin", color: "bg-red-800 text-white" }
+                case "JUNIOR_ADMIN":
+                  return { text: "Jr Admin", color: "bg-blue-800 text-white" }
+                case "SENIOR_STAFF":
+                  return { text: "Sr Staff", color: "bg-green-800 text-white" }
+                case "STAFF":
+                  return { text: "Staff", color: "bg-yellow-500 text-black" }
+                case "STAFF_IN_TRAINING":
+                  return { text: "Trainee", color: "bg-red-400 text-white" }
+                case "MEMBER":
+                  return { text: "Member", color: "bg-blue-400 text-white" }
+                default:
+                  return { text: "Member", color: "bg-blue-400 text-white" }
+              }
+            }
+
+            const roleBadge = getRoleBadge()
 
             // Format join date if available
             const joinDate = user.discordJoinedAt
@@ -175,9 +208,7 @@ export function OnlineUsers() {
                     <AvatarImage src={user.image || undefined} />
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
-                  <span
-                    className={`absolute bottom-0 right-0 w-2.5 h-2.5 ${statusColor} rounded-full border-2 border-background`}
-                  ></span>
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background"></span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -185,11 +216,7 @@ export function OnlineUsers() {
                     <Badge className={roleBadge.color}>{roleBadge.text}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {user.department && user.department !== "N_A"
-                      ? user.department
-                      : joinDate
-                        ? `Joined ${joinDate}`
-                        : "Online"}
+                    {joinDate ? `Joined ${joinDate}` : pathname === "/" ? "Browsing forums" : "Online"}
                   </p>
                 </div>
               </div>

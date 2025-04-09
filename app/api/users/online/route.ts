@@ -8,10 +8,10 @@ export async function GET() {
   try {
     // Get current session
     const session = await getServerSession(authOptions)
-    
+
     // Get all users who have been active in the last 5 minutes
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
-    
+
     // Find users who are currently online with active sessions
     const onlineUsers = await prisma.user.findMany({
       where: {
@@ -22,10 +22,10 @@ export async function GET() {
         sessions: {
           some: {
             expires: {
-              gt: new Date()
-            }
-          }
-        }
+              gt: new Date(),
+            },
+          },
+        },
       },
       select: {
         id: true,
@@ -33,24 +33,21 @@ export async function GET() {
         image: true,
         role: true,
         lastActive: true,
+        discordId: true,
       },
-      orderBy: [
-        { role: 'asc' },
-        { lastActive: 'desc' }
-      ],
+      orderBy: [{ role: "asc" }, { lastActive: "desc" }],
       take: 10,
     })
 
     // Count active anonymous sessions in the last 5 minutes
-    // If you've added the AnonymousSession model to your schema
     let guestCount = 0
     try {
       guestCount = await prisma.anonymousSession.count({
         where: {
           lastSeen: {
-            gte: fiveMinutesAgo
-          }
-        }
+            gte: fiveMinutesAgo,
+          },
+        },
       })
     } catch (error) {
       console.error("Error counting anonymous sessions:", error)
