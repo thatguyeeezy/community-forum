@@ -75,7 +75,7 @@ export function RecentActivityList({ recentUsers, recentThreads, recentPosts }: 
                 <div>
                   <p className="text-sm font-medium">New user registered</p>
                   <p className="text-xs text-muted-foreground">
-                    <Link href={`/admin/users/${user.id}`} className="hover:underline">
+                    <Link href={`/profile/${user.id}`} className="hover:underline">
                       {user.name || user.email || `User #${user.id}`}
                     </Link>{" "}
                     joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
