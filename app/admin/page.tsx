@@ -6,9 +6,75 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { AdminStats } from "@/components/admin-stats"
-import { Users, MessageSquare, FileText } from "lucide-react"
+import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import { RecentActivityList } from "@/components/recent-activity-list"
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const session = await getServerSession(authOptions)
+
+  // Check if user is authorized to access admin panel
+  if (!session?.user || !["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
+    redirect("/auth/signin?callbackUrl=/admin")
+  }
+
+  // Fetch recent users
+  const recentUsers = await prisma.user.findMany({
+    take: 5,
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+    },
+  })
+
+  // Fetch recent threads
+  const recentThreads = await prisma.thread.findMany({
+    take: 5,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      author: {
+        select: {
+          name: true,
+        },
+      },
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  })
+
+  // Fetch recent posts
+  const recentPosts = await prisma.post.findMany({
+    take: 5,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      author: {
+        select: {
+          name: true,
+        },
+      },
+      thread: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  })
+
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <div className="flex flex-col md:flex-row gap-6">
@@ -35,45 +101,11 @@ export default function AdminPage() {
                   <CardDescription>Recent activity across the forum</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="rounded-md bg-muted p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-full bg-primary/10 p-2">
-                          <Users className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">New user registered</p>
-                          <p className="text-xs text-muted-foreground">johndoe joined 2 hours ago</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="rounded-md bg-muted p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-full bg-primary/10 p-2">
-                          <MessageSquare className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">New thread created</p>
-                          <p className="text-xs text-muted-foreground">
-                            "Getting started with Next.js" in Tutorials & Resources
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="rounded-md bg-muted p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-full bg-primary/10 p-2">
-                          <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">New post in thread</p>
-                          <p className="text-xs text-muted-foreground">
-                            janedoe replied to "What's your favorite UI component library?"
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <RecentActivityList
+                    recentUsers={recentUsers}
+                    recentThreads={recentThreads}
+                    recentPosts={recentPosts}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -196,4 +228,3 @@ export default function AdminPage() {
     </div>
   )
 }
-

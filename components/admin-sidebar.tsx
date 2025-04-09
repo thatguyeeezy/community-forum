@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Users, MessageSquare, FileText, Settings, Bell, Shield, BarChart } from "lucide-react"
+import { LayoutDashboard, Users, FileText, Settings, BarChart, Flag } from "lucide-react"
 
 const adminNavItems = [
   {
@@ -18,11 +18,6 @@ const adminNavItems = [
     icon: Users,
   },
   {
-    title: "Forums",
-    href: "/admin/forums",
-    icon: MessageSquare,
-  },
-  {
     title: "Content",
     href: "/admin/content",
     icon: FileText,
@@ -30,17 +25,12 @@ const adminNavItems = [
   {
     title: "Reports",
     href: "/admin/reports",
-    icon: Shield,
+    icon: Flag,
   },
   {
     title: "Analytics",
     href: "/admin/analytics",
     icon: BarChart,
-  },
-  {
-    title: "Notifications",
-    href: "/admin/notifications",
-    icon: Bell,
   },
   {
     title: "Settings",
@@ -78,4 +68,3 @@ export function AdminSidebar() {
     </div>
   )
 }
-
