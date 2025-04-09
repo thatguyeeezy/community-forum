@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID || "",
       clientSecret: process.env.DISCORD_CLIENT_SECRET || "",
-      authorization: { params: { scope: "identify email" } },
+      authorization: { params: { scope: "identify email guilds" } }, // Add guilds scope
       callbackUrl: "http://198.154.99.127:3000/auth/discord/callback",
       profile(profile) {
         console.log("Discord profile received:", profile)
@@ -282,4 +282,3 @@ export const authOptions: NextAuthOptions = {
 export async function auth() {
   return await getServerSession(authOptions)
 }
-

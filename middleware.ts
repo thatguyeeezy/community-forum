@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
     // Check if user has admin role
     const userRole = session?.role
 
-    if (userRole !== "ADMIN" && userRole !== "MODERATOR") {
+    if (!["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(userRole as string)) {
       return NextResponse.redirect(new URL("/auth/error?error=AccessDenied", request.url))
     }
   }
@@ -78,4 +78,3 @@ export const config = {
     "/members",
   ],
 }
-
