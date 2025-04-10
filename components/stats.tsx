@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Users, MessageSquare, FileText, Activity } from "lucide-react"
 
-interface StatsData {
+type StatsData = {
   userCount: number
   threadCount: number
   postCount: number
-  onlineCount: number
+  activeUsers: number
 }
 
 export function Stats() {
@@ -18,30 +19,12 @@ export function Stats() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch("/api/metrics", {
-          cache: "no-store",
-          headers: {
-            pragma: "no-cache",
-            "cache-control": "no-cache",
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch stats")
-        }
-
+        const response = await fetch("/api/metrics")
         const data = await response.json()
         setStats(data)
+        setLoading(false)
       } catch (error) {
         console.error("Error fetching stats:", error)
-        // Fallback data
-        setStats({
-          userCount: 0,
-          threadCount: 0,
-          postCount: 0,
-          onlineCount: 0,
-        })
-      } finally {
         setLoading(false)
       }
     }
@@ -51,12 +34,12 @@ export function Stats() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={i} className="bg-gray-800 border-gray-700 shadow-md">
+          <Card key={i} className="bg-gray-800 border-gray-700">
             <CardContent className="p-4">
-              <Skeleton className="h-8 w-24 bg-gray-700" />
-              <Skeleton className="h-4 w-full mt-2 bg-gray-700" />
+              <Skeleton className="h-4 w-24 mb-2 bg-gray-700" />
+              <Skeleton className="h-8 w-16 bg-gray-700" />
             </CardContent>
           </Card>
         ))}
@@ -64,44 +47,59 @@ export function Stats() {
     )
   }
 
-  if (!stats) {
-    return null
-  }
-
-  const statItems = [
-    {
-      title: stats.userCount.toLocaleString(),
-      description: "Registered Users",
-      icon: "👥",
-    },
-    {
-      title: stats.threadCount.toLocaleString(),
-      description: "Discussion Threads",
-      icon: "📝",
-    },
-    {
-      title: stats.postCount.toLocaleString(),
-      description: "Total Posts",
-      icon: "💬",
-    },
-    {
-      title: stats.onlineCount.toLocaleString(),
-      description: "Users Online",
-      icon: "🟢",
-    },
-  ]
-
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      {statItems.map((item, index) => (
-        <Card key={index} className="bg-gray-800 border-gray-700 shadow-md hover:bg-gray-700 transition-colors">
-          <CardContent className="p-4 flex flex-col items-center text-center">
-            <div className="text-3xl mb-2">{item.icon}</div>
-            <div className="text-2xl font-bold text-gray-100">{item.title}</div>
-            <p className="text-sm text-gray-400">{item.description}</p>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Total Members */}
+      <Card className="bg-gray-800 border-gray-700 shadow-md">
+        <CardContent className="p-4 flex justify-between items-center">
+          <div>
+            <div className="text-sm text-gray-400">Total Members</div>
+            <div className="text-xl font-bold text-gray-100">{stats?.userCount.toLocaleString() || 0}</div>
+          </div>
+          <div className="text-blue-400">
+            <Users className="h-6 w-6" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Active Today */}
+      <Card className="bg-gray-800 border-gray-700 shadow-md">
+        <CardContent className="p-4 flex justify-between items-center">
+          <div>
+            <div className="text-sm text-gray-400">Active Today</div>
+            <div className="text-xl font-bold text-gray-100">{stats?.activeUsers.toLocaleString() || 0}</div>
+          </div>
+          <div className="text-blue-400">
+            <Activity className="h-6 w-6" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Threads */}
+      <Card className="bg-gray-800 border-gray-700 shadow-md">
+        <CardContent className="p-4 flex justify-between items-center">
+          <div>
+            <div className="text-sm text-gray-400">Threads</div>
+            <div className="text-xl font-bold text-gray-100">{stats?.threadCount.toLocaleString() || 0}</div>
+          </div>
+          <div className="text-blue-400">
+            <MessageSquare className="h-6 w-6" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Posts */}
+      <Card className="bg-gray-800 border-gray-700 shadow-md">
+        <CardContent className="p-4 flex justify-between items-center">
+          <div>
+            <div className="text-sm text-gray-400">Posts</div>
+            <div className="text-xl font-bold text-gray-100">{stats?.postCount.toLocaleString() || 0}</div>
+          </div>
+          <div className="text-blue-400">
+            <FileText className="h-6 w-6" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useSession, signOut } from "next-auth/react"
+import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,80 +13,79 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, LogOut, Settings, User, Shield } from "lucide-react"
-import Link from "next/link"
+import { User, Settings, LogOut } from "lucide-react"
 
 export function UserNav() {
   const { data: session, status } = useSession()
 
-  // Early return if no session to avoid rendering issues
-  if (status !== "authenticated" || !session || !session.user) {
-    return null
+  if (status === "loading") {
+    return (
+      <Button variant="ghost" size="icon" disabled className="text-gray-300">
+        <Avatar className="h-8 w-8 bg-gray-700">
+          <AvatarFallback className="bg-gray-700"></AvatarFallback>
+        </Avatar>
+      </Button>
+    )
   }
 
-  // Safely extract user data
-  const userName = typeof session.user.name === "string" ? session.user.name : "User"
-  const userEmail = typeof session.user.email === "string" ? session.user.email : ""
-  const userImage = typeof session.user.image === "string" ? session.user.image : "/placeholder.svg?height=32&width=32"
-  const userInitials = userName.substring(0, 2).toUpperCase()
-  const userRole = typeof session.user.role === "string" ? session.user.role : "MEMBER"
-  const userId = session.user.id // Get the user ID from the session
+  if (!session) {
+    return (
+      <Button asChild variant="ghost" size="sm" className="text-gray-300 hover:text-gray-100">
+        <Link href="/auth/signin">Sign In</Link>
+      </Button>
+    )
+  }
 
-  const isAdmin = userRole === "ADMIN"
-  const isModerator = userRole === "MODERATOR"
+  const initials = session.user?.name
+    ? session.user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .substring(0, 2)
+    : "U"
 
   return (
-    <div className="flex items-center gap-4">
-      <Button variant="ghost" size="icon">
-        <Bell className="h-5 w-5" />
-        <span className="sr-only">Notifications</span>
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={userImage} alt={userName} />
-              <AvatarFallback>{userInitials}</AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{userName}</p>
-              <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <Link href={`/profile/${userId}`} className="cursor-pointer flex w-full">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/settings" className="cursor-pointer flex w-full">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem>
-            {(isAdmin || isModerator) && (
-              <DropdownMenuItem asChild>
-                <Link href="/admin" className="cursor-pointer flex w-full">
-                  <Shield className="mr-2 h-4 w-4" />
-                  <span>Staff Panel</span>
-                </Link>
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })} className="cursor-pointer">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8 bg-blue-900 text-blue-300">
+            <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 bg-gray-800 border-gray-700" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal text-gray-300">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none text-gray-100">{session.user?.name}</p>
+            <p className="text-xs leading-none text-gray-400">{session.user?.email}</p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild className="text-gray-300 hover:text-gray-100 hover:bg-gray-700">
+            <Link href={`/profile/${session.user?.id}`}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
           </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          <DropdownMenuItem asChild className="text-gray-300 hover:text-gray-100 hover:bg-gray-700">
+            <Link href="/settings">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuItem
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="text-gray-300 hover:text-gray-100 hover:bg-gray-700"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
