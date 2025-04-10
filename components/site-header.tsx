@@ -2,39 +2,33 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
-import { UserNav } from "@/components/user-nav"
-import { Search } from "lucide-react"
+import { Moon, Search, User } from "lucide-react"
 
 export function SiteHeader() {
   const pathname = usePathname()
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-800 bg-gray-800">
-      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
+    <header className="sticky top-0 z-40 w-full border-b border-[#1e2330] bg-[#1e2330]">
+      <div className="container flex h-14 items-center">
         <div className="flex gap-6 md:gap-10">
           <Link href="/" className="flex items-center space-x-2">
             <div className="h-6 w-6 bg-blue-600 rounded-sm"></div>
             <span className="inline-block font-bold">Florida Coast RP</span>
           </Link>
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <nav className="flex items-center space-x-6 text-sm font-medium">
             <Link
               href="/"
-              className={cn(
-                "transition-colors hover:text-gray-100",
-                pathname === "/" ? "text-gray-100" : "text-gray-300",
-              )}
+              className={cn("transition-colors hover:text-white", pathname === "/" ? "text-white" : "text-gray-300")}
             >
               Home
             </Link>
             <Link
-              href="/community"
+              href="/forums"
               className={cn(
-                "transition-colors hover:text-gray-100",
-                pathname === "/community" || pathname.startsWith("/community/") ? "text-gray-100" : "text-gray-300",
+                "transition-colors hover:text-white",
+                pathname === "/forums" || pathname.startsWith("/forums/") ? "text-white" : "text-gray-300",
               )}
             >
               Forums
@@ -42,25 +36,27 @@ export function SiteHeader() {
             <Link
               href="/members"
               className={cn(
-                "transition-colors hover:text-gray-100",
-                pathname === "/members" ? "text-gray-100" : "text-gray-300",
+                "transition-colors hover:text-white",
+                pathname === "/members" ? "text-white" : "text-gray-300",
               )}
             >
               Members
             </Link>
           </nav>
         </div>
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          <div className="flex-1 sm:grow-0">
-            <Button variant="ghost" size="icon" className="text-gray-300 hover:text-gray-100">
-              <Search className="h-5 w-5" />
-              <span className="sr-only">Search</span>
-            </Button>
-          </div>
-          <nav className="flex items-center space-x-2">
-            <ModeToggle />
-            <UserNav />
-          </nav>
+        <div className="ml-auto flex items-center space-x-4">
+          <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
+            <Search className="h-5 w-5" />
+            <span className="sr-only">Search</span>
+          </Button>
+          <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
+            <Moon className="h-5 w-5" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+          <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
+            <User className="h-5 w-5" />
+            <span className="sr-only">User</span>
+          </Button>
         </div>
       </div>
     </header>
