@@ -54,7 +54,9 @@ export function Stats() {
         <CardContent className="p-4 flex justify-between items-center">
           <div>
             <div className="text-sm text-gray-400">Total Members</div>
-            <div className="text-xl font-bold text-gray-100">{stats?.userCount.toLocaleString() || 0}</div>
+            <div className="text-xl font-bold text-gray-100">
+              {stats?.userCount ? stats.userCount.toLocaleString() : 0}
+            </div>
           </div>
           <div className="text-blue-400">
             <Users className="h-6 w-6" />
@@ -67,7 +69,9 @@ export function Stats() {
         <CardContent className="p-4 flex justify-between items-center">
           <div>
             <div className="text-sm text-gray-400">Active Today</div>
-            <div className="text-xl font-bold text-gray-100">{stats?.activeUsers.toLocaleString() || 0}</div>
+            <div className="text-xl font-bold text-gray-100">
+              {stats?.activeUsers ? stats.activeUsers.toLocaleString() : 0}
+            </div>
           </div>
           <div className="text-blue-400">
             <Activity className="h-6 w-6" />
@@ -80,7 +84,9 @@ export function Stats() {
         <CardContent className="p-4 flex justify-between items-center">
           <div>
             <div className="text-sm text-gray-400">Threads</div>
-            <div className="text-xl font-bold text-gray-100">{stats?.threadCount.toLocaleString() || 0}</div>
+            <div className="text-xl font-bold text-gray-100">
+              {stats?.threadCount ? stats.threadCount.toLocaleString() : 0}
+            </div>
           </div>
           <div className="text-blue-400">
             <MessageSquare className="h-6 w-6" />
@@ -93,7 +99,9 @@ export function Stats() {
         <CardContent className="p-4 flex justify-between items-center">
           <div>
             <div className="text-sm text-gray-400">Posts</div>
-            <div className="text-xl font-bold text-gray-100">{stats?.postCount.toLocaleString() || 0}</div>
+            <div className="text-xl font-bold text-gray-100">
+              {stats?.postCount ? stats.postCount.toLocaleString() : 0}
+            </div>
           </div>
           <div className="text-blue-400">
             <FileText className="h-6 w-6" />
