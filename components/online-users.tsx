@@ -117,11 +117,11 @@ export function OnlineUsers() {
 
   if (loading) {
     return (
-      <Card className="bg-background border-border">
+      <Card className="bg-gray-800 border-gray-700 shadow-md">
         <CardContent className="p-4">
           <div className="animate-pulse space-y-2">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-8 bg-muted rounded"></div>
+              <div key={i} className="h-8 bg-gray-700 rounded"></div>
             ))}
           </div>
         </CardContent>
@@ -132,14 +132,14 @@ export function OnlineUsers() {
   // If no users are online, show a message
   if (onlineUsers.length === 0) {
     return (
-      <Card className="bg-background border-border">
-        <CardHeader className="pb-2 space-y-1">
-          <h2 className="text-base font-semibold">Online Users</h2>
-          <p className="text-sm text-muted-foreground">0 users currently online</p>
+      <Card className="bg-gray-800 border-gray-700 shadow-md">
+        <CardHeader className="pb-2 space-y-1 border-b border-gray-700">
+          <h2 className="text-base font-semibold text-gray-100">Online Users</h2>
+          <p className="text-sm text-gray-400">0 users currently online</p>
         </CardHeader>
         <CardContent className="p-4">
-          <p className="text-sm text-muted-foreground">No users are currently online</p>
-          <p className="text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
+          <p className="text-sm text-gray-300">No users are currently online</p>
+          <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-700">
             {guestCount > 0 ? `${guestCount} guest${guestCount === 1 ? "" : "s"} browsing` : "No guests browsing"}
           </p>
         </CardContent>
@@ -148,10 +148,10 @@ export function OnlineUsers() {
   }
 
   return (
-    <Card className="bg-background border-border">
-      <CardHeader className="pb-2 space-y-1">
-        <h2 className="text-base font-semibold">Online Users</h2>
-        <p className="text-sm text-muted-foreground">{onlineUsers.length} users currently online</p>
+    <Card className="bg-gray-800 border-gray-700 shadow-md">
+      <CardHeader className="pb-2 space-y-1 border-b border-gray-700">
+        <h2 className="text-base font-semibold text-gray-100">Online Users</h2>
+        <p className="text-sm text-gray-400">{onlineUsers.length} users currently online</p>
       </CardHeader>
       <CardContent className="p-4">
         <div className="space-y-4">
@@ -201,21 +201,21 @@ export function OnlineUsers() {
               <div
                 key={user.id}
                 onClick={() => router.push(`/profile/${user.id}`)}
-                className="flex items-center gap-3 cursor-pointer py-2"
+                className="flex items-center gap-3 cursor-pointer py-2 hover:bg-gray-700 rounded-md px-2 transition-colors"
               >
                 <div className="relative">
-                  <Avatar className="h-8 w-8 border border-border">
+                  <Avatar className="h-8 w-8 border border-gray-700 bg-blue-900 text-blue-300">
                     <AvatarImage src={user.image || undefined} />
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background"></span>
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-gray-800"></span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{user.name}</span>
+                    <span className="text-sm font-medium text-gray-200">{user.name}</span>
                     <Badge className={roleBadge.color}>{roleBadge.text}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-400">
                     {joinDate ? `Joined ${joinDate}` : pathname === "/" ? "Browsing forums" : "Online"}
                   </p>
                 </div>
@@ -224,7 +224,7 @@ export function OnlineUsers() {
           })}
         </div>
 
-        <p className="text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
+        <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-700">
           {guestCount > 0 ? `and ${guestCount} guest${guestCount === 1 ? "" : "s"} browsing` : "No guests browsing"}
         </p>
       </CardContent>

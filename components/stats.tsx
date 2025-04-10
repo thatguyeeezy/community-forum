@@ -1,34 +1,22 @@
-// components/stats.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Users, Activity, MessageCircle, GamepadIcon } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-interface Metrics {
-  totalMembers: number
-  activeToday: number
-  discordMembers: number
-  serverStatus: {
-    online: boolean
-    playerCount: number
-  }
+interface StatsData {
+  userCount: number
+  threadCount: number
+  postCount: number
+  onlineCount: number
 }
 
 export function Stats() {
-  const [metrics, setMetrics] = useState<Metrics>({
-    totalMembers: 0,
-    activeToday: 0,
-    discordMembers: 0,
-    serverStatus: {
-      online: false,
-      playerCount: 0,
-    },
-  })
+  const [stats, setStats] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchMetrics = async () => {
+    async function fetchStats() {
       try {
         const response = await fetch("/api/metrics", {
           cache: "no-store",
@@ -39,91 +27,81 @@ export function Stats() {
         })
 
         if (!response.ok) {
-          throw new Error("Failed to fetch metrics")
+          throw new Error("Failed to fetch stats")
         }
 
         const data = await response.json()
-        setMetrics(data)
+        setStats(data)
       } catch (error) {
-        console.error("Failed to fetch metrics:", error)
+        console.error("Error fetching stats:", error)
+        // Fallback data
+        setStats({
+          userCount: 0,
+          threadCount: 0,
+          postCount: 0,
+          onlineCount: 0,
+        })
       } finally {
         setLoading(false)
       }
     }
 
-    fetchMetrics()
-    // Refresh metrics every 5 minutes
-    const interval = setInterval(fetchMetrics, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    fetchStats()
   }, [])
 
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="bg-gray-800 border-gray-700 shadow-md">
+            <CardContent className="p-4">
+              <Skeleton className="h-8 w-24 bg-gray-700" />
+              <Skeleton className="h-4 w-full mt-2 bg-gray-700" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  if (!stats) {
+    return null
+  }
+
+  const statItems = [
+    {
+      title: stats.userCount.toLocaleString(),
+      description: "Registered Users",
+      icon: "👥",
+    },
+    {
+      title: stats.threadCount.toLocaleString(),
+      description: "Discussion Threads",
+      icon: "📝",
+    },
+    {
+      title: stats.postCount.toLocaleString(),
+      description: "Total Posts",
+      icon: "💬",
+    },
+    {
+      title: stats.onlineCount.toLocaleString(),
+      description: "Users Online",
+      icon: "🟢",
+    },
+  ]
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardContent className="flex flex-row items-center justify-between p-6">
-          <div className="flex flex-col space-y-1">
-            <span className="text-sm font-medium text-muted-foreground">Total Members</span>
-            <span className="text-2xl font-bold">
-              {loading ? <span className="animate-pulse">...</span> : metrics.totalMembers.toLocaleString()}
-            </span>
-          </div>
-          <div className="rounded-full bg-primary/10 p-3">
-            <Users className="h-6 w-6 text-primary" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex flex-row items-center justify-between p-6">
-          <div className="flex flex-col space-y-1">
-            <span className="text-sm font-medium text-muted-foreground">Active Today</span>
-            <span className="text-2xl font-bold">
-              {loading ? <span className="animate-pulse">...</span> : metrics.activeToday.toLocaleString()}
-            </span>
-          </div>
-          <div className="rounded-full bg-primary/10 p-3">
-            <Activity className="h-6 w-6 text-primary" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex flex-row items-center justify-between p-6">
-          <div className="flex flex-col space-y-1">
-            <span className="text-sm font-medium text-muted-foreground">Discord Members</span>
-            <span className="text-2xl font-bold">
-              {loading ? <span className="animate-pulse">...</span> : metrics.discordMembers.toLocaleString()}
-            </span>
-          </div>
-          <div className="rounded-full bg-primary/10 p-3">
-            <MessageCircle className="h-6 w-6 text-primary" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex flex-row items-center justify-between p-6">
-          <div className="flex flex-col space-y-1">
-            <span className="text-sm font-medium text-muted-foreground">Server Status</span>
-            <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${metrics.serverStatus.online ? "bg-green-500" : "bg-red-500"}`} />
-              <span className="text-2xl font-bold">
-                {loading ? (
-                  <span className="animate-pulse">...</span>
-                ) : metrics.serverStatus.online ? (
-                  `${metrics.serverStatus.playerCount} Online`
-                ) : (
-                  "Offline"
-                )}
-              </span>
-            </div>
-          </div>
-          <div className="rounded-full bg-primary/10 p-3">
-            <GamepadIcon className="h-6 w-6 text-primary" />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {statItems.map((item, index) => (
+        <Card key={index} className="bg-gray-800 border-gray-700 shadow-md hover:bg-gray-700 transition-colors">
+          <CardContent className="p-4 flex flex-col items-center text-center">
+            <div className="text-3xl mb-2">{item.icon}</div>
+            <div className="text-2xl font-bold text-gray-100">{item.title}</div>
+            <p className="text-sm text-gray-400">{item.description}</p>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   )
 }
-

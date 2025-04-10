@@ -1,35 +1,42 @@
-import type React from "react"
+"use client"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Home, Users, Building2 } from "lucide-react"
 
-export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
+export function MainNav() {
+  const pathname = usePathname()
+
   return (
-    <nav className={cn("flex items-center space-x-4 lg:space-x-6", className)} {...props}>
-      <Link href="/" className="flex items-center space-x-2">
-        <Building2 className="h-6 w-6" />
-        <span className="font-bold hidden md:inline-block">Florida Coast RP</span>
+    <div className="mr-4 flex">
+      <Link href="/" className="mr-6 flex items-center space-x-2">
+        <span className="hidden font-bold text-gray-100 sm:inline-block">Florida Coast RP</span>
       </Link>
-      <Button variant="ghost" size="sm" asChild>
-        <Link href="/" className="flex items-center space-x-1">
-          <Home className="h-4 w-4" />
-          <span>Home</span>
+      <nav className="flex items-center space-x-4 text-sm font-medium text-gray-300">
+        <Link
+          href="/"
+          className={cn("transition-colors hover:text-gray-100", pathname === "/" ? "text-gray-100" : "text-gray-300")}
+        >
+          Home
         </Link>
-      </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link href="/community" className="flex items-center space-x-1">
-          <Users className="h-4 w-4" />
-          <span>Community</span>
+        <Link
+          href="/community"
+          className={cn(
+            "transition-colors hover:text-gray-100",
+            pathname?.startsWith("/community") ? "text-gray-100" : "text-gray-300",
+          )}
+        >
+          Forums
         </Link>
-      </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link href="/members" className="flex items-center space-x-1">
-          <Users className="h-4 w-4" />
-          <span>Members</span>
+        <Link
+          href="/members"
+          className={cn(
+            "transition-colors hover:text-gray-100",
+            pathname?.startsWith("/members") ? "text-gray-100" : "text-gray-300",
+          )}
+        >
+          Members
         </Link>
-      </Button>
-    </nav>
+      </nav>
+    </div>
   )
 }
-

@@ -124,4 +124,3 @@ export function CreateThreadForm({ categories, defaultCategoryId }: CreateThread
     </Card>
   )
 }
-

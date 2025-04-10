@@ -212,4 +212,3 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
     </Dialog>
   )
 }
-

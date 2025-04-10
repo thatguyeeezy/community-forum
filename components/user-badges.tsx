@@ -31,4 +31,3 @@ export function UserBadges({ isEarlyAdopter, postCount, threadCount }: UserBadge
     </div>
   )
 }
-
