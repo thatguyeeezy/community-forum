@@ -26,8 +26,8 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
   leaders: [
     { profileId: 3, title: "Fire Chief" },
     { profileId: 1, title: "Deputy Chief" },
-    { profileId: "", title: "Assistant Chief" },
-    { profileId: "", title: "Battalion Chief" },
+    { profileId: 0, title: "Assistant Chief" },
+    { profileId: 0, title: "Battalion Chief" },
   ],
   divisions: [
     {
@@ -189,8 +189,7 @@ export default function DepartmentPage() {
                 </p>
               </div>
             </div>
-
-            {/* Leadership - Moved to right side */}
+            {/* Leadership */}
             <div>
               <div className="text-center mb-6">
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -200,7 +199,10 @@ export default function DepartmentPage() {
               </div>
 
               <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-                <DepartmentLeaders leaders={department.leaders} />
+                <DepartmentLeaders leaders={department.leaders.map(leader => ({
+                  ...leader,
+                  profileId: leader.profileId === 0 ? 'Vacant' : leader.profileId
+                }))} />
               </div>
             </div>
           </div>
