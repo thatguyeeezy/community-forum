@@ -110,11 +110,7 @@ export default function DepartmentPage() {
               </p>
             </div>
 
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="w-full h-auto object-cover4">
-                <img src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
-              </div>
-            </div>
+            
           </div>
         </div>
 
@@ -132,6 +128,12 @@ export default function DepartmentPage() {
               </p>
             </div>
 
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="w-full h-auto object-cover4">
+                <img src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
+              </div>
+            </div>
+            
             <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm text-center">
               <h3 className="text-2xl font-bold text-red-500 mb-4">Become a Firefighter Today!</h3>
               <p className="text-gray-800 dark:text-gray-200 mb-6">
