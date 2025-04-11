@@ -229,7 +229,6 @@ export default function DepartmentPage() {
               {[1, 2, 3, 4, 5, 6, 7, 8].map((_, index) => (
                 <div key={`extra-${index}`} className="relative h-48 rounded-lg overflow-hidden group">
                   <img
-                    src={`/placeholder.svg?height=300&width=400&text=FD+Image+${index + 8}`}
                     alt={`Fire Department Image ${index + 4}`}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                   />
