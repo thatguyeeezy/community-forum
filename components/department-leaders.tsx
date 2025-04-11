@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 
 interface Leader {
-  profileId: number
+  profileId: number | null
   title: string
 }
 
@@ -25,10 +25,11 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
     const fetchLeaderProfiles = async () => {
       try {
         const leaderPromises = leaders.map(async (leader) => {
-          // If profileId is 0, return vacant data
+          // If profileId is 0, return vacant data with no profileId
           if (leader.profileId === 0) {
             return {
               ...leader,
+              profileId: null,
               name: "Vacant",
               avatar: "/placeholder.svg?height=40&width=40",
             }
@@ -38,9 +39,10 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
             const response = await fetch(`/api/users/${leader.profileId}`)
 
             if (!response.ok) {
-              // If user not found, return vacant data
+              // If user not found, return vacant data with no profileId
               return {
                 ...leader,
+                profileId: null,
                 name: "Vacant",
                 avatar: "/placeholder.svg?height=40&width=40",
               }
@@ -55,9 +57,10 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
             }
           } catch (error) {
             console.error(`Error fetching profile ${leader.profileId}:`, error)
-            // If fetch fails, return vacant data
+            // If fetch fails, return vacant data with no profileId
             return {
               ...leader,
+              profileId: null,
               name: "Vacant",
               avatar: "/placeholder.svg?height=40&width=40",
             }
@@ -95,8 +98,8 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
   return (
     <div className="space-y-4">
       {leadersWithProfiles.map((leader, index) => (
-        <div key={index} className={`flex items-center gap-3 p-3 rounded-lg ${leader.profileId === 0 ? 'bg-gray-200 dark:bg-gray-700' : ''}`}>
-          {leader.profileId === 0 ? (
+        <div key={index} className={`flex items-center gap-3 p-3 rounded-lg ${leader.profileId === null ? 'bg-gray-200 dark:bg-gray-700' : ''}`}>
+          {leader.profileId === null ? (
             <div className="relative">
               <img
                 src={leader.avatar}
@@ -117,7 +120,7 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
             </Link>
           )}
           <div>
-            {leader.profileId === 0 ? (
+            {leader.profileId === null ? (
               <div className="flex flex-col">
                 <span className="font-medium text-gray-500 dark:text-gray-400">{leader.name}</span>
                 <span className="text-sm text-muted-foreground italic">{leader.title}</span>
