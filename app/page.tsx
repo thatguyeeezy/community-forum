@@ -399,7 +399,7 @@ export default async function ForumHomepage() {
               <div className="flex items-center mb-4">
                 <div className="relative mr-3">
                   <img
-                    src="/placeholder.svg?height=32&width=32"
+                    src="https://media.discordapp.net/attachments/1333680596727365724/1360063890574151891/New_Project_10.png?ex=67f9c1b4&is=67f87034&hm=009826ac17c6a9c52a2b1811d9658b39597954e91840cf37e6dbd70374ec2ea3&=&format=webp&quality=lossless"
                     alt="Florida Coast RP Logo"
                     className="w-8 h-8 object-contain"
                   />
