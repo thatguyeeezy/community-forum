@@ -2,6 +2,7 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { ServerStatus } from "@/components/server-status"
 
 export default async function ForumHomepage() {
   const session = await getServerSession(authOptions)
@@ -370,24 +371,8 @@ export default async function ForumHomepage() {
                 <div className="text-sm text-gray-400">Saturday, 8PM EST</div>
               </div>
 
-              {/* Server Status */}
-              <div className="bg-gray-800 shadow-md p-5 mb-6 border-l-4 border-blue-500">
-                <h3 className="font-bold mb-2 text-gray-100">Server Status</h3>
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                  <span className="text-gray-300">Online: 34 players</span>
-                </div>
-                <div className="grid grid-cols-2 gap-6 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-gray-100">{memberCount}</div>
-                    <div className="text-sm text-gray-400">Members</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-100">3,705</div>
-                    <div className="text-sm text-gray-400">Discord</div>
-                  </div>
-                </div>
-              </div>
+              {/* Server Status - Using the dynamic component */}
+              <ServerStatus className="mb-6" />
 
               <div className="bg-gray-800 shadow-md p-5 mb-6 border-l-4 border-blue-500">
                 <h3 className="font-bold mb-2 text-gray-100">Discord</h3>
