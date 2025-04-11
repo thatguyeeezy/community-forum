@@ -4,11 +4,13 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
+import { useTheme } from "next-themes"
 
 export function SiteHeader() {
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const isLoading = status === "loading"
+  const { setTheme, theme } = useTheme()
 
   return (
     <header className="bg-gray-800 border-b border-gray-700">
@@ -76,11 +78,15 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <Link href="/theme" className="p-2 text-gray-300 hover:text-gray-100" aria-label="Toggle dark/light mode">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2 text-gray-300 hover:text-gray-100"
+              aria-label="Toggle dark/light mode"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
               </svg>
-            </Link>
+            </button>
             <Link href="/search" className="p-2 text-gray-300 hover:text-gray-100" aria-label="Search">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"></circle>
