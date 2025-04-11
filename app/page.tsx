@@ -60,8 +60,14 @@ export default async function ForumHomepage() {
       },
     })
 
-    // Fetch categories with thread counts
-    categories = await prisma.category.findMany({
+    // Fetch parent categories first
+    const parentCategories = await prisma.category.findMany({
+      where: {
+        parentId: null,
+      },
+      orderBy: {
+        order: "asc",
+      },
       include: {
         _count: {
           select: {
@@ -69,7 +75,7 @@ export default async function ForumHomepage() {
           },
         },
         threads: {
-          take: 2,
+          take: 1,
           orderBy: {
             updatedAt: "desc",
           },
@@ -79,6 +85,49 @@ export default async function ForumHomepage() {
         },
       },
     })
+
+    // Fetch child categories
+    const childCategories = await prisma.category.findMany({
+      where: {
+        NOT: {
+          parentId: null,
+        },
+      },
+      orderBy: {
+        order: "asc",
+      },
+      include: {
+        _count: {
+          select: {
+            threads: true,
+          },
+        },
+        threads: {
+          take: 1,
+          orderBy: {
+            updatedAt: "desc",
+          },
+          include: {
+            author: true,
+          },
+        },
+      },
+    })
+
+    // Group child categories by parent
+    const childCategoriesByParent = childCategories.reduce((acc, category) => {
+      if (!acc[category.parentId]) {
+        acc[category.parentId] = []
+      }
+      acc[category.parentId].push(category)
+      return acc
+    }, {})
+
+    // Combine parent categories with their children
+    categories = parentCategories.map((parent) => ({
+      ...parent,
+      children: childCategoriesByParent[parent.id] || [],
+    }))
 
     console.log("Categories fetched:", categories.length)
   } catch (error) {
@@ -216,41 +265,85 @@ export default async function ForumHomepage() {
             <div className="space-y-8">
               {categories.length > 0 ? (
                 categories.map((category, index) => (
-                  <div
-                    key={category.id}
-                    className={`bg-gray-800 shadow-md border-l-4 ${index === 0 ? "border-blue-500" : "border-gray-600"}`}
-                  >
-                    <div className="p-5">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-100">{category.name}</h3>
-                          <p className="text-gray-300 mt-1">{category.description}</p>
+                  <div key={category.id}>
+                    <div
+                      className={`bg-gray-800 shadow-md border-l-4 ${
+                        index === 0 ? "border-blue-500" : "border-gray-600"
+                      }`}
+                    >
+                      <div className="p-5">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-100">{category.name}</h3>
+                            <p className="text-gray-300 mt-1">{category.description}</p>
+                          </div>
+                          <div className="bg-gray-700 text-gray-300 text-sm px-3 py-1 rounded">
+                            {category._count?.threads || 0} threads
+                          </div>
                         </div>
-                        <div className="bg-gray-700 text-gray-300 text-sm px-3 py-1 rounded">
-                          {category._count?.threads || 0} threads
-                        </div>
-                      </div>
 
-                      <div className="mt-4 border-t border-gray-700 pt-3">
-                        {category.threads && category.threads.length > 0 ? (
-                          category.threads.map((thread) => (
-                            <Link
-                              key={thread.id}
-                              href={`/community/thread/${thread.id}`}
-                              className="block py-2 hover:bg-gray-700 px-3 -mx-3 rounded"
-                            >
-                              <div className="font-medium text-gray-100">{thread.title}</div>
-                              <div className="text-sm text-gray-400">
-                                Started by {thread.author?.name || "Anonymous"},{" "}
-                                {formatTimeAgo(new Date(thread.createdAt))}
-                              </div>
-                            </Link>
-                          ))
-                        ) : (
-                          <div className="py-2 text-gray-400 text-sm">No threads in this category yet.</div>
-                        )}
+                        <div className="mt-4 border-t border-gray-700 pt-3">
+                          {category.threads && category.threads.length > 0 ? (
+                            category.threads.map((thread) => (
+                              <Link
+                                key={thread.id}
+                                href={`/community/thread/${thread.id}`}
+                                className="block py-2 hover:bg-gray-700 px-3 -mx-3 rounded"
+                              >
+                                <div className="font-medium text-gray-100">{thread.title}</div>
+                                <div className="text-sm text-gray-400">
+                                  Started by {thread.author?.name || "Anonymous"},{" "}
+                                  {formatTimeAgo(new Date(thread.createdAt))}
+                                </div>
+                              </Link>
+                            ))
+                          ) : (
+                            <div className="py-2 text-gray-400 text-sm">No threads in this category yet.</div>
+                          )}
+                        </div>
                       </div>
                     </div>
+
+                    {/* Child categories */}
+                    {category.children && category.children.length > 0 && (
+                      <div className="ml-6 mt-4 space-y-4">
+                        {category.children.map((childCategory) => (
+                          <div key={childCategory.id} className="bg-gray-800 shadow-md border-l-4 border-gray-600">
+                            <div className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <h4 className="text-lg font-bold text-gray-100">{childCategory.name}</h4>
+                                  <p className="text-gray-300 text-sm mt-1">{childCategory.description}</p>
+                                </div>
+                                <div className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded">
+                                  {childCategory._count?.threads || 0} threads
+                                </div>
+                              </div>
+
+                              <div className="mt-3 border-t border-gray-700 pt-2">
+                                {childCategory.threads && childCategory.threads.length > 0 ? (
+                                  childCategory.threads.map((thread) => (
+                                    <Link
+                                      key={thread.id}
+                                      href={`/community/thread/${thread.id}`}
+                                      className="block py-2 hover:bg-gray-700 px-3 -mx-3 rounded"
+                                    >
+                                      <div className="font-medium text-gray-100">{thread.title}</div>
+                                      <div className="text-sm text-gray-400">
+                                        Started by {thread.author?.name || "Anonymous"},{" "}
+                                        {formatTimeAgo(new Date(thread.createdAt))}
+                                      </div>
+                                    </Link>
+                                  ))
+                                ) : (
+                                  <div className="py-2 text-gray-400 text-sm">No threads in this category yet.</div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
@@ -399,7 +492,7 @@ export default async function ForumHomepage() {
               <div className="flex items-center mb-4">
                 <div className="relative mr-3">
                   <img
-                    src="https://media.discordapp.net/attachments/1333680596727365724/1360063890574151891/New_Project_10.png?ex=67f9c1b4&is=67f87034&hm=009826ac17c6a9c52a2b1811d9658b39597954e91840cf37e6dbd70374ec2ea3&=&format=webp&quality=lossless"
+                    src="/placeholder.svg?height=32&width=32"
                     alt="Florida Coast RP Logo"
                     className="w-8 h-8 object-contain"
                   />
