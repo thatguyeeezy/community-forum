@@ -25,7 +25,7 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
   requirements: ["18+ years old", "Clean record on the server", "Ability to pass background check"],
   leaders: [
     { profileId: 3, title: "Fire Chief" },
-    { profileId: 1, title: "Deputy Chief" },
+    { profileId: 0, title: "Deputy Chief" },
     { profileId: 0, title: "Assistant Chief" },
     { profileId: 0, title: "Battalion Chief" },
   ],
