@@ -11,37 +11,37 @@ import { ModeToggle } from "@/components/mode-toggle"
 const departments = [
   {
     id: "bcfr",
-    name: "BCFR – Broward County Fire Rescue",
+    name: "Fire Rescue",
     color: "text-red-400",
   },
   {
     id: "bso",
-    name: "BSO – Broward Sheriff's Office",
+    name: "Sheriff's Office",
     color: "text-amber-400",
   },
   {
     id: "civ",
-    name: "CIV – Civilian",
+    name: "Civilian",
     color: "text-blue-400",
   },
   {
     id: "fhp",
-    name: "FHP – Florida Highway Patrol",
+    name: "Highway Patrol",
     color: "text-green-400",
   },
   {
     id: "fwc",
-    name: "FWC – Florida Fish and Wildlife",
+    name: "Fish and Wildlife",
     color: "text-teal-400",
   },
   {
     id: "mpd",
-    name: "MPD – Miami Police Department",
+    name: "Police Department",
     color: "text-purple-400",
   },
   {
-    id: "nscg",
-    name: "NSCG – Naval Sea Coast Guard",
+    id: "rnr",
+    name: "R&R Team",
     color: "text-cyan-400",
   },
 ]
