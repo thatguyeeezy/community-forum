@@ -13,7 +13,7 @@ const department = {
   color: "bg-red-100 text-red-800 dark:bg-red-900/80 dark:text-red-300",
   textColor: "text-red-500 dark:text-red-400",
   accentColor: "bg-red-600 hover:bg-red-700",
-  subdivisions: ["EMS Division", "Fire Division", "Special Operations"],
+  subdivisions: [""],
   aboutUs: `The Florida Coast Roleplay Fire Rescue Services Department is a professional, educational department. Dedicated to the safety, development, and service of our members and the public. We are proud to serve the following counties Broward County, Palm Beach County, Miami-Dade County and surrounding unincorporated areas, with 24-hour coverage from 9 fully staffed stations, protecting approximately 80 square miles of diverse terrain.
 
 Our mission goes beyond traditional firefighting we specialize in fire prevention, rescue operations, emergency medical response, and technical disciplines such as hazardous materials response, urban search and rescue, water rescue services, forestry operations, and aircraft rescue. Our department also operates advanced support units including Air Operations, an Aircraft Rescue Firefighting, HAZMAT operations, a Technical Rescue Team, and a Fire Investigations/Prevention Bureau
@@ -104,7 +104,7 @@ export default function DepartmentPage() {
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Departments", href: "/departments" },
-    { label: "BCFR – Broward County Fire Rescue" },
+    { label: "Fire Rescue" },
   ]
 
   return (
