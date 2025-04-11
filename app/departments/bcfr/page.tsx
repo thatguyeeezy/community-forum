@@ -53,35 +53,35 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
   ],
   featuredImages: [
     {
-      src: "/images/fire-1.png",
+      src: "https://media.discordapp.net/attachments/992665389987278939/1352496147830411304/Screenshot_2025-03-20_231604.png?ex=67fa91f1&is=67f94071&hm=6ef805811618029230c9b30fcc399f7fe7d693d31c398b07e42669ed3d18b943&=&format=webp&quality=lossless&width=928&height=493",
       alt: "",
     },
     {
-      src: "/images/fire-2.png",
+      src: "https://media.discordapp.net/attachments/992665389987278939/1356708539418148935/FiveM_by_Cfx.re_4_1_2025_3_12_14_PM.png?ex=67fabbca&is=67f96a4a&hm=d7b077ff9b8668ff12dca6781b1d807a84193a686a68dc69d8afc9fb9aaacd2f&=&format=webp&quality=lossless&width=1032&height=581",
       alt: "",
     },
     {
-      src: "/images/fire-3.png",
+      src: "https://media.discordapp.net/attachments/992665389987278939/1339020115693273098/Screenshot_501.png?ex=67fa52e9&is=67f90169&hm=932d2b0ddc62d160118eef788520a27d54edfed4482d2a57c7b187413219539f&=&format=webp&quality=lossless&width=928&height=522",
       alt: "",
     },
     {
-      src: "/images/fire-4.png",
+      src: "https://media.discordapp.net/attachments/992665389987278939/1354994213967626443/image.png?ex=67fa6df3&is=67f91c73&hm=52d1317d6426b0e1a1aacce031087997e108b018a936a068d4b7b998ed713fa3&=&format=webp&quality=lossless&width=1032&height=580",
       alt: "",
     },
     {
-      src: "/images/fire-5.png",
+      src: "https://media.discordapp.net/attachments/1144075650051878963/1354496165781176491/image.png?ex=67fa985b&is=67f946db&hm=5f513d78a0b2623d50eade0decea2ccdec0d79cd32b350697cf330383fdbc3db&=&format=webp&quality=lossless&width=550&height=300",
       alt: "",
     },
     {
-      src: "/images/fire-6.png",
+      src: "https://media.discordapp.net/attachments/1144075650051878963/1355724052890783754/Screenshot_2025-03-29_215900.png?ex=67fa72aa&is=67f9212a&hm=c21cbf03f05d0df0732d0a135916358940d7541d1bd6619ab7659f6618c46edd&=&format=webp&quality=lossless&width=928&height=595",
       alt: "",
     },
     {
-      src: "/images/fire-7.png",
+      src: "https://media.discordapp.net/attachments/1144075650051878963/1358180423213125653/image.png?ex=67fad096&is=67f97f16&hm=bd987687090e48dad2247746f053e1d053afa4800ff611350ca7631fb50ae9c2&=&format=webp&quality=lossless&width=1032&height=543",
       alt: "",
     },
     {
-      src: "/images/fire-8.png",
+      src: "https://media.discordapp.net/attachments/1144075650051878963/1359268384520274272/Screenshot_2025-04-07_224923.png?ex=67fad154&is=67f97fd4&hm=be24ae424f1d66a0868c56c3e3928016187a50c08f90b7e7fef4e23ca3965cae&=&format=webp&quality=lossless&width=1032&height=560",
       alt: "",
     },
   ],
