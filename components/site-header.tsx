@@ -9,7 +9,8 @@ import { useSession } from "next-auth/react"
 
 export function SiteHeader() {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const isLoading = status === "loading"
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#1e2330] bg-[#1e2330]">
@@ -55,21 +56,22 @@ export function SiteHeader() {
             <Moon className="h-5 w-5" />
             <span className="sr-only">Toggle theme</span>
           </Button>
-          {session ? (
-            <Link href="/profile">
-              <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Profile</span>
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/auth/signin">
-              <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Sign In</span>
-              </Button>
-            </Link>
-          )}
+          {!isLoading &&
+            (session ? (
+              <Link href="/profile">
+                <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">Profile</span>
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/auth/signin">
+                <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">Sign In</span>
+                </Button>
+              </Link>
+            ))}
         </div>
       </div>
     </header>
