@@ -191,7 +191,7 @@ export default async function CommunityPage() {
 
             return (
               <div key={category.id} className="space-y-4">
-                <Card>
+                <Card className="border-border">
                   <CardHeader className="flex flex-row items-center gap-4 pb-2">
                     <div className="rounded-full bg-primary/10 p-2">
                       <Icon className="h-5 w-5 text-primary" />
@@ -199,7 +199,7 @@ export default async function CommunityPage() {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <CardTitle>
-                          <Link href={`/community/${category.id}`} className="hover:underline">
+                          <Link href={`/community/${category.id}`} className="hover:underline text-foreground">
                             {category.name}
                           </Link>
                         </CardTitle>
@@ -227,7 +227,7 @@ export default async function CommunityPage() {
 
                     {category.children.length > 0 && (
                       <div className="mt-4 border-t pt-4">
-                        <h4 className="text-sm font-medium mb-2">Subcategories</h4>
+                        <h4 className="text-sm font-medium mb-2 text-foreground">Subcategories</h4>
                         <div className="grid gap-2">
                           {category.children.map((subcategory) => {
                             const subCanCreate = canCreateInCategory(
@@ -241,11 +241,11 @@ export default async function CommunityPage() {
                               <Link
                                 key={subcategory.id}
                                 href={`/community/${category.id}/${subcategory.id}`}
-                                className="flex items-center justify-between rounded-md p-2 hover:bg-muted"
+                                className="flex items-center justify-between rounded-md p-2 hover:bg-accent"
                               >
                                 <div className="flex-1">
                                   <div className="flex items-center">
-                                    <h5 className="font-medium">{subcategory.name}</h5>
+                                    <h5 className="font-medium text-foreground">{subcategory.name}</h5>
                                     {!subCanCreate && (
                                       <div className="ml-2 flex items-center text-muted-foreground text-xs">
                                         <Lock className="h-3 w-3 mr-1" />
@@ -275,33 +275,33 @@ export default async function CommunityPage() {
         <TabsContent value="departments">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {formattedDepartments.map((department) => (
-              <Card key={department.id}>
+              <Card key={department.id} className="border-border bg-card">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="rounded-full bg-primary/10 p-2">
                       <department.icon className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-xl">{department.name}</CardTitle>
+                    <CardTitle className="text-xl text-foreground">{department.name}</CardTitle>
                   </div>
                   <CardDescription>{department.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="mb-4">
-                    <span className="text-sm font-medium">Members: </span>
+                    <span className="text-sm font-medium text-foreground">Members: </span>
                     <span className="text-sm text-muted-foreground">{department.memberCount}</span>
                   </div>
 
                   {department.subdivisions.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-sm font-medium">Subdivisions</h4>
+                      <h4 className="text-sm font-medium text-foreground">Subdivisions</h4>
                       <div className="grid gap-1">
                         {department.subdivisions.map((subdivision, index) => (
                           <Link
                             key={index}
                             href={`/community/departments/${department.id}/${subdivision.toLowerCase().replace(/\s+/g, "-")}`}
-                            className="text-sm rounded-md p-2 hover:bg-muted flex justify-between items-center"
+                            className="text-sm rounded-md p-2 hover:bg-accent flex justify-between items-center"
                           >
-                            <span>{subdivision}</span>
+                            <span className="text-foreground">{subdivision}</span>
                             <Button variant="ghost" size="sm">
                               View
                             </Button>

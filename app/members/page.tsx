@@ -151,10 +151,10 @@ export default function MembersPage() {
 
   return (
     <div className="container py-10">
-      <Card>
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle>Community Members</CardTitle>
-          <CardDescription>Browse all members of our community</CardDescription>
+          <CardTitle className="text-foreground">Community Members</CardTitle>
+          <CardDescription className="text-muted-foreground">Browse all members of our community</CardDescription>
           <div className="mt-4 relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -180,7 +180,7 @@ export default function MembersPage() {
             <div className="space-y-8">
               {sortedRoles.map((role) => (
                 <div key={role} className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
                     {getRoleBadge(role)}
                     <span className="text-muted-foreground text-sm">
                       ({groupedMembers[role].length} {groupedMembers[role].length === 1 ? "member" : "members"})
@@ -189,14 +189,14 @@ export default function MembersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groupedMembers[role].map((member) => (
                       <Link href={`/profile/${member.id}`} key={member.id} className="block">
-                        <div className="border rounded-lg p-4 hover:bg-accent transition-colors">
+                        <div className="border border-border rounded-lg p-4 hover:bg-accent transition-colors">
                           <div className="flex items-center space-x-4">
                             <Avatar>
                               <AvatarImage src={member.image || undefined} alt={member.name || ""} />
                               <AvatarFallback>{member.name?.substring(0, 2).toUpperCase() || "??"}</AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium">{member.name}</p>
+                              <p className="font-medium text-foreground">{member.name}</p>
                               <p className="text-xs text-muted-foreground">
                                 Joined {new Date(member.joinDate).toLocaleDateString()}
                               </p>

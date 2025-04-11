@@ -268,7 +268,7 @@ export default function UserProfilePage() {
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
-      <Card className="mb-6">
+      <Card className="mb-6 bg-card text-foreground border-border">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
             <Avatar className="h-24 w-24 border-4 border-background">
@@ -293,17 +293,17 @@ export default function UserProfilePage() {
             </div>
             <div className="flex flex-col gap-2">
               {isOwnProfile ? (
-                <Button onClick={() => setEditProfileOpen(true)}>
+                <Button onClick={() => setEditProfileOpen(true)} className="hover:bg-accent">
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Profile
                 </Button>
               ) : (
                 <>
-                  <Button>
+                  <Button className="hover:bg-accent">
                     <Users className="mr-2 h-4 w-4" />
                     Follow
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" className="hover:bg-accent">
                     <Mail className="mr-2 h-4 w-4" />
                     Message
                   </Button>
@@ -316,7 +316,7 @@ export default function UserProfilePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-1 space-y-6">
-          <Card>
+          <Card className="bg-card text-foreground border-border">
             <CardHeader>
               <CardTitle>Information</CardTitle>
             </CardHeader>
@@ -353,7 +353,7 @@ export default function UserProfilePage() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-card text-foreground border-border">
             <CardHeader>
               <CardTitle>Stats</CardTitle>
             </CardHeader>
@@ -377,7 +377,7 @@ export default function UserProfilePage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card text-foreground border-border">
             <CardHeader>
               <CardTitle>Badges</CardTitle>
               <CardDescription>Achievements earned</CardDescription>
@@ -438,7 +438,7 @@ export default function UserProfilePage() {
               <TabsTrigger value="about">About</TabsTrigger>
             </TabsList>
             <TabsContent value="threads">
-              <Card>
+              <Card className="bg-card text-foreground border-border">
                 <CardHeader>
                   <CardTitle>Recent Threads</CardTitle>
                   <CardDescription>Threads started by {profile.name}</CardDescription>
@@ -449,7 +449,7 @@ export default function UserProfilePage() {
               </Card>
             </TabsContent>
             <TabsContent value="posts">
-              <Card>
+              <Card className="bg-card text-foreground border-border">
                 <CardHeader>
                   <CardTitle>Recent Posts</CardTitle>
                   <CardDescription>Posts written by {profile.name}</CardDescription>
@@ -460,7 +460,7 @@ export default function UserProfilePage() {
               </Card>
             </TabsContent>
             <TabsContent value="activity">
-              <Card>
+              <Card className="bg-card text-foreground border-border">
                 <CardHeader>
                   <CardTitle>Recent Activity</CardTitle>
                   <CardDescription>{profile.name}'s recent activity</CardDescription>
@@ -471,7 +471,7 @@ export default function UserProfilePage() {
               </Card>
             </TabsContent>
             <TabsContent value="about">
-              <Card>
+              <Card className="bg-card text-foreground border-border">
                 <CardHeader>
                   <CardTitle>About {profile.name}</CardTitle>
                 </CardHeader>
