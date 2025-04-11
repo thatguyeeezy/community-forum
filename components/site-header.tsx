@@ -31,7 +31,7 @@ const departments = [
   },
   {
     id: "fwc",
-    name: "Fish and Wildlife Conservation",
+    name: "Fish and Wildlife",
     color: "text-teal-400",
   },
   {
