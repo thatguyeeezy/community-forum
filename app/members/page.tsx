@@ -4,11 +4,10 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Search } from 'lucide-react'
+import { Search } from "lucide-react"
 import Link from "next/link"
-import { Role } from "@prisma/client"
+import type { Role } from "@prisma/client"
 
 interface Member {
   id: number
@@ -28,7 +27,7 @@ const roleConfig = {
   STAFF: { order: 6, label: "Staff", color: "bg-yellow-500 text-black" },
   STAFF_IN_TRAINING: { order: 7, label: "Staff In Training", color: "bg-red-400 text-white" },
   MEMBER: { order: 8, label: "Member", color: "bg-blue-400 text-white" },
-  APPLICANT: { order: 9, label: "Applicant", color: "bg-gray-400 text-white" }
+  APPLICANT: { order: 9, label: "Applicant", color: "bg-gray-400 text-white" },
 }
 
 export default function MembersPage() {
@@ -40,16 +39,16 @@ export default function MembersPage() {
     const fetchMembers = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/users')
-        
+        const response = await fetch("/api/users")
+
         if (!response.ok) {
-          throw new Error('Failed to fetch members')
+          throw new Error("Failed to fetch members")
         }
-        
+
         const data = await response.json()
         setMembers(data)
       } catch (error) {
-        console.error('Error fetching members:', error)
+        console.error("Error fetching members:", error)
         // Fallback mock data
         setMembers([
           {
@@ -120,37 +119,34 @@ export default function MembersPage() {
         setLoading(false)
       }
     }
-    
+
     fetchMembers()
   }, [])
 
   // Filter members based on search query
-  const filteredMembers = members.filter(member => 
-    member.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredMembers = members.filter((member) => member.name?.toLowerCase().includes(searchQuery.toLowerCase()))
 
   // Group members by role
-  const groupedMembers = filteredMembers.reduce((groups, member) => {
-    const role = member.role
-    if (!groups[role]) {
-      groups[role] = []
-    }
-    groups[role].push(member)
-    return groups
-  }, {} as Record<Role, Member[]>)
+  const groupedMembers = filteredMembers.reduce(
+    (groups, member) => {
+      const role = member.role
+      if (!groups[role]) {
+        groups[role] = []
+      }
+      groups[role].push(member)
+      return groups
+    },
+    {} as Record<Role, Member[]>,
+  )
 
   // Sort roles by order defined in roleConfig
   const sortedRoles = Object.keys(groupedMembers).sort(
-    (a, b) => roleConfig[a as Role].order - roleConfig[b as Role].order
+    (a, b) => roleConfig[a as Role].order - roleConfig[b as Role].order,
   ) as Role[]
 
   const getRoleBadge = (role: Role) => {
     const config = roleConfig[role]
-    return (
-      <Badge className={config.color}>
-        {config.label}
-      </Badge>
-    )
+    return <Badge className={config.color}>{config.label}</Badge>
   }
 
   return (
@@ -182,21 +178,17 @@ export default function MembersPage() {
             </div>
           ) : (
             <div className="space-y-8">
-              {sortedRoles.map(role => (
+              {sortedRoles.map((role) => (
                 <div key={role} className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     {getRoleBadge(role)}
                     <span className="text-muted-foreground text-sm">
-                      ({groupedMembers[role].length} {groupedMembers[role].length === 1 ? 'member' : 'members'})
+                      ({groupedMembers[role].length} {groupedMembers[role].length === 1 ? "member" : "members"})
                     </span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groupedMembers[role].map((member) => (
-                      <Link 
-                        href={`/profile/${member.id}`} 
-                        key={member.id}
-                        className="block"
-                      >
+                      <Link href={`/profile/${member.id}`} key={member.id} className="block">
                         <div className="border rounded-lg p-4 hover:bg-accent transition-colors">
                           <div className="flex items-center space-x-4">
                             <Avatar>
