@@ -1,40 +1,73 @@
-import { Shield, ChevronRight } from "lucide-react"
+import { Shield } from "lucide-react"
 import Link from "next/link"
+import { Breadcrumbs } from "@/components/breadcrumbs"
 
-export default function MPDPage() {
+// Department data
+const department = {
+  id: "mpd",
+  name: "MPD – Miami Police Department",
+  description: "City law enforcement agency",
+  memberCount: 92,
+  icon: Shield,
+  color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+  textColor: "text-purple-400",
+  subdivisions: ["Patrol Division", "Detective Bureau", "Special Units"],
+  longDescription:
+    "The Miami Police Department (MPD) is responsible for law enforcement within the city of Miami. Our officers patrol neighborhoods, respond to calls for service, investigate crimes, and work to build positive relationships with the community.",
+  requirements: [
+    "18+ years old",
+    "Clean record on the server",
+    "Ability to pass background check",
+    "Strong communication skills",
+    "Minimum 15 hours of civilian playtime",
+  ],
+  leaders: [
+    { name: "David Martinez", title: "Police Chief", avatar: "/placeholder.svg?height=40&width=40" },
+    { name: "Jennifer Taylor", title: "Assistant Chief", avatar: "/placeholder.svg?height=40&width=40" },
+  ],
+  applicationProcess:
+    "Applications for MPD are processed through our website. After submitting your application, you'll be contacted for an interview, followed by a background check.",
+}
+
+export default function DepartmentPage() {
+  const DeptIcon = department.icon
+
+  // Breadcrumb items
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: "Departments" }, // No href makes this non-clickable
+    { label: department.name },
+  ]
+
   return (
     <div className="bg-gray-900 min-h-screen">
       <div className="container mx-auto py-6 px-4 md:px-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/" className="hover:text-gray-300">
-            Home
-          </Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-300">MPD – Miami Police Department</span>
-        </div>
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={breadcrumbItems} />
 
         {/* Department Header */}
         <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden mb-8">
-          <div className="h-2 w-full bg-indigo-600"></div>
+          <div className={`h-2 w-full bg-purple-500`}></div>
           <div className="p-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="rounded-full p-3 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300">
-                <Shield className="h-6 w-6" />
+              <div className={`rounded-full p-3 ${department.color}`}>
+                <DeptIcon className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-100">MPD – Miami Police Department</h1>
-                <p className="text-gray-400">City law enforcement agency</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-100">{department.name}</h1>
+                <p className="text-gray-400">{department.description}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="bg-gray-700 px-3 py-1 rounded text-gray-300">
-                <span className="font-medium">Members:</span> 92
+                <span className="font-medium">Members:</span> {department.memberCount}
               </div>
-              <div className="bg-gray-700 px-3 py-1 rounded text-gray-300">Patrol Division</div>
-              <div className="bg-gray-700 px-3 py-1 rounded text-gray-300">Detective Bureau</div>
-              <div className="bg-gray-700 px-3 py-1 rounded text-gray-300">Special Units</div>
+              {department.subdivisions.map((sub, index) => (
+                <div key={index} className="bg-gray-700 px-3 py-1 rounded text-gray-300">
+                  {sub}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -45,39 +78,27 @@ export default function MPDPage() {
             {/* About */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-100 mb-4">About</h2>
-              <p className="text-gray-300 leading-relaxed">
-                The Miami Police Department (MPD) is responsible for law enforcement within the city of Miami. Our
-                officers patrol neighborhoods, respond to calls for service, investigate crimes, and work to build
-                positive relationships with the community. MPD is committed to reducing crime and improving the quality
-                of life for all residents and visitors.
-              </p>
+              <p className="text-gray-300 leading-relaxed">{department.longDescription}</p>
             </div>
 
             {/* Requirements */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-100 mb-4">Requirements</h2>
               <ul className="list-disc pl-5 text-gray-300 space-y-2">
-                <li>18+ years old</li>
-                <li>Clean record on the server</li>
-                <li>Ability to pass background check</li>
-                <li>Strong communication skills</li>
-                <li>Minimum 15 hours of civilian playtime</li>
+                {department.requirements.map((req, index) => (
+                  <li key={index}>{req}</li>
+                ))}
               </ul>
             </div>
 
             {/* Application Process */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-100 mb-4">How to Join</h2>
-              <p className="text-gray-300 leading-relaxed">
-                Applications for MPD are processed through our website. After submitting your application, you'll be
-                contacted for an interview, followed by a background check. If accepted, you'll attend the police
-                academy for training in law enforcement procedures, firearms, defensive tactics, and department
-                policies.
-              </p>
+              <p className="text-gray-300 leading-relaxed">{department.applicationProcess}</p>
 
               <div className="mt-6">
                 <Link
-                  href={`/apply?department=mpd`}
+                  href={`/apply?department=${department.id}`}
                   className="inline-block py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded"
                 >
                   Apply Now
@@ -92,46 +113,39 @@ export default function MPDPage() {
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-100 mb-4">Leadership</h2>
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="/placeholder.svg?height=40&width=40"
-                    alt="Police Chief"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <div className="font-medium text-gray-200">David Martinez</div>
-                    <div className="text-sm text-gray-400">Police Chief</div>
+                {department.leaders.map((leader, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <img
+                      src={leader.avatar || "/placeholder.svg"}
+                      alt={leader.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-200">{leader.name}</div>
+                      <div className="text-sm text-gray-400">{leader.title}</div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <img
-                    src="/placeholder.svg?height=40&width=40"
-                    alt="Assistant Chief"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <div className="font-medium text-gray-200">Jennifer Taylor</div>
-                    <div className="text-sm text-gray-400">Assistant Chief</div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
             {/* Related Departments */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-100 mb-4">Related Departments</h2>
+              <h2 className="text-xl font-semibold text-gray-100 mb-4">Other Departments</h2>
               <div className="space-y-3">
                 <Link
                   href="/departments/bso"
                   className="flex items-center gap-3 p-2 hover:bg-gray-700 rounded-md text-gray-300 hover:text-gray-100"
                 >
-                  <span className="text-blue-400">BSO – Broward Sheriff's Office</span>
+                  <Shield className="h-5 w-5 text-amber-400" />
+                  <span>BSO – Broward Sheriff's Office</span>
                 </Link>
                 <Link
                   href="/departments/fhp"
                   className="flex items-center gap-3 p-2 hover:bg-gray-700 rounded-md text-gray-300 hover:text-gray-100"
                 >
-                  <span className="text-green-400">FHP – Florida Highway Patrol</span>
+                  <Shield className="h-5 w-5 text-green-400" />
+                  <span>FHP – Florida Highway Patrol</span>
                 </Link>
               </div>
             </div>
