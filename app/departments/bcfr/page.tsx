@@ -86,7 +86,7 @@ export default function DepartmentPage() {
         {/* Hero Banner */}
         <div className="relative w-full h-[300px] md:h-[400px] rounded-lg overflow-hidden mb-8">
           <div className="absolute inset-0 bg-black/50 z-10"></div>
-          <img src="https://media.discordapp.net/attachments/1336191599482503228/1360313363909054564/Screenshot_2025-03-02_182908.png?ex=67faaa0b&is=67f9588b&hm=e471d602fad72e3e45b8ef457445211807bc47e7ae498ace153d72efcafaa561&=&format=webp&quality=lossless&width=928&height=494" alt="Fire Department Banner" className="w-full h-full object-cover" />
+          <img src="/images/fd-banner.png" alt="Fire Department Banner" className="w-full h-full object-cover" />
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-white">
             <div className="flex items-center gap-4 mb-4">
               <DeptIcon className="h-12 w-12 text-red-500" />
@@ -98,28 +98,25 @@ export default function DepartmentPage() {
 
         {/* About Us Section */}
         <div className="mb-12">
-          <div className="lg:col-span-2 mx-auto">
-            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
-              <span className="text-red-500">About</span> Us
-            </h2>
-            <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
-          </div>
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-red-500">About</span> Us
+          </h2>
+          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-              <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line text-center">
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
                 {department.aboutUs}
               </p>
             </div>
 
             <div className="flex flex-col items-center justify-center gap-4">
-              <div className="w-full h-auto object-cover">
+              <div className="grid grid-cols-1 gap-4">
                 <img src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
               </div>
             </div>
           </div>
         </div>
-
 
         {/* Mission Statement Section */}
         <div className="mb-12">
