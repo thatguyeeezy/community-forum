@@ -98,17 +98,14 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
   return (
     <div className="space-y-4">
       {leadersWithProfiles.map((leader, index) => (
-        <div key={index} className={`flex items-center gap-3 p-3 rounded-lg ${leader.profileId === null ? 'bg-[#1e2330] dark:bg-[#1e2330]' : ''}`}>
+        <div key={index} className="flex items-center gap-3">
           {leader.profileId === null ? (
-            <div className="relative">
+            <div>
               <img
                 src={leader.avatar}
-                alt={leader.name}
-                className="w-10 h-10 rounded-full object-cover opacity-40"
+                alt="Vacant Position"
+                className="w-10 h-10 rounded-full object-cover"
               />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs font-bold text-gray-400">VACANT</span>
-              </div>
             </div>
           ) : (
             <Link href={`/profile/${leader.profileId}`}>
@@ -122,8 +119,8 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
           <div>
             {leader.profileId === null ? (
               <div className="flex flex-col">
-                <span className="font-medium text-gray-400">{leader.name}</span>
-                <span className="text-sm text-gray-500 italic">{leader.title}</span>
+                <span className="font-medium text-foreground">{leader.name}</span>
+                <span className="text-sm text-muted-foreground">{leader.title}</span>
               </div>
             ) : (
               <div className="flex flex-col">
