@@ -147,7 +147,7 @@ export default function DepartmentPage() {
             </div>
 
             <div className="lg:col-span-2 flex flex-col items-center justify-center">
-              <div className="w-full max-w-[300px] mx-auto">
+              <div className="w-full max-w-[320px] mx-auto">
                 <img
                   src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless"
                   alt="Fire Department Badge"
