@@ -26,7 +26,7 @@ const departments = [
   },
   {
     id: "fhp",
-    name: "Highway Patrol",
+    name: "Florida Highway Patrol",
     color: "text-green-400",
   },
   {
