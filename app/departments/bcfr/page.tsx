@@ -86,7 +86,7 @@ export default function DepartmentPage() {
         {/* Hero Banner */}
         <div className="relative w-full h-[300px] md:h-[250px] rounded-lg overflow-hidden mb-8">
           <div className="absolute inset-0 bg-black/50 z-10"></div>
-          <img src="https://media.discordapp.net/attachments/1336191599482503228/1360313363909054564/Screenshot_2025-03-02_182908.png?ex=67faaa0b&is=67f9588b&hm=e471d602fad72e3e45b8ef457445211807bc47e7ae498ace153d72efcafaa561&=&format=webp&quality=lossless&width=928&height=494" alt="Fire Department Banner" className="w-full h-full object-cover" />
+          <img src="https://media.discordapp.net/attachments/1336191599482503228/1360313363909054564/Screenshot_2025-03-02_182908.png?ex=67faaa0b&is=67f9588b&hm=e471d602fad72e3e45b8ef457445211807bc47e7ae498ace153d72efcafaa561&=&format=webp&quality=lossless&width=928&height=494" alt="Fire Department Banner" className="w-full h-full object-cover object-[center_70%]" />
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-white">
             <div className="flex items-center gap-4 mb-4">
               <DeptIcon className="h-12 w-12 text-red-500" />
