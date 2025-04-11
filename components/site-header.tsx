@@ -50,7 +50,12 @@ export function SiteHeader() {
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const isLoading = status === "loading"
-  const [hoveredDept, setHoveredDept] = useState(false)
+  const [isDeptsOpen, setIsDeptsOpen] = useState(false)
+
+  const handleMouseEvents = {
+    onMouseEnter: () => setIsDeptsOpen(true),
+    onMouseLeave: () => setIsDeptsOpen(false),
+  }
 
   return (
     <header className="dark:bg-gray-800 bg-white border-b dark:border-gray-700 border-gray-200">
@@ -95,35 +100,33 @@ export function SiteHeader() {
               </li>
               <li
                 className="relative"
-                onMouseEnter={() => setHoveredDept(true)}
-                onMouseLeave={() => setHoveredDept(false)}
+                {...handleMouseEvents}
               >
-                {/* Non-clickable span instead of Link */}
-                <span
+                <button
+                  onClick={() => setIsDeptsOpen(!isDeptsOpen)}
                   className={cn(
-                    "inline-block px-2 py-1 font-medium dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900 border-b-2 border-transparent hover:dark:border-gray-600 hover:border-gray-300 cursor-default",
+                    "inline-block px-2 py-1 font-medium dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900 border-b-2 border-transparent hover:dark:border-gray-600 hover:border-gray-300",
                     pathname.startsWith("/departments/")
                       ? "dark:text-gray-100 text-gray-900 border-blue-500"
                       : "border-transparent",
                   )}
                 >
                   Departments
-                </span>
+                </button>
                 {/* Dropdown menu */}
-                {hoveredDept && (
+                {isDeptsOpen && (
                   <div className="absolute left-0 mt-1 w-64 dark:bg-gray-800 bg-white border dark:border-gray-700 border-gray-200 rounded shadow-lg z-50">
                     <div className="py-1">
-                      {departments.map((dept) => {
-                        return (
-                          <Link
-                            key={dept.id}
-                            href={`/departments/${dept.id}`}
-                            className="flex items-center px-4 py-2 dark:text-gray-300 text-gray-600 hover:dark:bg-gray-700 hover:bg-gray-100 hover:dark:text-gray-100 hover:text-gray-900"
-                          >
-                            <span>{dept.name}</span>
-                          </Link>
-                        )
-                      })}
+                      {departments.map((dept) => (
+                        <Link
+                          key={dept.id}
+                          href={`/departments/${dept.id}`}
+                          className="flex items-center px-4 py-2 dark:text-gray-300 text-gray-600 hover:dark:bg-gray-700 hover:bg-gray-100 hover:dark:text-gray-100 hover:text-gray-900"
+                          onClick={() => setIsDeptsOpen(false)}
+                        >
+                          <span>{dept.name}</span>
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 )}
