@@ -111,17 +111,15 @@ export function SiteHeader() {
                 onMouseEnter={() => setHoveredDept(true)}
                 onMouseLeave={() => setHoveredDept(false)}
               >
-                <Link
-                  href="/departments"
+                {/* Non-clickable span instead of Link */}
+                <span
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-gray-300 hover:text-gray-100 border-b-2 border-transparent hover:border-gray-600",
-                    pathname === "/departments" || pathname.startsWith("/departments/")
-                      ? "text-gray-100 border-blue-500"
-                      : "border-transparent",
+                    "inline-block px-2 py-1 font-medium text-gray-300 hover:text-gray-100 border-b-2 border-transparent hover:border-gray-600 cursor-default",
+                    pathname.startsWith("/departments/") ? "text-gray-100 border-blue-500" : "border-transparent",
                   )}
                 >
                   Departments
-                </Link>
+                </span>
                 {/* Dropdown menu */}
                 {hoveredDept && (
                   <div className="absolute left-0 mt-1 w-64 bg-gray-800 border border-gray-700 rounded shadow-lg z-50">
@@ -139,13 +137,6 @@ export function SiteHeader() {
                           </Link>
                         )
                       })}
-                      <div className="border-t border-gray-700 my-1"></div>
-                      <Link
-                        href="/departments"
-                        className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-gray-100"
-                      >
-                        <span>View All Departments</span>
-                      </Link>
                     </div>
                   </div>
                 )}

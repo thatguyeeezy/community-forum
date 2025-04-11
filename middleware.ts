@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 import type { NextRequest } from "next/server"
@@ -10,6 +9,14 @@ function getIP(request: NextRequest): string {
 }
 
 export async function middleware(request: NextRequest) {
+  // Get the pathname of the request
+  const pathname = request.nextUrl.pathname
+
+  // If the pathname is exactly /departments, redirect to home
+  if (pathname === "/departments") {
+    return NextResponse.redirect(new URL("/", request.url))
+  }
+
   const path = request.nextUrl.pathname
   const session = await getToken({
     req: request,
@@ -58,12 +65,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Continue with the request
   return response
 }
 
 // Update the matcher to include more routes for tracking
 export const config = {
   matcher: [
+    "/departments",
     // Include admin routes for protection
     "/admin/:path*",
 
