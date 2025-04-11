@@ -29,15 +29,6 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
     { profileId: 3, title: "Assistant Chief (AC)" },
     { profileId: 4, title: "Battalion Chief (BC)" },
   ],
-  chainOfCommand: [
-    "Engineer",
-    "Lieutenant (LT)",
-    "Captain",
-    "Battalion Chief (BC)",
-    "Assistant Chief (AC)",
-    "Deputy Chief (DC)",
-    "Fire Chief (FC)",
-  ],
   divisions: [
     {
       name: "EMS Division",
@@ -121,10 +112,7 @@ export default function DepartmentPage() {
 
             <div className="flex flex-col items-center justify-center gap-4">
               <div className="grid grid-cols-2 gap-4">
-                <img src="/images/fire-1.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
-                <img src="/images/fire-2.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
-                <img src="/images/fire-3.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
-                <img src="/images/fire-1.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
+                <img src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
               </div>
             </div>
           </div>
