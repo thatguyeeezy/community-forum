@@ -38,10 +38,10 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
             const response = await fetch(`/api/users/${leader.profileId}`)
 
             if (!response.ok) {
-              // Fallback data if user not found
+              // If user not found, return vacant data
               return {
                 ...leader,
-                name: "Unknown User",
+                name: "Vacant",
                 avatar: "/placeholder.svg?height=40&width=40",
               }
             }
@@ -55,10 +55,10 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
             }
           } catch (error) {
             console.error(`Error fetching profile ${leader.profileId}:`, error)
-            // Fallback data if fetch fails
+            // If fetch fails, return vacant data
             return {
               ...leader,
-              name: "Unknown User",
+              name: "Vacant",
               avatar: "/placeholder.svg?height=40&width=40",
             }
           }
