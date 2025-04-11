@@ -155,11 +155,10 @@ export default function DepartmentPage() {
                 />
               </div>
 
-              {/* Become a Firefighter - Moved up */}
+              {/* Become a Firefighter */}
               <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm text-center mt-6 w-full">
                 <h3 className="text-2xl font-bold text-red-500 mb-4">Become a Firefighter Today!</h3>
                 <p className="text-gray-800 dark:text-gray-200 mb-6">
-                  Join our team and make a difference in your community.
                 </p>
                 <Link
                   href={`/apply?department=${department.id}`}
