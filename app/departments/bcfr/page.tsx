@@ -1,6 +1,3 @@
-'use client'
-
-import React from 'react'
 import { Flame, Search, Plane, AlertTriangle, FileSearch } from "lucide-react"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/breadcrumbs"
@@ -107,7 +104,7 @@ export default function DepartmentPage() {
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Departments", href: "/departments" },
-    { label: "Fire Rescue" },
+    { label: "BCFR – Broward County Fire Rescue" },
   ]
 
   return (
@@ -135,9 +132,16 @@ export default function DepartmentPage() {
 
         {/* About Us Section */}
         <div className="mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              <span className="text-red-500">About</span> Us
+            </h2>
+            <div className="h-1 w-24 bg-red-500 mx-auto"></div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-7 gap-8 items-start">
             <div className="lg:col-span-5 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-              <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line text-center">
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
                 {department.aboutUs}
               </p>
             </div>
