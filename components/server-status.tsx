@@ -51,7 +51,7 @@ export function ServerStatus({ className = "" }: ServerStatusProps) {
 
   if (loading) {
     return (
-      <div className={`bg-gray-800 shadow-md p-5 border-l-4 border-blue-500 ${className}`}>
+      <div className={`bg-gray-800 dark:bg-gray-800 shadow-md p-5 border-l-4 border-blue-500 ${className}`}>
         <h3 className="font-bold mb-2 text-gray-100">Server Status</h3>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-700 rounded w-24 mb-4"></div>
@@ -72,7 +72,7 @@ export function ServerStatus({ className = "" }: ServerStatusProps) {
 
   if (error) {
     return (
-      <div className={`bg-gray-800 shadow-md p-5 border-l-4 border-red-500 ${className}`}>
+      <div className={`bg-gray-800 dark:bg-gray-800 shadow-md p-5 border-l-4 border-red-500 ${className}`}>
         <h3 className="font-bold mb-2 text-gray-100">Server Status</h3>
         <p className="text-gray-300">{error}</p>
       </div>
@@ -80,7 +80,7 @@ export function ServerStatus({ className = "" }: ServerStatusProps) {
   }
 
   return (
-    <div className={`bg-gray-800 shadow-md p-5 border-l-4 border-blue-500 ${className}`}>
+    <div className={`bg-gray-800 dark:bg-gray-800 shadow-md p-5 border-l-4 border-blue-500 ${className}`}>
       <h3 className="font-bold mb-2 text-gray-100">Server Status</h3>
       <div className="flex items-center space-x-2 mb-4">
         <span className={`w-3 h-3 ${data?.serverStatus.online ? "bg-green-500" : "bg-red-500"} rounded-full`}></span>

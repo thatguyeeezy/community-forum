@@ -395,10 +395,7 @@ export default async function ForumHomepage() {
               </div>
 
               {/* Server Status */}
-              <div className="dark:bg-gray-800 bg-white shadow-md p-5 mb-6 border-l-4 border-blue-500">
-                <h3 className="font-bold mb-2 dark:text-gray-100 text-gray-900">Server Status</h3>
-                <ServerStatus />
-              </div>
+              <ServerStatus className="mb-6" />
 
               <div className="dark:bg-gray-800 bg-white shadow-md p-5 mb-6 border-l-4 border-blue-500">
                 <h3 className="font-bold mb-2 dark:text-gray-100 text-gray-900">Discord</h3>
