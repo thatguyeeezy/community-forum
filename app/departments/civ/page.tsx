@@ -49,7 +49,7 @@ const department = {
       name: "John Doe",
       title: "Civilian Operations Director",
       avatar: "/placeholder.svg?height=40&width=40",
-      profileId: "john-doe",
+      profileId: "1",
     },
     {
       name: "Jane Smith",
