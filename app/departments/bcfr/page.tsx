@@ -7,7 +7,7 @@ export default function BCFRPage() {
       <div className="container mx-auto py-6 px-4 md:px-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/" className="hover:text-gray-300">
+          <Link href="/departments" className="hover:text-gray-300">
             Home
           </Link>
           <ChevronRight className="h-4 w-4" />
