@@ -45,8 +45,18 @@ const department = {
     "Experience is preferred but not required",
   ],
   leaders: [
-    { name: "John Doe", title: "Civilian Operations Director", avatar: "/placeholder.svg?height=40&width=40" },
-    { name: "Jane Smith", title: "Deputy Director", avatar: "/placeholder.svg?height=40&width=40" },
+    {
+      name: "John Doe",
+      title: "Civilian Operations Director",
+      avatar: "/placeholder.svg?height=40&width=40",
+      profileId: "john-doe",
+    },
+    {
+      name: "Jane Smith",
+      title: "Deputy Director",
+      avatar: "/placeholder.svg?height=40&width=40",
+      profileId: "jane-smith",
+    },
   ],
 }
 
@@ -173,7 +183,12 @@ export default function DepartmentPage() {
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
-                      <div className="font-medium text-gray-200">{leader.name}</div>
+                      <Link
+                        href={`/profile/${leader.profileId}`}
+                        className="font-medium text-gray-200 hover:text-blue-400 transition-colors"
+                      >
+                        {leader.name}
+                      </Link>
                       <div className="text-sm text-gray-400">{leader.title}</div>
                     </div>
                   </div>
