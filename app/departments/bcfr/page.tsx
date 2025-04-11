@@ -50,13 +50,13 @@ export default function DepartmentPage() {
   ]
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       <div className="container mx-auto py-6 px-4 md:px-6">
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} />
 
         {/* Department Header */}
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-8 shadow-sm">
+        <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden mb-8 shadow-sm">
           <div className="h-2 w-full bg-red-500"></div>
           <div className="p-6">
             <div className="flex items-center gap-4 mb-4">
@@ -70,13 +70,13 @@ export default function DepartmentPage() {
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm">
-              <div className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200">
+              <div className="bg-gray-200 dark:bg-slate-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200">
                 <span className="font-medium">Members:</span> {department.memberCount}
               </div>
               {department.subdivisions.map((sub, index) => (
                 <div
                   key={index}
-                  className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200"
+                  className="bg-gray-200 dark:bg-slate-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200"
                 >
                   {sub}
                 </div>
@@ -86,7 +86,7 @@ export default function DepartmentPage() {
         </div>
 
         {/* Department Advertisement */}
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8 shadow-sm">
+        <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 mb-8 shadow-sm">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Join Our Team</h2>
           <div className="text-gray-800 dark:text-gray-200 leading-relaxed">
             <p className="mb-4">
@@ -107,13 +107,13 @@ export default function DepartmentPage() {
         </div>
 
         {/* Featured Images */}
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8 shadow-sm">
+        <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 mb-8 shadow-sm">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Featured Images</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {department.featuredImages.map((image, index) => (
               <div
                 key={index}
-                className="relative h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                className="relative h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700"
               >
                 <img
                   src={image.src || "/placeholder.svg"}
@@ -129,13 +129,13 @@ export default function DepartmentPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* About */}
-            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">About</h2>
               <p className="text-gray-800 dark:text-gray-200 leading-relaxed">{department.longDescription}</p>
             </div>
 
             {/* Requirements */}
-            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Requirements</h2>
               <ul className="list-disc pl-5 text-gray-800 dark:text-gray-200 space-y-2">
                 {department.requirements.map((req, index) => (
@@ -145,7 +145,7 @@ export default function DepartmentPage() {
             </div>
 
             {/* Application Process */}
-            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">How to Join</h2>
               <p className="text-gray-800 dark:text-gray-200 leading-relaxed">{department.applicationProcess}</p>
             </div>
@@ -154,32 +154,32 @@ export default function DepartmentPage() {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Leadership */}
-            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Leadership</h2>
               <DepartmentLeaders leaders={department.leaders} />
             </div>
 
             {/* Related Departments */}
-            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Other Departments</h2>
               <div className="space-y-3">
                 <Link
                   href="/departments/fhp"
-                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200"
+                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-slate-700/70 rounded-md text-gray-800 dark:text-gray-200"
                 >
                   <Shield className="h-5 w-5 text-green-500 dark:text-green-400" />
                   <span>FHP – Florida Highway Patrol</span>
                 </Link>
                 <Link
                   href="/departments/bso"
-                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200"
+                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-slate-700/70 rounded-md text-gray-800 dark:text-gray-200"
                 >
                   <Shield className="h-5 w-5 text-amber-500 dark:text-amber-400" />
                   <span>BSO – Broward Sheriff's Office</span>
                 </Link>
                 <Link
                   href="/departments/mpd"
-                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200"
+                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-slate-700/70 rounded-md text-gray-800 dark:text-gray-200"
                 >
                   <Shield className="h-5 w-5 text-purple-500 dark:text-purple-400" />
                   <span>MPD – Miami Police Department</span>
