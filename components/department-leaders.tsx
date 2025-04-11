@@ -95,13 +95,18 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
   return (
     <div className="space-y-4">
       {leadersWithProfiles.map((leader, index) => (
-        <div key={index} className="flex items-center gap-3">
+        <div key={index} className={`flex items-center gap-3 p-3 rounded-lg ${leader.profileId === 0 ? 'bg-gray-200 dark:bg-gray-700' : ''}`}>
           {leader.profileId === 0 ? (
-            <img
-              src={leader.avatar}
-              alt={leader.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <div className="relative">
+              <img
+                src={leader.avatar}
+                alt={leader.name}
+                className="w-10 h-10 rounded-full object-cover opacity-50"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xs font-bold text-gray-500 dark:text-gray-400">VACANT</span>
+              </div>
+            </div>
           ) : (
             <Link href={`/profile/${leader.profileId}`}>
               <img
@@ -113,13 +118,18 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
           )}
           <div>
             {leader.profileId === 0 ? (
-              <span className="font-medium text-foreground">{leader.name}</span>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-500 dark:text-gray-400">{leader.name}</span>
+                <span className="text-sm text-muted-foreground italic">{leader.title}</span>
+              </div>
             ) : (
-              <Link href={`/profile/${leader.profileId}`} className="font-medium text-foreground hover:underline">
-                {leader.name}
-              </Link>
+              <div className="flex flex-col">
+                <Link href={`/profile/${leader.profileId}`} className="font-medium text-foreground hover:underline">
+                  {leader.name}
+                </Link>
+                <span className="text-sm text-muted-foreground">{leader.title}</span>
+              </div>
             )}
-            <div className="text-sm text-muted-foreground">{leader.title}</div>
           </div>
         </div>
       ))}
