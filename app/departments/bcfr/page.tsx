@@ -27,7 +27,7 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
     { profileId: 3, title: "Fire Chief" },
     { profileId: 0, title: "Deputy Chief" },
     { profileId: 0, title: "Assistant Chief" },
-    { profileId: 0, title: "Battalion Chief" },
+    { profileId: 0, title: "Assistant Chief" },
   ],
   divisions: [
     {
