@@ -16,12 +16,12 @@ const departments = [
   },
   {
     id: "bso",
-    name: "Sheriff's Office",
+    name: "Broward Sheriff's Office",
     color: "text-amber-400",
   },
   {
     id: "civ",
-    name: "Civilian",
+    name: "Civilian Operations",
     color: "text-blue-400",
   },
   {
@@ -31,17 +31,17 @@ const departments = [
   },
   {
     id: "fwc",
-    name: "Fish and Wildlife",
+    name: "Fish and Wildlife Conservation",
     color: "text-teal-400",
   },
   {
     id: "mpd",
-    name: "Police Department",
+    name: "Municipal Police Department",
     color: "text-purple-400",
   },
   {
     id: "rnr",
-    name: "R&R Team",
+    name: "Recruitment & Retention",
     color: "text-cyan-400",
   },
 ]
