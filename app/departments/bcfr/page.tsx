@@ -10,8 +10,9 @@ const department = {
   description: "Emergency medical services and fire response",
   memberCount: 42,
   icon: Flame,
-  color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-  textColor: "text-red-400",
+  color: "bg-red-100 text-red-800 dark:bg-red-900/80 dark:text-red-300",
+  textColor: "text-red-500 dark:text-red-400",
+  accentColor: "bg-red-600 hover:bg-red-700",
   subdivisions: ["EMS Division", "Fire Division", "Special Operations"],
   longDescription:
     "Broward County Fire Rescue (BCFR) provides emergency medical services and fire response throughout Broward County. BCFR personnel respond to medical emergencies, fires, and other incidents requiring specialized rescue operations.",
@@ -49,31 +50,34 @@ export default function DepartmentPage() {
   ]
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen">
       <div className="container mx-auto py-6 px-4 md:px-6">
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} />
 
         {/* Department Header */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden mb-8">
-          <div className={`h-2 w-full bg-red-500`}></div>
+        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-8 shadow-sm">
+          <div className="h-2 w-full bg-red-500"></div>
           <div className="p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className={`rounded-full p-3 ${department.color}`}>
                 <DeptIcon className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">{department.name}</h1>
-                <p className="text-muted-foreground">{department.description}</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">{department.name}</h1>
+                <p className="text-gray-600 dark:text-gray-400">{department.description}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm">
-              <div className="bg-muted px-3 py-1 rounded text-foreground">
+              <div className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200">
                 <span className="font-medium">Members:</span> {department.memberCount}
               </div>
               {department.subdivisions.map((sub, index) => (
-                <div key={index} className="bg-muted px-3 py-1 rounded text-foreground">
+                <div
+                  key={index}
+                  className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200"
+                >
                   {sub}
                 </div>
               ))}
@@ -82,9 +86,9 @@ export default function DepartmentPage() {
         </div>
 
         {/* Department Advertisement */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Join Our Team</h2>
-          <div className="text-foreground leading-relaxed">
+        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Join Our Team</h2>
+          <div className="text-gray-800 dark:text-gray-200 leading-relaxed">
             <p className="mb-4">
               Join the Broward Sheriff Fire Rescue Team! Are you ready to make a difference and be part of an elite team
               dedicated to saving lives and protecting the community? The Broward Sheriff Fire Rescue is actively
@@ -94,7 +98,7 @@ export default function DepartmentPage() {
             <div className="mt-6">
               <Link
                 href={`/apply?department=${department.id}`}
-                className="inline-block py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded"
+                className={`inline-block py-2 px-4 ${department.accentColor} text-white rounded`}
               >
                 Apply Now
               </Link>
@@ -103,11 +107,14 @@ export default function DepartmentPage() {
         </div>
 
         {/* Featured Images */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Featured Images</h2>
+        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Featured Images</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {department.featuredImages.map((image, index) => (
-              <div key={index} className="relative h-48 rounded-lg overflow-hidden border border-border">
+              <div
+                key={index}
+                className="relative h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+              >
                 <img
                   src={image.src || "/placeholder.svg"}
                   alt={image.alt}
@@ -122,15 +129,15 @@ export default function DepartmentPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* About */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">About</h2>
-              <p className="text-foreground leading-relaxed">{department.longDescription}</p>
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">About</h2>
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed">{department.longDescription}</p>
             </div>
 
             {/* Requirements */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Requirements</h2>
-              <ul className="list-disc pl-5 text-foreground space-y-2">
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Requirements</h2>
+              <ul className="list-disc pl-5 text-gray-800 dark:text-gray-200 space-y-2">
                 {department.requirements.map((req, index) => (
                   <li key={index}>{req}</li>
                 ))}
@@ -138,43 +145,43 @@ export default function DepartmentPage() {
             </div>
 
             {/* Application Process */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">How to Join</h2>
-              <p className="text-foreground leading-relaxed">{department.applicationProcess}</p>
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">How to Join</h2>
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed">{department.applicationProcess}</p>
             </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Leadership */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Leadership</h2>
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Leadership</h2>
               <DepartmentLeaders leaders={department.leaders} />
             </div>
 
             {/* Related Departments */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Other Departments</h2>
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Other Departments</h2>
               <div className="space-y-3">
                 <Link
                   href="/departments/fhp"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground hover:text-accent-foreground"
+                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200"
                 >
-                  <Shield className="h-5 w-5 text-green-400" />
+                  <Shield className="h-5 w-5 text-green-500 dark:text-green-400" />
                   <span>FHP – Florida Highway Patrol</span>
                 </Link>
                 <Link
                   href="/departments/bso"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground hover:text-accent-foreground"
+                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200"
                 >
-                  <Shield className="h-5 w-5 text-amber-400" />
+                  <Shield className="h-5 w-5 text-amber-500 dark:text-amber-400" />
                   <span>BSO – Broward Sheriff's Office</span>
                 </Link>
                 <Link
                   href="/departments/mpd"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground hover:text-accent-foreground"
+                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200"
                 >
-                  <Shield className="h-5 w-5 text-purple-400" />
+                  <Shield className="h-5 w-5 text-purple-500 dark:text-purple-400" />
                   <span>MPD – Miami Police Department</span>
                 </Link>
               </div>
