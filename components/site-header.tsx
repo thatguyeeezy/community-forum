@@ -51,7 +51,7 @@ export function SiteHeader() {
   const { data: session, status } = useSession()
   const isLoading = status === "loading"
   const [isDeptsOpen, setIsDeptsOpen] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
