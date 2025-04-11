@@ -8,48 +8,40 @@ import { useState } from "react"
 import { Shield, Users, Anchor, Flame, Fish } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
 
-// Department data with appropriate icons
 const departments = [
   {
     id: "bcfr",
     name: "BCFR – Broward County Fire Rescue",
-    icon: Flame,
     color: "text-red-400",
   },
   {
     id: "bso",
     name: "BSO – Broward Sheriff's Office",
-    icon: Shield,
     color: "text-amber-400",
   },
   {
     id: "civ",
     name: "CIV – Civilian",
-    icon: Users,
     color: "text-blue-400",
   },
   {
     id: "fhp",
     name: "FHP – Florida Highway Patrol",
-    icon: Shield,
     color: "text-green-400",
   },
   {
     id: "fwc",
     name: "FWC – Florida Fish and Wildlife",
-    icon: Fish,
     color: "text-teal-400",
   },
   {
     id: "mpd",
     name: "MPD – Miami Police Department",
-    icon: Shield,
     color: "text-purple-400",
   },
   {
     id: "nscg",
     name: "NSCG – Naval Sea Coast Guard",
-    icon: Anchor,
     color: "text-cyan-400",
   },
 ]
@@ -122,14 +114,12 @@ export function SiteHeader() {
                   <div className="absolute left-0 mt-1 w-64 dark:bg-gray-800 bg-white border dark:border-gray-700 border-gray-200 rounded shadow-lg z-50">
                     <div className="py-1">
                       {departments.map((dept) => {
-                        const DeptIcon = dept.icon
                         return (
                           <Link
                             key={dept.id}
                             href={`/departments/${dept.id}`}
                             className="flex items-center px-4 py-2 dark:text-gray-300 text-gray-600 hover:dark:bg-gray-700 hover:bg-gray-100 hover:dark:text-gray-100 hover:text-gray-900"
                           >
-                            <DeptIcon className={`h-4 w-4 mr-2 ${dept.color}`} />
                             <span>{dept.name}</span>
                           </Link>
                         )
