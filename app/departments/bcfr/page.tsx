@@ -18,7 +18,7 @@ const department = {
   requirements: ["OPEN TO ANYONE / NON WHITELIST TOO", "18 Years Of Age", "Preferred Past FiveM Experience"],
   leaders: [
     { profileId: 3, title: "Fire Chief" },
-    { profileId: 4, title: "Deputy Chief" },
+    { profileId: 1, title: "Deputy Chief" },
   ],
   applicationProcess:
     "Applications for BCFR are processed through our website. After submitting your application, you'll be contacted for an interview, followed by academy training if accepted.",
