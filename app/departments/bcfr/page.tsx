@@ -140,13 +140,13 @@ export default function DepartmentPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-7 gap-8 items-start">
-            <div className="lg:col-span-4 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
+            <div className="lg:col-span-5 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
               <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
                 {department.aboutUs}
               </p>
             </div>
 
-            <div className="lg:col-span-3 flex flex-col items-center justify-center">
+            <div className="lg:col-span-2 flex flex-col items-center justify-center">
               <div className="w-full max-w-[250px] mx-auto">
                 <img
                   src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless"
