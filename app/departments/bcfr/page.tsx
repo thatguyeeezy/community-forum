@@ -147,7 +147,7 @@ export default function DepartmentPage() {
             </div>
 
             <div className="lg:col-span-2 flex flex-col items-center justify-center">
-              <div className="w-full max-w-[315px] mx-auto">
+              <div className="w-full max-w-[312px] mx-auto">
                 <img
                   src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless"
                   alt="Fire Department Badge"
@@ -189,6 +189,7 @@ export default function DepartmentPage() {
                 </p>
               </div>
             </div>
+
             {/* Leadership */}
             <div>
               <div className="text-center mb-6">
@@ -199,10 +200,7 @@ export default function DepartmentPage() {
               </div>
 
               <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-                <DepartmentLeaders leaders={department.leaders.map(leader => ({
-                  ...leader,
-                  profileId: leader.profileId === 0 ? 'Vacant' : leader.profileId
-                }))} />
+                <DepartmentLeaders leaders={department.leaders} />  
               </div>
             </div>
           </div>
