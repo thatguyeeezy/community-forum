@@ -61,13 +61,13 @@ export default function DepartmentPage() {
   ]
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-gray-900 min-h-screen">
       <div className="container mx-auto py-6 px-4 md:px-6">
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} />
 
         {/* Department Header */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden mb-8">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden mb-8">
           <div className={`h-2 w-full bg-blue-500`}></div>
           <div className="p-6">
             <div className="flex items-center gap-4 mb-4">
@@ -75,17 +75,17 @@ export default function DepartmentPage() {
                 <DeptIcon className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">{department.name}</h1>
-                <p className="text-muted-foreground">{department.description}</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-100">{department.name}</h1>
+                <p className="text-gray-400">{department.description}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm">
-              <div className="bg-accent px-3 py-1 rounded text-foreground">
+              <div className="bg-gray-700 px-3 py-1 rounded text-gray-300">
                 <span className="font-medium">Members:</span> {department.memberCount}
               </div>
               {department.subdivisions.map((sub, index) => (
-                <div key={index} className="bg-accent px-3 py-1 rounded text-foreground">
+                <div key={index} className="bg-gray-700 px-3 py-1 rounded text-gray-300">
                   {sub}
                 </div>
               ))}
@@ -97,32 +97,32 @@ export default function DepartmentPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* Advertisement */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Civilian Operations</h2>
-              <p className="text-foreground leading-relaxed">{department.advertisement}</p>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-100 mb-4">Civilian Operations</h2>
+              <p className="text-gray-300 leading-relaxed">{department.advertisement}</p>
             </div>
 
             {/* About */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">About Civilian Operations</h2>
-              <p className="text-foreground leading-relaxed">{department.about}</p>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-100 mb-4">About Civilian Operations</h2>
+              <p className="text-gray-300 leading-relaxed">{department.about}</p>
             </div>
 
             {/* Divisions */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">What We Offer</h2>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-100 mb-4">What We Offer</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 {department.divisions.map((division, index) => {
                   const DivIcon = division.icon
                   return (
-                    <div key={index} className="border border-border rounded-lg p-4">
+                    <div key={index} className="border border-gray-700 rounded-lg p-4">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="rounded-full p-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                           <DivIcon className="h-5 w-5" />
                         </div>
-                        <h3 className="font-medium text-foreground">{division.name}</h3>
+                        <h3 className="font-medium text-gray-200">{division.name}</h3>
                       </div>
-                      <p className="text-muted-foreground text-sm">{division.description}</p>
+                      <p className="text-gray-400 text-sm">{division.description}</p>
                     </div>
                   )
                 })}
@@ -130,9 +130,9 @@ export default function DepartmentPage() {
             </div>
 
             {/* Membership Guidelines */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Membership Guidelines</h2>
-              <ul className="list-disc pl-5 text-foreground space-y-2">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-100 mb-4">Membership Guidelines</h2>
+              <ul className="list-disc pl-5 text-gray-300 space-y-2">
                 {department.membershipGuidelines.map((guideline, index) => (
                   <li key={index}>{guideline}</li>
                 ))}
@@ -140,9 +140,9 @@ export default function DepartmentPage() {
             </div>
 
             {/* Requirements */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Requirements to Join</h2>
-              <ul className="list-disc pl-5 text-foreground space-y-2">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-100 mb-4">Requirements to Join</h2>
+              <ul className="list-disc pl-5 text-gray-300 space-y-2">
                 {department.requirements.map((req, index) => (
                   <li key={index}>{req}</li>
                 ))}
@@ -162,8 +162,8 @@ export default function DepartmentPage() {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Leadership */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Leadership</h2>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-100 mb-4">Leadership</h2>
               <div className="space-y-4">
                 {department.leaders.map((leader, index) => (
                   <div key={index} className="flex items-center gap-3">
@@ -173,32 +173,11 @@ export default function DepartmentPage() {
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
-                      <div className="font-medium text-foreground">{leader.name}</div>
-                      <div className="text-sm text-muted-foreground">{leader.title}</div>
+                      <div className="font-medium text-gray-200">{leader.name}</div>
+                      <div className="text-sm text-gray-400">{leader.title}</div>
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Related Departments */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Other Departments</h2>
-              <div className="space-y-3">
-                <Link
-                  href="/departments/bso"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground"
-                >
-                  <Shield className="h-5 w-5 text-amber-400" />
-                  <span>BSO – Broward Sheriff's Office</span>
-                </Link>
-                <Link
-                  href="/departments/mpd"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground"
-                >
-                  <Shield className="h-5 w-5 text-purple-400" />
-                  <span>MPD – Miami Police Department</span>
-                </Link>
               </div>
             </div>
           </div>
