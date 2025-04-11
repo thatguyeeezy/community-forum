@@ -1,4 +1,4 @@
-import { Flame, ChevronRight } from "lucide-react"
+import { Flame, Search, Plane, AlertTriangle, FileSearch } from "lucide-react"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { DepartmentLeaders } from "@/components/department-leaders"
@@ -31,24 +31,39 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
   ],
   divisions: [
     {
-      name: "EMS Division",
-      description: "Provides emergency medical services and transport throughout the county.",
-      icon: "/images/ems-icon.png",
+      name: "Technical Rescue Team",
+      description:
+        "The Technical Rescue Team (TRT) is trained to handle complex rescue operations in challenging environments. The team's core capabilities include water rescue, high and low-angle rope rescue, search and rescue, confined space operations, structural collapse, vehicle and machinery extrication, and hazardous materials support.",
+      icon: Search,
+      code: "1.6.1",
     },
     {
-      name: "Fire Suppression",
-      description: "Primary firefighting operations and response to fire emergencies.",
-      icon: "/images/fire-icon.png",
+      name: "Aircraft And Rescue Firefighting",
+      description:
+        "The Aircraft Rescue and Firefighting (ARFF) Team is a highly trained unit dedicated to responding to aviation emergencies. Specializing in aircraft firefighting, rescue, and hazardous material containment, the team operates with precision to protect passengers, crew, and airport infrastructure.",
+      icon: Plane,
+      code: "1.6.2",
     },
     {
-      name: "HAZMAT Operations",
-      description: "Specialized response to hazardous materials incidents and chemical emergencies.",
-      icon: "/images/hazmat-icon.png",
+      name: "Hazardous Materials Response Team",
+      description:
+        "The Hazardous Materials (HazMat) Team specializes in managing and mitigating incidents involving dangerous substances. Trained to handle chemical, biological, radiological, and other hazardous emergencies, the team works to protect life, property, and the environment.",
+      icon: AlertTriangle,
+      code: "1.6.3",
     },
     {
-      name: "Technical Rescue",
-      description: "Specialized rescue operations including confined space, high angle, and structural collapse.",
-      icon: "/images/rescue-icon.png",
+      name: "Fire Investigations Bureau",
+      description:
+        "The Fire Investigations Bureau is a specialized unit responsible for determining the origin and cause of fires. Investigators use advanced techniques and forensic analysis to identify accidental, natural, or intentional causes, working closely with law enforcement when criminal activity is suspected.",
+      icon: FileSearch,
+      code: "1.6.4",
+    },
+    {
+      name: "Air Rescue Division",
+      description:
+        "The Air Rescue Division provides rapid medical response, aerial evacuation, and specialized aviation support during emergency operations. Staffed by highly trained flight medics, pilots, and crew chiefs, this division conducts MEDEVAC missions, aerial search and rescue, and supports fireground operations from the air. Whether transporting critical patients to trauma centers or assisting in remote rescues, the Air Rescue team integrates seamlessly with ground units to deliver advanced care when every second counts.",
+      icon: Plane,
+      code: "1.6.5",
     },
   ],
   featuredImages: [
@@ -106,7 +121,11 @@ export default function DepartmentPage() {
         {/* Hero Banner */}
         <div className="relative w-full h-[300px] md:h-[250px] rounded-lg overflow-hidden mb-8">
           <div className="absolute inset-0 bg-black/50 z-10"></div>
-          <img src="https://media.discordapp.net/attachments/1336191599482503228/1360313363909054564/Screenshot_2025-03-02_182908.png?ex=67faaa0b&is=67f9588b&hm=e471d602fad72e3e45b8ef457445211807bc47e7ae498ace153d72efcafaa561&=&format=webp&quality=lossless&width=928&height=494" alt="Fire Department Banner" className="w-full h-full object-cover object-[center_40%]" />
+          <img
+            src="https://media.discordapp.net/attachments/1336191599482503228/1360313363909054564/Screenshot_2025-03-02_182908.png?ex=67faaa0b&is=67f9588b&hm=e471d602fad72e3e45b8ef457445211807bc47e7ae498ace153d72efcafaa561&=&format=webp&quality=lossless&width=928&height=494"
+            alt="Fire Department Banner"
+            className="w-full h-full object-cover object-[center_40%]"
+          />
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-white">
             <div className="flex items-center gap-4 mb-4">
               <DeptIcon className="h-12 w-12 text-red-500" />
@@ -132,7 +151,11 @@ export default function DepartmentPage() {
 
             <div className="flex flex-col items-center justify-center gap-4">
               <div className="w-full h-auto object-cover4">
-                <img src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
+                <img
+                  src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless"
+                  alt="Fire Department Badge"
+                  className="w-full h-auto rounded-lg"
+                />
               </div>
             </div>
           </div>
@@ -182,21 +205,26 @@ export default function DepartmentPage() {
         {/* Divisions */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
-            <span className="text-red-500">Our</span> Divisions
+            <span className="text-red-500">Specialized</span> Divisions
           </h2>
           <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="space-y-6">
             {department.divisions.map((division, index) => (
               <div
                 key={index}
-                className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm flex flex-col items-center text-center"
+                className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm"
               >
-                <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-                  <Flame className="h-8 w-8 text-red-500" />
+                <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                    <division.icon className="h-8 w-8 text-red-500" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-red-500 mb-1">{division.code}</div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{division.name}</h3>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{division.name}</h3>
-                <p className="text-gray-700 dark:text-gray-300">{division.description}</p>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{division.description}</p>
               </div>
             ))}
           </div>
