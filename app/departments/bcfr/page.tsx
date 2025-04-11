@@ -215,12 +215,8 @@ export default function DepartmentPage() {
                 <div key={index} className="relative h-48 rounded-lg overflow-hidden group">
                   <img
                     src={image.src || "/placeholder.svg"}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="font-medium">{image.alt}</p>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
