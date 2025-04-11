@@ -35,35 +35,30 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
       description:
         "The Technical Rescue Team (TRT) is trained to handle complex rescue operations in challenging environments. The team's core capabilities include water rescue, high and low-angle rope rescue, search and rescue, confined space operations, structural collapse, vehicle and machinery extrication, and hazardous materials support.",
       icon: Search,
-      code: "1.6.1",
     },
     {
       name: "Aircraft And Rescue Firefighting",
       description:
         "The Aircraft Rescue and Firefighting (ARFF) Team is a highly trained unit dedicated to responding to aviation emergencies. Specializing in aircraft firefighting, rescue, and hazardous material containment, the team operates with precision to protect passengers, crew, and airport infrastructure.",
       icon: Plane,
-      code: "1.6.2",
     },
     {
       name: "Hazardous Materials Response Team",
       description:
         "The Hazardous Materials (HazMat) Team specializes in managing and mitigating incidents involving dangerous substances. Trained to handle chemical, biological, radiological, and other hazardous emergencies, the team works to protect life, property, and the environment.",
       icon: AlertTriangle,
-      code: "1.6.3",
     },
     {
       name: "Fire Investigations Bureau",
       description:
         "The Fire Investigations Bureau is a specialized unit responsible for determining the origin and cause of fires. Investigators use advanced techniques and forensic analysis to identify accidental, natural, or intentional causes, working closely with law enforcement when criminal activity is suspected.",
       icon: FileSearch,
-      code: "1.6.4",
     },
     {
       name: "Air Rescue Division",
       description:
         "The Air Rescue Division provides rapid medical response, aerial evacuation, and specialized aviation support during emergency operations. Staffed by highly trained flight medics, pilots, and crew chiefs, this division conducts MEDEVAC missions, aerial search and rescue, and supports fireground operations from the air. Whether transporting critical patients to trauma centers or assisting in remote rescues, the Air Rescue team integrates seamlessly with ground units to deliver advanced care when every second counts.",
       icon: Plane,
-      code: "1.6.5",
     },
   ],
   featuredImages: [
@@ -220,7 +215,6 @@ export default function DepartmentPage() {
                     <division.icon className="h-8 w-8 text-red-500" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-red-500 mb-1">{division.code}</div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{division.name}</h3>
                   </div>
                 </div>
