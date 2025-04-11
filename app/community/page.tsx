@@ -178,12 +178,6 @@ export default async function CommunityPage() {
             >
               Community
             </TabsTrigger>
-            <TabsTrigger
-              value="departments"
-              className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-gray-100"
-            >
-              Departments
-            </TabsTrigger>
           </TabsList>
 
           {/* Community Tab */}
