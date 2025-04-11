@@ -24,10 +24,10 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
   missionStatement: `The mission of The Florida Coast Roleplay Fire Rescue Services Department is to protect lives, reduce harm, and safeguard property through the unified and professional delivery of fire suppression, emergency medical services, and disaster response. We are committed to serving the residents and visitors of our counties with integrity, compassion, and excellence.`,
   requirements: ["18+ years old", "Clean record on the server", "Ability to pass background check"],
   leaders: [
-    { profileId: 1, title: "Fire Chief (FC)" },
-    { profileId: 2, title: "Deputy Chief (DC)" },
-    { profileId: 3, title: "Assistant Chief (AC)" },
-    { profileId: 4, title: "Battalion Chief (BC)" },
+    { profileId: 3, title: "Fire Chief" },
+    { profileId: 1, title: "Deputy Chief" },
+    { profileId: 4, title: "Assistant Chief" },
+    { profileId: 5, title: "Battalion Chief" },
   ],
   divisions: [
     {
@@ -143,29 +143,6 @@ export default function DepartmentPage() {
               >
                 APPLY HERE
               </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Chain of Command */}
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
-            <span className="text-red-500">Chain of</span> Command
-          </h2>
-          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
-
-          <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-            <div className="flex flex-wrap justify-center items-center gap-4">
-              {department.chainOfCommand.map((rank, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="bg-gray-200 dark:bg-slate-700 px-4 py-2 rounded text-gray-800 dark:text-gray-200 font-medium">
-                    {rank}
-                  </div>
-                  {index < department.chainOfCommand.length - 1 && (
-                    <ChevronRight className="h-5 w-5 text-gray-400 mx-1" />
-                  )}
-                </div>
-              ))}
             </div>
           </div>
         </div>
