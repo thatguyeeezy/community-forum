@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MessageSquare, Users, FileText, Shield, Plus, Filter, Megaphone, UserPlus, Lock } from "lucide-react"
 import Link from "next/link"
@@ -141,187 +140,207 @@ export default async function CommunityPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Community</h1>
-          <p className="text-muted-foreground">Browse discussions, resources, and departments</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-          {session ? (
-            <Button size="sm" asChild>
-              <Link href="/community/new-thread">
-                <Plus className="h-4 w-4 mr-2" />
-                New Thread
-              </Link>
+    <div className="min-h-screen bg-gray-900 text-gray-100">
+      <div className="container mx-auto py-6 px-4 md:px-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Community</h1>
+            <p className="text-gray-400">Browse discussions, resources, and departments</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
             </Button>
-          ) : (
-            <Button size="sm" asChild>
-              <Link href="/auth/signin?callbackUrl=/community">
-                <Plus className="h-4 w-4 mr-2" />
-                New Thread
-              </Link>
-            </Button>
-          )}
+            {session ? (
+              <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Link href="/community/new-thread">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Thread
+                </Link>
+              </Button>
+            ) : (
+              <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Link href="/auth/signin?callbackUrl=/community">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Thread
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
 
-      <Tabs defaultValue="community" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="community">Community</TabsTrigger>
-          <TabsTrigger value="departments">Departments</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="community" className="space-y-4">
+          <TabsList className="bg-gray-800 border-gray-700">
+            <TabsTrigger
+              value="community"
+              className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-gray-100"
+            >
+              Community
+            </TabsTrigger>
+            <TabsTrigger
+              value="departments"
+              className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-gray-100"
+            >
+              Departments
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Community Tab */}
-        <TabsContent value="community" className="space-y-4">
-          {categories.map((category) => {
-            const Icon = getCategoryIcon(category.name)
-            const threadCount = category._count.threads
-            const postCount = categoryPostCounts[category.id] || 0
-            const canCreate = canCreateInCategory(
-              category.id,
-              session?.user?.role as string,
-              // @ts-ignore - department is added to session in auth.ts
-              session?.user?.department as string,
-            )
+          {/* Community Tab */}
+          <TabsContent value="community" className="space-y-4">
+            {categories.map((category) => {
+              const Icon = getCategoryIcon(category.name)
+              const threadCount = category._count.threads
+              const postCount = categoryPostCounts[category.id] || 0
+              const canCreate = canCreateInCategory(
+                category.id,
+                session?.user?.role as string,
+                // @ts-ignore - department is added to session in auth.ts
+                session?.user?.department as string,
+              )
 
-            return (
-              <div key={category.id} className="space-y-4">
-                <Card className="border-border">
-                  <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                    <div className="rounded-full bg-primary/10 p-2">
-                      <Icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <CardTitle>
-                          <Link href={`/community/${category.id}`} className="hover:underline text-foreground">
-                            {category.name}
-                          </Link>
-                        </CardTitle>
-                        {!canCreate && (
-                          <div className="flex items-center text-muted-foreground text-sm">
-                            <Lock className="h-3 w-3 mr-1" />
-                            Restricted
-                          </div>
-                        )}
-                      </div>
-                      <CardDescription>{category.description}</CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <MessageSquare className="mr-1 h-4 w-4" />
-                        {threadCount} threads
-                      </div>
-                      <div className="flex items-center">
-                        <FileText className="mr-1 h-4 w-4" />
-                        {postCount} posts
-                      </div>
-                    </div>
-
-                    {category.children.length > 0 && (
-                      <div className="mt-4 border-t pt-4">
-                        <h4 className="text-sm font-medium mb-2 text-foreground">Subcategories</h4>
-                        <div className="grid gap-2">
-                          {category.children.map((subcategory) => {
-                            const subCanCreate = canCreateInCategory(
-                              subcategory.id,
-                              session?.user?.role as string,
-                              // @ts-ignore - department is added to session in auth.ts
-                              session?.user?.department as string,
-                            )
-
-                            return (
-                              <Link
-                                key={subcategory.id}
-                                href={`/community/${category.id}/${subcategory.id}`}
-                                className="flex items-center justify-between rounded-md p-2 hover:bg-accent"
-                              >
-                                <div className="flex-1">
-                                  <div className="flex items-center">
-                                    <h5 className="font-medium text-foreground">{subcategory.name}</h5>
-                                    {!subCanCreate && (
-                                      <div className="ml-2 flex items-center text-muted-foreground text-xs">
-                                        <Lock className="h-3 w-3 mr-1" />
-                                        Restricted
-                                      </div>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-muted-foreground">{subcategory.description}</p>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {subcategory._count.threads} threads
-                                </div>
+              return (
+                <div key={category.id} className="space-y-4">
+                  <div className="bg-gray-800 shadow-md border-l-4 border-blue-500 rounded-md overflow-hidden">
+                    <div className="p-5">
+                      <div className="flex items-center gap-4 pb-2">
+                        <div className="rounded-full bg-blue-600/20 p-2">
+                          <Icon className="h-5 w-5 text-blue-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-gray-100">
+                              <Link href={`/community/${category.id}`} className="hover:text-blue-400">
+                                {category.name}
                               </Link>
-                            )
-                          })}
+                            </h3>
+                            {!canCreate && (
+                              <div className="flex items-center text-gray-400 text-sm">
+                                <Lock className="h-3 w-3 mr-1" />
+                                Restricted
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-gray-400 text-sm">{category.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4 text-sm text-gray-400 mt-2">
+                        <div className="flex items-center">
+                          <MessageSquare className="mr-1 h-4 w-4" />
+                          {threadCount} threads
+                        </div>
+                        <div className="flex items-center">
+                          <FileText className="mr-1 h-4 w-4" />
+                          {postCount} posts
+                        </div>
+                      </div>
+
+                      {category.children.length > 0 && (
+                        <div className="mt-4 border-t border-gray-700 pt-4">
+                          <h4 className="text-sm font-medium mb-2 text-gray-300">Subcategories</h4>
+                          <div className="grid gap-2">
+                            {category.children.map((subcategory) => {
+                              const subCanCreate = canCreateInCategory(
+                                subcategory.id,
+                                session?.user?.role as string,
+                                // @ts-ignore - department is added to session in auth.ts
+                                session?.user?.department as string,
+                              )
+
+                              return (
+                                <Link
+                                  key={subcategory.id}
+                                  href={`/community/${category.id}/${subcategory.id}`}
+                                  className="flex items-center justify-between rounded-md p-2 hover:bg-gray-700"
+                                >
+                                  <div className="flex-1">
+                                    <div className="flex items-center">
+                                      <h5 className="font-medium text-gray-200">{subcategory.name}</h5>
+                                      {!subCanCreate && (
+                                        <div className="ml-2 flex items-center text-gray-400 text-xs">
+                                          <Lock className="h-3 w-3 mr-1" />
+                                          Restricted
+                                        </div>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-gray-400">{subcategory.description}</p>
+                                  </div>
+                                  <div className="text-xs text-gray-400">{subcategory._count.threads} threads</div>
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </TabsContent>
+
+          {/* Departments Tab */}
+          <TabsContent value="departments">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {formattedDepartments.map((department) => (
+                <div
+                  key={department.id}
+                  className="bg-gray-800 shadow-md border-l-4 border-blue-500 rounded-md overflow-hidden"
+                >
+                  <div className="p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="rounded-full bg-blue-600/20 p-2">
+                        <department.icon className="h-5 w-5 text-blue-400" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-100">{department.name}</h3>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-4">{department.description}</p>
+
+                    <div className="mb-4">
+                      <span className="text-sm font-medium text-gray-300">Members: </span>
+                      <span className="text-sm text-gray-400">{department.memberCount}</span>
+                    </div>
+
+                    {department.subdivisions.length > 0 && (
+                      <div className="space-y-2 mb-4">
+                        <h4 className="text-sm font-medium text-gray-300">Subdivisions</h4>
+                        <div className="grid gap-1">
+                          {department.subdivisions.map((subdivision, index) => (
+                            <Link
+                              key={index}
+                              href={`/community/departments/${department.id}/${subdivision.toLowerCase().replace(/\s+/g, "-")}`}
+                              className="text-sm rounded-md p-2 hover:bg-gray-700 flex justify-between items-center"
+                            >
+                              <span className="text-gray-200">{subdivision}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-gray-300 hover:text-white hover:bg-gray-600"
+                              >
+                                View
+                              </Button>
+                            </Link>
+                          ))}
                         </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </div>
-            )
-          })}
-        </TabsContent>
 
-        {/* Departments Tab */}
-        <TabsContent value="departments">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {formattedDepartments.map((department) => (
-              <Card key={department.id} className="border-border bg-card">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-primary/10 p-2">
-                      <department.icon className="h-5 w-5 text-primary" />
+                    <div className="mt-4 pt-4 border-t border-gray-700">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600"
+                      >
+                        <Link href={`/community/departments/${department.id}`}>View Department</Link>
+                      </Button>
                     </div>
-                    <CardTitle className="text-xl text-foreground">{department.name}</CardTitle>
                   </div>
-                  <CardDescription>{department.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <span className="text-sm font-medium text-foreground">Members: </span>
-                    <span className="text-sm text-muted-foreground">{department.memberCount}</span>
-                  </div>
-
-                  {department.subdivisions.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-foreground">Subdivisions</h4>
-                      <div className="grid gap-1">
-                        {department.subdivisions.map((subdivision, index) => (
-                          <Link
-                            key={index}
-                            href={`/community/departments/${department.id}/${subdivision.toLowerCase().replace(/\s+/g, "-")}`}
-                            className="text-sm rounded-md p-2 hover:bg-accent flex justify-between items-center"
-                          >
-                            <span className="text-foreground">{subdivision}</span>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-4 pt-4 border-t">
-                    <Button asChild variant="outline" className="w-full">
-                      <Link href={`/community/departments/${department.id}`}>View Department</Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }

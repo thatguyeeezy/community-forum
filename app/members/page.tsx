@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -150,68 +149,72 @@ export default function MembersPage() {
   }
 
   return (
-    <div className="container py-10">
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Community Members</CardTitle>
-          <CardDescription className="text-muted-foreground">Browse all members of our community</CardDescription>
-          <div className="mt-4 relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search members..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+    <div className="min-h-screen bg-gray-900 text-gray-100">
+      <div className="container py-10">
+        <div className="bg-gray-800 shadow-md rounded-md overflow-hidden border-l-4 border-blue-500">
+          <div className="p-6 border-b border-gray-700">
+            <h1 className="text-2xl font-bold text-gray-100">Community Members</h1>
+            <p className="text-gray-400 mt-1">Browse all members of our community</p>
+            <div className="mt-4 relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+              <Input
+                type="search"
+                placeholder="Search members..."
+                className="pl-8 bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400 focus-visible:ring-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-10">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-              <p className="mt-2 text-muted-foreground">Loading members...</p>
-            </div>
-          ) : filteredMembers.length === 0 ? (
-            <div className="text-center py-10">
-              <p className="text-muted-foreground">No members found matching your search.</p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {sortedRoles.map((role) => (
-                <div key={role} className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                    {getRoleBadge(role)}
-                    <span className="text-muted-foreground text-sm">
-                      ({groupedMembers[role].length} {groupedMembers[role].length === 1 ? "member" : "members"})
-                    </span>
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {groupedMembers[role].map((member) => (
-                      <Link href={`/profile/${member.id}`} key={member.id} className="block">
-                        <div className="border border-border rounded-lg p-4 hover:bg-accent transition-colors">
-                          <div className="flex items-center space-x-4">
-                            <Avatar>
-                              <AvatarImage src={member.image || undefined} alt={member.name || ""} />
-                              <AvatarFallback>{member.name?.substring(0, 2).toUpperCase() || "??"}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-foreground">{member.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Joined {new Date(member.joinDate).toLocaleDateString()}
-                              </p>
+          <div className="p-6">
+            {loading ? (
+              <div className="text-center py-10">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+                <p className="mt-2 text-gray-400">Loading members...</p>
+              </div>
+            ) : filteredMembers.length === 0 ? (
+              <div className="text-center py-10">
+                <p className="text-gray-400">No members found matching your search.</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {sortedRoles.map((role) => (
+                  <div key={role} className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2 text-gray-100">
+                      {getRoleBadge(role)}
+                      <span className="text-gray-400 text-sm">
+                        ({groupedMembers[role].length} {groupedMembers[role].length === 1 ? "member" : "members"})
+                      </span>
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {groupedMembers[role].map((member) => (
+                        <Link href={`/profile/${member.id}`} key={member.id} className="block">
+                          <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 hover:bg-gray-600 transition-colors">
+                            <div className="flex items-center space-x-4">
+                              <Avatar>
+                                <AvatarImage src={member.image || undefined} alt={member.name || ""} />
+                                <AvatarFallback className="bg-blue-600 text-white">
+                                  {member.name?.substring(0, 2).toUpperCase() || "??"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-gray-100">{member.name}</p>
+                                <p className="text-xs text-gray-400">
+                                  Joined {new Date(member.joinDate).toLocaleDateString()}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
