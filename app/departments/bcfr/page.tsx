@@ -64,6 +64,26 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
       src: "/images/fire-3.png",
       alt: "",
     },
+    {
+      src: "/images/fire-4.png",
+      alt: "",
+    },
+    {
+      src: "/images/fire-5.png",
+      alt: "",
+    },
+    {
+      src: "/images/fire-6.png",
+      alt: "",
+    },
+    {
+      src: "/images/fire-7.png",
+      alt: "",
+    },
+    {
+      src: "/images/fire-8.png",
+      alt: "",
+    },
   ],
 }
 
