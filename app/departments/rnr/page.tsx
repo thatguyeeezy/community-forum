@@ -45,7 +45,7 @@ Supportive Leadership: We believe in teamwork and mentorship, ensuring you have 
     { profileId: 0, title: "Senior Recruitment Officer" },
     { profileId: 0, title: "Senior Retention Specialist" },
   ],
-  keyFeatures: [
+  keyRoles: [
     {
       name: "Community Building",
       description: "Foster a vibrant and inclusive community where members can thrive and grow together.",
@@ -163,13 +163,13 @@ export default function DepartmentPage() {
         <div className="mb-12">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              <span className="text-blue-500">Key</span> Features
+              <span className="text-blue-500">Key</span> Roles
             </h2>
             <div className="h-1 w-24 bg-blue-500 mx-auto"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {department.keyFeatures.map((feature, index) => (
+            {department.keyRoles.map((feature, index) => (
               <div
                 key={index}
                 className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm"
