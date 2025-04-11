@@ -54,15 +54,15 @@ Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse 
   featuredImages: [
     {
       src: "/images/fire-1.png",
-      alt: "BCFR in action",
+      alt: "",
     },
     {
       src: "/images/fire-2.png",
-      alt: "BCFR emergency response",
+      alt: "",
     },
     {
       src: "/images/fire-3.png",
-      alt: "BCFR team",
+      alt: "",
     },
   ],
 }
@@ -73,7 +73,7 @@ export default function DepartmentPage() {
   // Breadcrumb items
   const breadcrumbItems = [
     { label: "Home", href: "/" },
-    { label: "Departments" }, // No href makes this non-clickable
+    { label: "Departments", href: "/departments" }, // No href makes this non-clickable
     { label: "BCFR – Broward County Fire Rescue" },
   ]
 
@@ -111,7 +111,7 @@ export default function DepartmentPage() {
             </div>
 
             <div className="flex flex-col items-center justify-center gap-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="w-full h-auto object-cover">
                 <img src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
               </div>
             </div>
