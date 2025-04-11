@@ -225,15 +225,6 @@ export default function DepartmentPage() {
                   </div>
                 </div>
               ))}
-              {/* Add more placeholder images to fill the grid */}
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((_, index) => (
-                <div key={`extra-${index}`} className="relative h-48 rounded-lg overflow-hidden group">
-                  <img
-                    alt={`Fire Department Image ${index + 4}`}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
-                  />
-                </div>
-              ))}
             </div>
           </div>
         </div>
