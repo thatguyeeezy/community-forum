@@ -25,6 +25,15 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
     const fetchLeaderProfiles = async () => {
       try {
         const leaderPromises = leaders.map(async (leader) => {
+          // If profileId is 0, return vacant data
+          if (leader.profileId === 0) {
+            return {
+              ...leader,
+              name: "Vacant",
+              avatar: "/placeholder.svg?height=40&width=40",
+            }
+          }
+
           try {
             const response = await fetch(`/api/users/${leader.profileId}`)
 
@@ -87,17 +96,29 @@ export function DepartmentLeaders({ leaders }: DepartmentLeadersProps) {
     <div className="space-y-4">
       {leadersWithProfiles.map((leader, index) => (
         <div key={index} className="flex items-center gap-3">
-          <Link href={`/profile/${leader.profileId}`}>
+          {leader.profileId === 0 ? (
             <img
-              src={leader.avatar || "/placeholder.svg"}
+              src={leader.avatar}
               alt={leader.name}
               className="w-10 h-10 rounded-full object-cover"
             />
-          </Link>
-          <div>
-            <Link href={`/profile/${leader.profileId}`} className="font-medium text-foreground hover:underline">
-              {leader.name}
+          ) : (
+            <Link href={`/profile/${leader.profileId}`}>
+              <img
+                src={leader.avatar}
+                alt={leader.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
             </Link>
+          )}
+          <div>
+            {leader.profileId === 0 ? (
+              <span className="font-medium text-foreground">{leader.name}</span>
+            ) : (
+              <Link href={`/profile/${leader.profileId}`} className="font-medium text-foreground hover:underline">
+                {leader.name}
+              </Link>
+            )}
             <div className="text-sm text-muted-foreground">{leader.title}</div>
           </div>
         </div>
