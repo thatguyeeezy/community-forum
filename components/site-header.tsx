@@ -61,7 +61,7 @@ export function SiteHeader() {
   const [hoveredDept, setHoveredDept] = useState(false)
 
   return (
-    <header className="bg-background border-b border-border">
+    <header className="dark:bg-gray-800 bg-white border-b dark:border-gray-700 border-gray-200">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -72,7 +72,7 @@ export function SiteHeader() {
                 className="w-10 h-10 object-contain"
               />
             </div>
-            <span className="font-semibold text-xl text-foreground">Florida Coast RP</span>
+            <span className="font-semibold text-xl dark:text-gray-100 text-gray-900">Florida Coast RP</span>
           </div>
 
           <nav className="hidden md:flex">
@@ -81,8 +81,8 @@ export function SiteHeader() {
                 <Link
                   href="/"
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border",
-                    pathname === "/" ? "text-foreground border-primary" : "border-transparent",
+                    "inline-block px-2 py-1 font-medium dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900 border-b-2 border-transparent hover:dark:border-gray-600 hover:border-gray-300",
+                    pathname === "/" ? "dark:text-gray-100 text-gray-900 border-blue-500" : "border-transparent",
                   )}
                 >
                   Home
@@ -92,9 +92,9 @@ export function SiteHeader() {
                 <Link
                   href="/community"
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border",
+                    "inline-block px-2 py-1 font-medium dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900 border-b-2 border-transparent hover:dark:border-gray-600 hover:border-gray-300",
                     pathname === "/community" || pathname.startsWith("/community/")
-                      ? "text-foreground border-primary"
+                      ? "dark:text-gray-100 text-gray-900 border-blue-500"
                       : "border-transparent",
                   )}
                 >
@@ -109,15 +109,17 @@ export function SiteHeader() {
                 {/* Non-clickable span instead of Link */}
                 <span
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border cursor-default",
-                    pathname.startsWith("/departments/") ? "text-foreground border-primary" : "border-transparent",
+                    "inline-block px-2 py-1 font-medium dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900 border-b-2 border-transparent hover:dark:border-gray-600 hover:border-gray-300 cursor-default",
+                    pathname.startsWith("/departments/")
+                      ? "dark:text-gray-100 text-gray-900 border-blue-500"
+                      : "border-transparent",
                   )}
                 >
                   Departments
                 </span>
                 {/* Dropdown menu */}
                 {hoveredDept && (
-                  <div className="absolute left-0 mt-1 w-64 bg-background border border-border rounded shadow-lg z-50">
+                  <div className="absolute left-0 mt-1 w-64 dark:bg-gray-800 bg-white border dark:border-gray-700 border-gray-200 rounded shadow-lg z-50">
                     <div className="py-1">
                       {departments.map((dept) => {
                         const DeptIcon = dept.icon
@@ -125,7 +127,7 @@ export function SiteHeader() {
                           <Link
                             key={dept.id}
                             href={`/departments/${dept.id}`}
-                            className="flex items-center px-4 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
+                            className="flex items-center px-4 py-2 dark:text-gray-300 text-gray-600 hover:dark:bg-gray-700 hover:bg-gray-100 hover:dark:text-gray-100 hover:text-gray-900"
                           >
                             <DeptIcon className={`h-4 w-4 mr-2 ${dept.color}`} />
                             <span>{dept.name}</span>
@@ -140,8 +142,8 @@ export function SiteHeader() {
                 <Link
                   href="/members"
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border",
-                    pathname === "/members" ? "text-foreground border-primary" : "border-transparent",
+                    "inline-block px-2 py-1 font-medium dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900 border-b-2 border-transparent hover:dark:border-gray-600 hover:border-gray-300",
+                    pathname === "/members" ? "dark:text-gray-100 text-gray-900 border-blue-500" : "border-transparent",
                   )}
                 >
                   Members
@@ -151,7 +153,7 @@ export function SiteHeader() {
                 <li>
                   <Link
                     href="/auth/signin"
-                    className="inline-block px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded"
+                    className="inline-block px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded"
                   >
                     Join
                   </Link>
@@ -164,7 +166,11 @@ export function SiteHeader() {
             {/* Use the ModeToggle component */}
             <ModeToggle />
 
-            <Link href="/search" className="p-2 text-muted-foreground hover:text-foreground" aria-label="Search">
+            <Link
+              href="/search"
+              className="p-2 dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900"
+              aria-label="Search"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -174,7 +180,7 @@ export function SiteHeader() {
               (session ? (
                 <Link
                   href={`/profile/${session.user?.id || ""}`}
-                  className="w-10 h-10 bg-muted rounded-full flex items-center justify-center overflow-hidden"
+                  className="w-10 h-10 dark:bg-gray-700 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden"
                 >
                   {session.user?.image ? (
                     <img
@@ -183,7 +189,7 @@ export function SiteHeader() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="text-muted-foreground">
+                    <div className="dark:text-gray-300 text-gray-600">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
@@ -194,7 +200,7 @@ export function SiteHeader() {
               ) : (
                 <Link
                   href="/auth/signin"
-                  className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-muted-foreground"
+                  className="w-10 h-10 dark:bg-gray-700 bg-gray-200 rounded-full flex items-center justify-center dark:text-gray-300 text-gray-600"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>

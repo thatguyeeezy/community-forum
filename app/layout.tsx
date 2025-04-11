@@ -5,8 +5,6 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { SiteHeader } from "@/components/site-header"
 import { SessionProvider } from "@/components/session-provider"
-import { Toaster } from "@/components/ui/toaster"
-import { ThemeDebug } from "@/components/theme-debug"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,13 +20,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-background text-foreground`} suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
         <SessionProvider>
-          <ThemeProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="theme-mode">
             <SiteHeader />
-            <main>{children}</main>
-            <Toaster />
-            <ThemeDebug />
+            {children}
           </ThemeProvider>
         </SessionProvider>
       </body>

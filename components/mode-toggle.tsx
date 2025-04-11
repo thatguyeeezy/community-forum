@@ -31,8 +31,8 @@ export function ModeToggle() {
       size="icon"
       onClick={() => {
         setTheme(currentTheme === "dark" ? "light" : "dark")
-        console.log("Switching theme from", currentTheme, "to", currentTheme === "dark" ? "light" : "dark")
       }}
+      className="dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900"
       aria-label="Toggle theme"
     >
       <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

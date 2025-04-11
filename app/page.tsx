@@ -140,9 +140,9 @@ export default async function ForumHomepage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
+    <div className="min-h-screen dark:bg-gray-900 bg-gray-50 dark:text-gray-100 text-gray-900 font-sans">
       {/* Hero Section with asymmetrical layout */}
-      <section className="relative bg-gray-800 border-b border-gray-700 overflow-hidden">
+      <section className="relative dark:bg-gray-800 bg-white border-b dark:border-gray-700 border-gray-200 overflow-hidden">
         {/* Replace the light blue background with an image carousel background */}
         <div className="absolute right-0 top-0 w-1/2 h-full z-0 overflow-hidden">
           {/* Image Carousel in Background */}
@@ -150,19 +150,19 @@ export default async function ForumHomepage() {
             <div className="flex animate-carousel absolute inset-0">
               <div className="min-w-full h-full relative">
                 <div className="absolute inset-0 bg-black opacity-50"></div>
-                <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                <div className="w-full h-full dark:bg-gray-700 bg-gray-200 flex items-center justify-center">
                   <div className="absolute inset-0 bg-[url('/placeholder.svg?height=500&width=800')] bg-cover bg-center opacity-60"></div>
                 </div>
               </div>
               <div className="min-w-full h-full relative">
                 <div className="absolute inset-0 bg-black opacity-50"></div>
-                <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                <div className="w-full h-full dark:bg-gray-800 bg-gray-300 flex items-center justify-center">
                   <div className="absolute inset-0 bg-[url('/placeholder.svg?height=500&width=800')] bg-cover bg-center opacity-60"></div>
                 </div>
               </div>
               <div className="min-w-full h-full relative">
                 <div className="absolute inset-0 bg-black opacity-50"></div>
-                <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                <div className="w-full h-full dark:bg-gray-900 bg-gray-400 flex items-center justify-center">
                   <div className="absolute inset-0 bg-[url('/placeholder.svg?height=500&width=800')] bg-cover bg-center opacity-60"></div>
                 </div>
               </div>
@@ -170,13 +170,13 @@ export default async function ForumHomepage() {
           </div>
 
           {/* Diagonal overlay to create a more interesting visual */}
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-800/80 to-transparent transform -skew-x-12 origin-top-right"></div>
+          <div className="absolute inset-0 dark:bg-gradient-to-r dark:from-gray-800 dark:via-gray-800/80 dark:to-transparent bg-gradient-to-r from-white via-white/80 to-transparent transform -skew-x-12 origin-top-right"></div>
         </div>
 
         <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="max-w-xl">
-            <h1 className="text-4xl font-bold mb-4 text-gray-100">Welcome to Florida Coast RP</h1>
-            <p className="text-gray-300 mb-6">
+            <h1 className="text-4xl font-bold mb-4 dark:text-gray-100 text-gray-900">Welcome to Florida Coast RP</h1>
+            <p className="dark:text-gray-300 text-gray-600 mb-6">
               Join our realistic FiveM roleplay community and experience immersive law enforcement, emergency services,
               and civilian interactions.
             </p>
@@ -189,7 +189,7 @@ export default async function ForumHomepage() {
               </a>
               <Link
                 href="/about"
-                className="inline-block px-6 py-2 border border-gray-600 rounded text-gray-300 hover:bg-gray-700"
+                className="inline-block px-6 py-2 border dark:border-gray-600 border-gray-300 rounded dark:text-gray-300 text-gray-600 hover:dark:bg-gray-700 hover:bg-gray-100"
               >
                 Learn More
               </Link>
@@ -204,37 +204,43 @@ export default async function ForumHomepage() {
           {/* Left Sidebar - Recent Activity */}
           <div className="lg:w-1/4 order-2 lg:order-1">
             <div className="sticky top-4">
-              <h2 className="text-xl font-bold mb-4 text-gray-100 border-b border-gray-700 pb-2">Recent Activity</h2>
+              <h2 className="text-xl font-bold mb-4 dark:text-gray-100 text-gray-900 border-b dark:border-gray-700 border-gray-200 pb-2">
+                Recent Activity
+              </h2>
 
               <div className="space-y-6">
                 {recentThreads.slice(0, 3).map((thread) => (
                   <div key={thread.id} className="relative pl-4 border-l-2 border-blue-500">
                     <Link
                       href={`/community/thread/${thread.id}`}
-                      className="font-medium text-gray-100 hover:text-blue-400"
+                      className="font-medium dark:text-gray-100 text-gray-900 hover:text-blue-400"
                     >
                       {thread.title}
                     </Link>
-                    <div className="text-sm text-gray-400 mt-1">
+                    <div className="text-sm dark:text-gray-400 text-gray-500 mt-1">
                       Posted by {thread.author?.name || "Anonymous"}, {formatTimeAgo(new Date(thread.createdAt))}
                     </div>
-                    <div className="text-sm text-gray-300 mt-2">{thread.content?.substring(0, 100) || ""}...</div>
+                    <div className="text-sm dark:text-gray-300 text-gray-600 mt-2">
+                      {thread.content?.substring(0, 100) || ""}...
+                    </div>
                   </div>
                 ))}
 
                 {recentThreads.length === 0 && (
-                  <div className="text-gray-400 text-sm">No recent activity to display.</div>
+                  <div className="dark:text-gray-400 text-gray-500 text-sm">No recent activity to display.</div>
                 )}
               </div>
 
               <div className="mt-8">
-                <h3 className="text-lg font-bold mb-3 text-gray-100 border-b border-gray-700 pb-2">Online Now</h3>
+                <h3 className="text-lg font-bold mb-3 dark:text-gray-100 text-gray-900 border-b dark:border-gray-700 border-gray-200 pb-2">
+                  Online Now
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {onlineUsers.map((user) => (
                     <Link
                       key={user.id}
                       href={`/profile/${user.id}`}
-                      className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center text-blue-300 font-medium overflow-hidden"
+                      className="w-10 h-10 dark:bg-blue-900 bg-blue-100 rounded-full flex items-center justify-center dark:text-blue-300 text-blue-700 font-medium overflow-hidden"
                     >
                       {user.image ? (
                         <img
@@ -253,7 +259,9 @@ export default async function ForumHomepage() {
                     </div>
                   )}
 
-                  {onlineUsers.length === 0 && <div className="text-gray-400 text-sm">No users currently online.</div>}
+                  {onlineUsers.length === 0 && (
+                    <div className="dark:text-gray-400 text-gray-500 text-sm">No users currently online.</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -261,45 +269,49 @@ export default async function ForumHomepage() {
 
           {/* Main Content - Categories */}
           <div className="lg:w-2/4 order-1 lg:order-2">
-            <h2 className="text-2xl font-bold mb-6 text-gray-100 border-b border-gray-700 pb-2">Categories</h2>
+            <h2 className="text-2xl font-bold mb-6 dark:text-gray-100 text-gray-900 border-b dark:border-gray-700 border-gray-200 pb-2">
+              Categories
+            </h2>
 
             <div className="space-y-8">
               {categories.length > 0 ? (
                 categories.map((category, index) => (
                   <div key={category.id}>
                     <div
-                      className={`bg-gray-800 shadow-md border-l-4 ${
-                        index === 0 ? "border-blue-500" : "border-gray-600"
+                      className={`dark:bg-gray-800 bg-white shadow-md border-l-4 ${
+                        index === 0 ? "border-blue-500" : "dark:border-gray-600 border-gray-300"
                       }`}
                     >
                       <div className="p-5">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="text-xl font-bold text-gray-100">{category.name}</h3>
-                            <p className="text-gray-300 mt-1">{category.description}</p>
+                            <h3 className="text-xl font-bold dark:text-gray-100 text-gray-900">{category.name}</h3>
+                            <p className="dark:text-gray-300 text-gray-600 mt-1">{category.description}</p>
                           </div>
-                          <div className="bg-gray-700 text-gray-300 text-sm px-3 py-1 rounded">
+                          <div className="dark:bg-gray-700 bg-gray-100 dark:text-gray-300 text-gray-600 text-sm px-3 py-1 rounded">
                             {category._count?.threads || 0} threads
                           </div>
                         </div>
 
-                        <div className="mt-4 border-t border-gray-700 pt-3">
+                        <div className="mt-4 border-t dark:border-gray-700 border-gray-200 pt-3">
                           {category.threads && category.threads.length > 0 ? (
                             category.threads.map((thread) => (
                               <Link
                                 key={thread.id}
                                 href={`/community/thread/${thread.id}`}
-                                className="block py-2 hover:bg-gray-700 px-3 -mx-3 rounded"
+                                className="block py-2 hover:dark:bg-gray-700 hover:bg-gray-100 px-3 -mx-3 rounded"
                               >
-                                <div className="font-medium text-gray-100">{thread.title}</div>
-                                <div className="text-sm text-gray-400">
+                                <div className="font-medium dark:text-gray-100 text-gray-900">{thread.title}</div>
+                                <div className="text-sm dark:text-gray-400 text-gray-500">
                                   Started by {thread.author?.name || "Anonymous"},{" "}
                                   {formatTimeAgo(new Date(thread.createdAt))}
                                 </div>
                               </Link>
                             ))
                           ) : (
-                            <div className="py-2 text-gray-400 text-sm">No threads in this category yet.</div>
+                            <div className="py-2 dark:text-gray-400 text-gray-500 text-sm">
+                              No threads in this category yet.
+                            </div>
                           )}
                         </div>
                       </div>
@@ -309,35 +321,44 @@ export default async function ForumHomepage() {
                     {category.children && category.children.length > 0 && (
                       <div className="ml-6 mt-4 space-y-4">
                         {category.children.map((childCategory) => (
-                          <div key={childCategory.id} className="bg-gray-800 shadow-md border-l-4 border-gray-600">
+                          <div
+                            key={childCategory.id}
+                            className="dark:bg-gray-800 bg-white shadow-md border-l-4 dark:border-gray-600 border-gray-300"
+                          >
                             <div className="p-4">
                               <div className="flex items-start justify-between">
                                 <div>
-                                  <h4 className="text-lg font-bold text-gray-100">{childCategory.name}</h4>
-                                  <p className="text-gray-300 text-sm mt-1">{childCategory.description}</p>
+                                  <h4 className="text-lg font-bold dark:text-gray-100 text-gray-900">
+                                    {childCategory.name}
+                                  </h4>
+                                  <p className="dark:text-gray-300 text-gray-600 text-sm mt-1">
+                                    {childCategory.description}
+                                  </p>
                                 </div>
-                                <div className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded">
+                                <div className="dark:bg-gray-700 bg-gray-100 dark:text-gray-300 text-gray-600 text-xs px-2 py-1 rounded">
                                   {childCategory._count?.threads || 0} threads
                                 </div>
                               </div>
 
-                              <div className="mt-3 border-t border-gray-700 pt-2">
+                              <div className="mt-3 border-t dark:border-gray-700 border-gray-200 pt-2">
                                 {childCategory.threads && childCategory.threads.length > 0 ? (
                                   childCategory.threads.map((thread) => (
                                     <Link
                                       key={thread.id}
                                       href={`/community/thread/${thread.id}`}
-                                      className="block py-2 hover:bg-gray-700 px-3 -mx-3 rounded"
+                                      className="block py-2 hover:dark:bg-gray-700 hover:bg-gray-100 px-3 -mx-3 rounded"
                                     >
-                                      <div className="font-medium text-gray-100">{thread.title}</div>
-                                      <div className="text-sm text-gray-400">
+                                      <div className="font-medium dark:text-gray-100 text-gray-900">{thread.title}</div>
+                                      <div className="text-sm dark:text-gray-400 text-gray-500">
                                         Started by {thread.author?.name || "Anonymous"},{" "}
                                         {formatTimeAgo(new Date(thread.createdAt))}
                                       </div>
                                     </Link>
                                   ))
                                 ) : (
-                                  <div className="py-2 text-gray-400 text-sm">No threads in this category yet.</div>
+                                  <div className="py-2 dark:text-gray-400 text-gray-500 text-sm">
+                                    No threads in this category yet.
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -348,8 +369,10 @@ export default async function ForumHomepage() {
                   </div>
                 ))
               ) : (
-                <div className="bg-gray-800 shadow-md p-5">
-                  <p className="text-gray-400">No categories found. Please check your database connection.</p>
+                <div className="dark:bg-gray-800 bg-white shadow-md p-5">
+                  <p className="dark:text-gray-400 text-gray-500">
+                    No categories found. Please check your database connection.
+                  </p>
                 </div>
               )}
             </div>
@@ -358,25 +381,28 @@ export default async function ForumHomepage() {
           {/* Right Sidebar - Community Highlights */}
           <div className="lg:w-1/4 order-3">
             <div className="sticky top-4">
-              <h2 className="text-xl font-bold mb-4 text-gray-100 border-b border-gray-700 pb-2">
+              <h2 className="text-xl font-bold mb-4 dark:text-gray-100 text-gray-900 border-b dark:border-gray-700 border-gray-200 pb-2">
                 Community Highlights
               </h2>
 
               {/* Featured Event */}
-              <div className="bg-gray-800 shadow-md p-5 mb-6 border-t-4 border-blue-500">
-                <h3 className="font-bold mb-2 text-gray-100">Featured Event</h3>
-                <p className="text-sm text-gray-300 mb-3">
+              <div className="dark:bg-gray-800 bg-white shadow-md p-5 mb-6 border-t-4 border-blue-500">
+                <h3 className="font-bold mb-2 dark:text-gray-100 text-gray-900">Featured Event</h3>
+                <p className="text-sm dark:text-gray-300 text-gray-600 mb-3">
                   Join us this weekend for the grand opening of the new shopping mall!
                 </p>
-                <div className="text-sm text-gray-400">Saturday, 8PM EST</div>
+                <div className="text-sm dark:text-gray-400 text-gray-500">Saturday, 8PM EST</div>
               </div>
 
-              {/* Server Status - Using the dynamic component */}
-              <ServerStatus className="mb-6" />
+              {/* Server Status */}
+              <div className="dark:bg-gray-800 bg-white shadow-md p-5 mb-6 border-l-4 border-blue-500">
+                <h3 className="font-bold mb-2 dark:text-gray-100 text-gray-900">Server Status</h3>
+                <ServerStatus />
+              </div>
 
-              <div className="bg-gray-800 shadow-md p-5 mb-6 border-l-4 border-blue-500">
-                <h3 className="font-bold mb-2 text-gray-100">Discord</h3>
-                <p className="text-sm text-gray-300 mb-3">
+              <div className="dark:bg-gray-800 bg-white shadow-md p-5 mb-6 border-l-4 border-blue-500">
+                <h3 className="font-bold mb-2 dark:text-gray-100 text-gray-900">Discord</h3>
+                <p className="text-sm dark:text-gray-300 text-gray-600 mb-3">
                   Join our Discord server to stay connected with the community!
                 </p>
                 <a
@@ -387,11 +413,16 @@ export default async function ForumHomepage() {
                 </a>
               </div>
 
-              <div className="bg-gray-800 shadow-md p-5">
-                <h3 className="font-bold mb-3 text-gray-100 border-b border-gray-700 pb-2">Quick Links</h3>
+              <div className="dark:bg-gray-800 bg-white shadow-md p-5">
+                <h3 className="font-bold mb-3 dark:text-gray-100 text-gray-900 border-b dark:border-gray-700 border-gray-200 pb-2">
+                  Quick Links
+                </h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link href="/rules" className="flex items-center text-gray-300 hover:text-blue-400">
+                    <Link
+                      href="/rules"
+                      className="flex items-center dark:text-gray-300 text-gray-600 hover:text-blue-400"
+                    >
                       <svg
                         width="16"
                         height="16"
@@ -409,7 +440,10 @@ export default async function ForumHomepage() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/join" className="flex items-center text-gray-300 hover:text-blue-400">
+                    <Link
+                      href="/join"
+                      className="flex items-center dark:text-gray-300 text-gray-600 hover:text-blue-400"
+                    >
                       <svg
                         width="16"
                         height="16"
@@ -427,7 +461,10 @@ export default async function ForumHomepage() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/apply" className="flex items-center text-gray-300 hover:text-blue-400">
+                    <Link
+                      href="/apply"
+                      className="flex items-center dark:text-gray-300 text-gray-600 hover:text-blue-400"
+                    >
                       <svg
                         width="16"
                         height="16"
@@ -445,7 +482,10 @@ export default async function ForumHomepage() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/report" className="flex items-center text-gray-300 hover:text-blue-400">
+                    <Link
+                      href="/report"
+                      className="flex items-center dark:text-gray-300 text-gray-600 hover:text-blue-400"
+                    >
                       <svg
                         width="16"
                         height="16"
@@ -470,7 +510,7 @@ export default async function ForumHomepage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-12">
+      <footer className="dark:bg-gray-900 bg-gray-100 dark:text-white text-gray-800 mt-12">
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -484,14 +524,16 @@ export default async function ForumHomepage() {
                 </div>
                 <span className="font-bold text-lg">Florida Coast RP</span>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="dark:text-gray-400 text-gray-500 text-sm">
                 A realistic FiveM roleplay community focused on quality roleplay and immersive experiences.
               </p>
             </div>
 
             <div>
-              <h3 className="font-bold mb-4 text-gray-200 border-b border-gray-700 pb-2">Links</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h3 className="font-bold mb-4 dark:text-gray-200 text-gray-700 border-b dark:border-gray-700 border-gray-200 pb-2">
+                Links
+              </h3>
+              <ul className="space-y-2 text-sm dark:text-gray-400 text-gray-500">
                 <li>
                   <Link href="/" className="hover:text-blue-400">
                     Home
@@ -521,11 +563,13 @@ export default async function ForumHomepage() {
             </div>
 
             <div>
-              <h3 className="font-bold mb-4 text-gray-200 border-b border-gray-700 pb-2">Connect</h3>
+              <h3 className="font-bold mb-4 dark:text-gray-200 text-gray-700 border-b dark:border-gray-700 border-gray-200 pb-2">
+                Connect
+              </h3>
               <div className="flex space-x-3 mb-4">
                 <a
                   href="#"
-                  className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
+                  className="w-8 h-8 dark:bg-gray-800 bg-gray-200 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
@@ -533,7 +577,7 @@ export default async function ForumHomepage() {
                 </a>
                 <a
                   href="#"
-                  className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
+                  className="w-8 h-8 dark:bg-gray-800 bg-gray-200 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
@@ -541,7 +585,7 @@ export default async function ForumHomepage() {
                 </a>
                 <a
                   href="https://discord.gg/DaPzAREBGp"
-                  className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
+                  className="w-8 h-8 dark:bg-gray-800 bg-gray-200 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
@@ -549,7 +593,7 @@ export default async function ForumHomepage() {
                 </a>
                 <a
                   href="#"
-                  className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
+                  className="w-8 h-8 dark:bg-gray-800 bg-gray-200 rounded flex items-center justify-center hover:bg-blue-600 transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -558,7 +602,7 @@ export default async function ForumHomepage() {
                   </svg>
                 </a>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm dark:text-gray-500 text-gray-400">
                 © {new Date().getFullYear().toString()} Florida Coast Roleplay.
                 <br />
                 All rights reserved.
