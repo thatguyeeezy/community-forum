@@ -1,4 +1,4 @@
-import { Shield, Flame } from "lucide-react"
+import { Flame, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { DepartmentLeaders } from "@/components/department-leaders"
@@ -6,7 +6,7 @@ import { DepartmentLeaders } from "@/components/department-leaders"
 // Department data
 const department = {
   id: "bcfr",
-  name: "BCFR – Broward County Fire Rescue",
+  name: "FCRP COUNTY FIRE RESCUE",
   description: "Emergency medical services and fire response",
   memberCount: 42,
   icon: Flame,
@@ -14,15 +14,52 @@ const department = {
   textColor: "text-red-500 dark:text-red-400",
   accentColor: "bg-red-600 hover:bg-red-700",
   subdivisions: ["EMS Division", "Fire Division", "Special Operations"],
-  longDescription:
-    "Broward County Fire Rescue (BCFR) provides emergency medical services and fire response throughout Broward County. BCFR personnel respond to medical emergencies, fires, and other incidents requiring specialized rescue operations.",
-  requirements: ["OPEN TO ANYONE / NON WHITELIST TOO", "18 Years Of Age", "Preferred Past FiveM Experience"],
+  aboutUs: `The Florida Coast Roleplay Fire Rescue Services Department is a professional, educational department. Dedicated to the safety, development, and service of our members and the public. We are proud to serve the following counties Broward County, Palm Beach County, Miami-Dade County and surrounding unincorporated areas, with 24-hour coverage from 9 fully staffed stations, protecting approximately 80 square miles of diverse terrain.
+
+Our mission goes beyond traditional firefighting we specialize in fire prevention, rescue operations, emergency medical response, and technical disciplines such as hazardous materials response, urban search and rescue, water rescue services, forestry operations, and aircraft rescue. Our department also operates advanced support units including Air Operations, an Aircraft Rescue Firefighting, HAZMAT operations, a Technical Rescue Team, and a Fire Investigations/Prevention Bureau
+
+We believe in building a supportive and educational environment for all members, where continuous learning and real-world experience go hand-in-hand. With a strong emphasis on in-depth training both classroom-based and hands-on, our department is designed to help you grow and develop as both a responder and a leader. 
+
+Above all, Florida Coast Roleplay Fire Rescue Department is a family, a diverse and passionate group of individuals committed to excellence, teamwork, and self-improvement. Whether you're new to emergency services or a seasoned, we welcome you to be part of something Big!`,
+  missionStatement: `The mission of The Florida Coast Roleplay Fire Rescue Services Department is to protect lives, reduce harm, and safeguard property through the unified and professional delivery of fire suppression, emergency medical services, and disaster response. We are committed to serving the residents and visitors of our counties with integrity, compassion, and excellence.`,
+  requirements: ["18+ years old", "Clean record on the server", "Ability to pass background check"],
   leaders: [
-    { profileId: 1, title: "Fire Chief" },
-    { profileId: 2, title: "Deputy Chief" },
+    { profileId: 1, title: "Fire Chief (FC)" },
+    { profileId: 2, title: "Deputy Chief (DC)" },
+    { profileId: 3, title: "Assistant Chief (AC)" },
+    { profileId: 4, title: "Battalion Chief (BC)" },
   ],
-  applicationProcess:
-    "Applications for BCFR are processed through our website. After submitting your application, you'll be contacted for an interview, followed by academy training if accepted.",
+  chainOfCommand: [
+    "Engineer",
+    "Lieutenant (LT)",
+    "Captain",
+    "Battalion Chief (BC)",
+    "Assistant Chief (AC)",
+    "Deputy Chief (DC)",
+    "Fire Chief (FC)",
+  ],
+  divisions: [
+    {
+      name: "EMS Division",
+      description: "Provides emergency medical services and transport throughout the county.",
+      icon: "/images/ems-icon.png",
+    },
+    {
+      name: "Fire Suppression",
+      description: "Primary firefighting operations and response to fire emergencies.",
+      icon: "/images/fire-icon.png",
+    },
+    {
+      name: "HAZMAT Operations",
+      description: "Specialized response to hazardous materials incidents and chemical emergencies.",
+      icon: "/images/hazmat-icon.png",
+    },
+    {
+      name: "Technical Rescue",
+      description: "Specialized rescue operations including confined space, high angle, and structural collapse.",
+      icon: "/images/rescue-icon.png",
+    },
+  ],
   featuredImages: [
     {
       src: "/images/fire-1.png",
@@ -46,7 +83,7 @@ export default function DepartmentPage() {
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Departments" }, // No href makes this non-clickable
-    { label: department.name },
+    { label: "BCFR – Broward County Fire Rescue" },
   ]
 
   return (
@@ -55,136 +92,169 @@ export default function DepartmentPage() {
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} />
 
-        {/* Department Header */}
-        <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden mb-8 shadow-sm">
-          <div className="h-2 w-full bg-red-500"></div>
-          <div className="p-6">
+        {/* Hero Banner */}
+        <div className="relative w-full h-[300px] md:h-[400px] rounded-lg overflow-hidden mb-8">
+          <div className="absolute inset-0 bg-black/50 z-10"></div>
+          <img src="/images/fd-banner.png" alt="Fire Department Banner" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-white">
             <div className="flex items-center gap-4 mb-4">
-              <div className={`rounded-full p-3 ${department.color}`}>
-                <DeptIcon className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">{department.name}</h1>
-                <p className="text-gray-600 dark:text-gray-400">{department.description}</p>
-              </div>
+              <DeptIcon className="h-12 w-12 text-red-500" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-center text-white mb-2">{department.name}</h1>
+            <p className="text-xl text-gray-200 text-center max-w-2xl">{department.description}</p>
+          </div>
+        </div>
+
+        {/* About Us Section */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-red-500">About</span> Us
+          </h2>
+          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
+                {department.aboutUs}
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="bg-gray-200 dark:bg-slate-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200">
-                <span className="font-medium">Members:</span> {department.memberCount}
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <img src="/images/fire-1.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
+                <img src="/images/fire-2.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
+                <img src="/images/fire-3.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
+                <img src="/images/fire-1.png" alt="Fire Department Badge" className="w-full h-auto rounded-lg" />
               </div>
-              {department.subdivisions.map((sub, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-200 dark:bg-slate-700 px-3 py-1 rounded text-gray-800 dark:text-gray-200"
-                >
-                  {sub}
+            </div>
+          </div>
+        </div>
+
+        {/* Mission Statement Section */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-red-500">Mission</span> Statement
+          </h2>
+          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+            <div className="lg:col-span-2 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed text-lg italic">
+                {department.missionStatement}
+              </p>
+            </div>
+
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm text-center">
+              <h3 className="text-2xl font-bold text-red-500 mb-4">Become a Firefighter Today!</h3>
+              <p className="text-gray-800 dark:text-gray-200 mb-6">
+                Join our team and make a difference in your community.
+              </p>
+              <Link
+                href={`/apply?department=${department.id}`}
+                className="inline-block py-3 px-6 bg-red-600 hover:bg-red-700 text-white rounded-md font-bold text-lg"
+              >
+                APPLY HERE
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Chain of Command */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-red-500">Chain of</span> Command
+          </h2>
+          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+
+          <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
+            <div className="flex flex-wrap justify-center items-center gap-4">
+              {department.chainOfCommand.map((rank, index) => (
+                <div key={index} className="flex items-center">
+                  <div className="bg-gray-200 dark:bg-slate-700 px-4 py-2 rounded text-gray-800 dark:text-gray-200 font-medium">
+                    {rank}
+                  </div>
+                  {index < department.chainOfCommand.length - 1 && (
+                    <ChevronRight className="h-5 w-5 text-gray-400 mx-1" />
+                  )}
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Department Advertisement */}
-        <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 mb-8 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Join Our Team</h2>
-          <div className="text-gray-800 dark:text-gray-200 leading-relaxed">
-            <p className="mb-4">
-              Join the Broward Sheriff Fire Rescue Team! Are you ready to make a difference and be part of an elite team
-              dedicated to saving lives and protecting the community? The Broward Sheriff Fire Rescue is actively
-              recruiting passionate and driven individuals. Don't wait—apply today and live the dream that LEO Officers
-              aspire to!
-            </p>
-            <div className="mt-6">
-              <Link
-                href={`/apply?department=${department.id}`}
-                className={`inline-block py-2 px-4 ${department.accentColor} text-white rounded`}
-              >
-                Apply Now
-              </Link>
-            </div>
+        {/* Leadership */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-red-500">Department</span> Leadership
+          </h2>
+          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+
+          <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
+            <DepartmentLeaders leaders={department.leaders} />
           </div>
         </div>
 
-        {/* Featured Images */}
-        <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 mb-8 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Featured Images</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {department.featuredImages.map((image, index) => (
+        {/* Divisions */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-red-500">Our</span> Divisions
+          </h2>
+          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {department.divisions.map((division, index) => (
               <div
                 key={index}
-                className="relative h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700"
+                className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm flex flex-col items-center text-center"
               >
-                <img
-                  src={image.src || "/placeholder.svg"}
-                  alt={image.alt}
-                  className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                />
+                <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+                  <Flame className="h-8 w-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{division.name}</h3>
+                <p className="text-gray-700 dark:text-gray-300">{division.description}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Department Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {/* About */}
-            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">About</h2>
-              <p className="text-gray-800 dark:text-gray-200 leading-relaxed">{department.longDescription}</p>
-            </div>
+        {/* Media Section */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-red-500">Media</span> Gallery
+          </h2>
+          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
 
-            {/* Requirements */}
-            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Requirements</h2>
-              <ul className="list-disc pl-5 text-gray-800 dark:text-gray-200 space-y-2">
-                {department.requirements.map((req, index) => (
-                  <li key={index}>{req}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Application Process */}
-            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">How to Join</h2>
-              <p className="text-gray-800 dark:text-gray-200 leading-relaxed">{department.applicationProcess}</p>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-8">
-            {/* Leadership */}
-            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Leadership</h2>
-              <DepartmentLeaders leaders={department.leaders} />
-            </div>
-
-            {/* Related Departments */}
-            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Other Departments</h2>
-              <div className="space-y-3">
-                <Link
-                  href="/departments/fhp"
-                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-slate-700/70 rounded-md text-gray-800 dark:text-gray-200"
-                >
-                  <Shield className="h-5 w-5 text-green-500 dark:text-green-400" />
-                  <span>FHP – Florida Highway Patrol</span>
-                </Link>
-                <Link
-                  href="/departments/bso"
-                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-slate-700/70 rounded-md text-gray-800 dark:text-gray-200"
-                >
-                  <Shield className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-                  <span>BSO – Broward Sheriff's Office</span>
-                </Link>
-                <Link
-                  href="/departments/mpd"
-                  className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-slate-700/70 rounded-md text-gray-800 dark:text-gray-200"
-                >
-                  <Shield className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-                  <span>MPD – Miami Police Department</span>
-                </Link>
-              </div>
+          <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {department.featuredImages.map((image, index) => (
+                <div key={index} className="relative h-48 rounded-lg overflow-hidden group">
+                  <img
+                    src={image.src || "/placeholder.svg"}
+                    alt={image.alt}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="font-medium">{image.alt}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {/* Add more placeholder images to fill the grid */}
+              {[1, 2, 3, 4, 5].map((_, index) => (
+                <div key={`extra-${index}`} className="relative h-48 rounded-lg overflow-hidden group">
+                  <img
+                    src={`/placeholder.svg?height=300&width=400&text=FD+Image+${index + 4}`}
+                    alt={`Fire Department Image ${index + 4}`}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="font-medium">Fire Department Activity</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
