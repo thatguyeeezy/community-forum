@@ -10,6 +10,18 @@ import { Shield, Users, Anchor, Flame, Fish } from "lucide-react"
 // Department data with appropriate icons
 const departments = [
   {
+    id: "bcfr",
+    name: "BCFR – Broward County Fire Rescue",
+    icon: Flame,
+    color: "text-red-400",
+  },
+  {
+    id: "bso",
+    name: "BSO – Broward Sheriff's Office",
+    icon: Shield,
+    color: "text-amber-400",
+  },
+  {
     id: "civ",
     name: "CIV – Civilian",
     icon: Users,
@@ -22,40 +34,22 @@ const departments = [
     color: "text-green-400",
   },
   {
-    id: "mpd",
-    name: "MPD – Miami Police Department",
-    icon: Shield,
-    color: "text-purple-400",
-  },
-  {
-    id: "bso",
-    name: "BSO – Broward Sheriff's Office",
-    icon: Shield,
-    color: "text-amber-400",
-  },
-  {
     id: "fwc",
     name: "FWC – Florida Fish and Wildlife",
     icon: Fish,
     color: "text-teal-400",
   },
   {
-    id: "uscg",
-    name: "USCG – United States Coast Guard",
+    id: "mpd",
+    name: "MPD – Miami Police Department",
+    icon: Shield,
+    color: "text-purple-400",
+  },
+  {
+    id: "nscg",
+    name: "NSCG – Naval Sea Coast Guard",
     icon: Anchor,
     color: "text-cyan-400",
-  },
-  {
-    id: "usms",
-    name: "USMS – United States Marshals Service",
-    icon: Shield,
-    color: "text-indigo-400",
-  },
-  {
-    id: "bcfr",
-    name: "BCFR – Broward County Fire Rescue",
-    icon: Flame,
-    color: "text-red-400",
   },
 ]
 

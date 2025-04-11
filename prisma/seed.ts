@@ -158,11 +158,6 @@ async function main() {
       subdivisions: ["Maritime Law Enforcement", "Search and Rescue", "Port Security"],
     },
     {
-      name: "USMS – United States Marshals Service",
-      description: "Federal law enforcement agency",
-      subdivisions: ["Fugitive Task Force", "Judicial Security", "Prisoner Operations"],
-    },
-    {
       name: "BCFR – Broward County Fire Rescue",
       description: "Fire and emergency medical services",
       subdivisions: ["Fire Suppression", "EMS", "Special Operations"],
