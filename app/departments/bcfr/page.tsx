@@ -1,3 +1,6 @@
+'use client'
+
+import React from 'react'
 import { Flame, Search, Plane, AlertTriangle, FileSearch } from "lucide-react"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/breadcrumbs"
