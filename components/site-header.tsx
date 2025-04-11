@@ -61,7 +61,7 @@ export function SiteHeader() {
   const [hoveredDept, setHoveredDept] = useState(false)
 
   return (
-    <header className="bg-gray-800 border-b border-gray-700">
+    <header className="bg-background border-b border-border">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -72,7 +72,7 @@ export function SiteHeader() {
                 className="w-10 h-10 object-contain"
               />
             </div>
-            <span className="font-semibold text-xl text-gray-100">Florida Coast RP</span>
+            <span className="font-semibold text-xl text-foreground">Florida Coast RP</span>
           </div>
 
           <nav className="hidden md:flex">
@@ -81,8 +81,8 @@ export function SiteHeader() {
                 <Link
                   href="/"
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-gray-300 hover:text-gray-100 border-b-2 border-transparent hover:border-gray-600",
-                    pathname === "/" ? "text-gray-100 border-blue-500" : "border-transparent",
+                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border",
+                    pathname === "/" ? "text-foreground border-primary" : "border-transparent",
                   )}
                 >
                   Home
@@ -92,9 +92,9 @@ export function SiteHeader() {
                 <Link
                   href="/community"
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-gray-300 hover:text-gray-100 border-b-2 border-transparent hover:border-gray-600",
+                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border",
                     pathname === "/community" || pathname.startsWith("/community/")
-                      ? "text-gray-100 border-blue-500"
+                      ? "text-foreground border-primary"
                       : "border-transparent",
                   )}
                 >
@@ -109,15 +109,15 @@ export function SiteHeader() {
                 {/* Non-clickable span instead of Link */}
                 <span
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-gray-300 hover:text-gray-100 border-b-2 border-transparent hover:border-gray-600 cursor-default",
-                    pathname.startsWith("/departments/") ? "text-gray-100 border-blue-500" : "border-transparent",
+                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border cursor-default",
+                    pathname.startsWith("/departments/") ? "text-foreground border-primary" : "border-transparent",
                   )}
                 >
                   Departments
                 </span>
                 {/* Dropdown menu */}
                 {hoveredDept && (
-                  <div className="absolute left-0 mt-1 w-64 bg-gray-800 border border-gray-700 rounded shadow-lg z-50">
+                  <div className="absolute left-0 mt-1 w-64 bg-background border border-border rounded shadow-lg z-50">
                     <div className="py-1">
                       {departments.map((dept) => {
                         const DeptIcon = dept.icon
@@ -125,7 +125,7 @@ export function SiteHeader() {
                           <Link
                             key={dept.id}
                             href={`/departments/${dept.id}`}
-                            className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-gray-100"
+                            className="flex items-center px-4 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
                           >
                             <DeptIcon className={`h-4 w-4 mr-2 ${dept.color}`} />
                             <span>{dept.name}</span>
@@ -140,8 +140,8 @@ export function SiteHeader() {
                 <Link
                   href="/members"
                   className={cn(
-                    "inline-block px-2 py-1 font-medium text-gray-300 hover:text-gray-100 border-b-2 border-transparent hover:border-gray-600",
-                    pathname === "/members" ? "text-gray-100 border-blue-500" : "border-transparent",
+                    "inline-block px-2 py-1 font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border",
+                    pathname === "/members" ? "text-foreground border-primary" : "border-transparent",
                   )}
                 >
                   Members
@@ -151,7 +151,7 @@ export function SiteHeader() {
                 <li>
                   <Link
                     href="/auth/signin"
-                    className="inline-block px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded"
+                    className="inline-block px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded"
                   >
                     Join
                   </Link>
@@ -161,10 +161,10 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            {/* Replace the theme link with ModeToggle component */}
+            {/* Use the ModeToggle component */}
             <ModeToggle />
 
-            <Link href="/search" className="p-2 text-gray-300 hover:text-gray-100" aria-label="Search">
+            <Link href="/search" className="p-2 text-muted-foreground hover:text-foreground" aria-label="Search">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -174,7 +174,7 @@ export function SiteHeader() {
               (session ? (
                 <Link
                   href={`/profile/${session.user?.id || ""}`}
-                  className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden"
+                  className="w-10 h-10 bg-muted rounded-full flex items-center justify-center overflow-hidden"
                 >
                   {session.user?.image ? (
                     <img
@@ -183,7 +183,7 @@ export function SiteHeader() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="text-gray-300">
+                    <div className="text-muted-foreground">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
@@ -194,7 +194,7 @@ export function SiteHeader() {
               ) : (
                 <Link
                   href="/auth/signin"
-                  className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-gray-300"
+                  className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-muted-foreground"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>

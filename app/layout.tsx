@@ -6,13 +6,13 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { SiteHeader } from "@/components/site-header"
 import { SessionProvider } from "@/components/session-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { ThemeDebug } from "@/components/theme-debug"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Florida Coast RP",
   description: "Florida Coast Roleplay Community",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -22,26 +22,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={`${inter.className} bg-background text-foreground`} suppressHydrationWarning>
         <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            storageKey="theme-mode"
-            disableTransitionOnChange
-          >
-            <div className="min-h-screen bg-background text-foreground">
-              <SiteHeader />
-              {children}
-              <Toaster />
-            </div>
+          <ThemeProvider>
+            <SiteHeader />
+            <main>{children}</main>
+            <Toaster />
+            <ThemeDebug />
           </ThemeProvider>
         </SessionProvider>
       </body>
     </html>
   )
 }
-
-
-import './globals.css'
