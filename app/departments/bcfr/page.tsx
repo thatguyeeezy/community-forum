@@ -194,7 +194,7 @@ export default function DepartmentPage() {
             <div>
               <div className="text-center mb-6">
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  <span className="text-red-500">Leadership</span>
+                  <span className="text-red-500">Department</span> Leadership
                 </h2>
                 <div className="h-1 w-24 bg-red-500 mx-auto"></div>
               </div>
