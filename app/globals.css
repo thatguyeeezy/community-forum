@@ -14,38 +14,25 @@ body {
 
 @layer base {
   :root {
-    --background: 222 47% 7%; /* #0f1116 */
-    --foreground: 210 40% 98%; /* #f3f4f6 */
-    --card: 220 14% 13%; /* #1a1d24 */
-    --card-foreground: 210 40% 98%; /* #f3f4f6 */
-    --popover: 220 14% 13%; /* #1a1d24 */
-    --popover-foreground: 210 40% 98%; /* #f3f4f6 */
-    --primary: 217.2 91.2% 59.8%; /* #3b82f6 */
+    --background: 222 47% 7%;
+    --foreground: 210 40% 98%;
+    --card: 220 14% 13%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 14% 13%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%; /* #2d3139 */
-    --secondary-foreground: 210 40% 98%; /* #f3f4f6 */
-    --muted: 217.2 32.6% 17.5%; /* #2d3139 */
-    --muted-foreground: 215 20.2% 65.1%; /* #9ca3af */
-    --accent: 217.2 32.6% 17.5%; /* #2d3139 */
-    --accent-foreground: 210 40% 98%; /* #f3f4f6 */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 215 27.9% 16.9%; /* #374151 */
-    --input: 215 27.9% 16.9%; /* #374151 */
-    --ring: 224.3 76.3% 48%; /* #2563eb */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -56,4 +43,23 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes carousel {
+  0% {
+    transform: translateX(0);
+  }
+  33.33% {
+    transform: translateX(-100%);
+  }
+  66.66% {
+    transform: translateX(-200%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-carousel {
+  animation: carousel 15s infinite linear;
 }
