@@ -17,22 +17,22 @@ const department = {
     "Broward County Fire Rescue (BCFR) provides emergency medical services and fire response throughout Broward County. BCFR personnel respond to medical emergencies, fires, and other incidents requiring specialized rescue operations.",
   requirements: ["OPEN TO ANYONE / NON WHITELIST TOO", "18 Years Of Age", "Preferred Past FiveM Experience"],
   leaders: [
-    { profileId: 3, title: "Fire Chief" },
-    { profileId: 1, title: "Deputy Chief" },
+    { profileId: 1, title: "Fire Chief" },
+    { profileId: 2, title: "Deputy Chief" },
   ],
   applicationProcess:
     "Applications for BCFR are processed through our website. After submitting your application, you'll be contacted for an interview, followed by academy training if accepted.",
   featuredImages: [
     {
-      src: "/images/carousel-1.png",
+      src: "/images/fire-1.png",
       alt: "BCFR in action",
     },
     {
-      src: "/images/carousel-2.png",
+      src: "/images/fire-2.png",
       alt: "BCFR emergency response",
     },
     {
-      src: "/images/carousel-3.png",
+      src: "/images/fire-3.png",
       alt: "BCFR team",
     },
   ],
@@ -69,11 +69,11 @@ export default function DepartmentPage() {
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm">
-              <div className="bg-accent px-3 py-1 rounded text-foreground">
+              <div className="bg-muted px-3 py-1 rounded text-foreground">
                 <span className="font-medium">Members:</span> {department.memberCount}
               </div>
               {department.subdivisions.map((sub, index) => (
-                <div key={index} className="bg-accent px-3 py-1 rounded text-foreground">
+                <div key={index} className="bg-muted px-3 py-1 rounded text-foreground">
                   {sub}
                 </div>
               ))}
@@ -158,21 +158,21 @@ export default function DepartmentPage() {
               <div className="space-y-3">
                 <Link
                   href="/departments/fhp"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground"
+                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground hover:text-accent-foreground"
                 >
                   <Shield className="h-5 w-5 text-green-400" />
                   <span>FHP – Florida Highway Patrol</span>
                 </Link>
                 <Link
                   href="/departments/bso"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground"
+                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground hover:text-accent-foreground"
                 >
                   <Shield className="h-5 w-5 text-amber-400" />
                   <span>BSO – Broward Sheriff's Office</span>
                 </Link>
                 <Link
                   href="/departments/mpd"
-                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground"
+                  className="flex items-center gap-3 p-2 hover:bg-accent rounded-md text-foreground hover:text-accent-foreground"
                 >
                   <Shield className="h-5 w-5 text-purple-400" />
                   <span>MPD – Miami Police Department</span>
