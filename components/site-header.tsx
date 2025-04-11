@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Shield, Users, Anchor, Flame, Fish } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
 
@@ -51,10 +51,19 @@ export function SiteHeader() {
   const { data: session, status } = useSession()
   const isLoading = status === "loading"
   const [isDeptsOpen, setIsDeptsOpen] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout>()
 
-  const handleMouseEvents = {
-    onMouseEnter: () => setIsDeptsOpen(true),
-    onMouseLeave: () => setIsDeptsOpen(false),
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    setIsDeptsOpen(true)
+  }
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsDeptsOpen(false)
+    }, 150)
   }
 
   return (
@@ -100,7 +109,8 @@ export function SiteHeader() {
               </li>
               <li
                 className="relative"
-                {...handleMouseEvents}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
               >
                 <button
                   onClick={() => setIsDeptsOpen(!isDeptsOpen)}
@@ -115,18 +125,24 @@ export function SiteHeader() {
                 </button>
                 {/* Dropdown menu */}
                 {isDeptsOpen && (
-                  <div className="absolute left-0 mt-1 w-64 dark:bg-gray-800 bg-white border dark:border-gray-700 border-gray-200 rounded shadow-lg z-50">
-                    <div className="py-1">
-                      {departments.map((dept) => (
-                        <Link
-                          key={dept.id}
-                          href={`/departments/${dept.id}`}
-                          className="flex items-center px-4 py-2 dark:text-gray-300 text-gray-600 hover:dark:bg-gray-700 hover:bg-gray-100 hover:dark:text-gray-100 hover:text-gray-900"
-                          onClick={() => setIsDeptsOpen(false)}
-                        >
-                          <span>{dept.name}</span>
-                        </Link>
-                      ))}
+                  <div 
+                    className="absolute left-0 top-full pt-1 w-64 z-50"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <div className="dark:bg-gray-800 bg-white border dark:border-gray-700 border-gray-200 rounded shadow-lg">
+                      <div className="py-1">
+                        {departments.map((dept) => (
+                          <Link
+                            key={dept.id}
+                            href={`/departments/${dept.id}`}
+                            className="flex items-center px-4 py-2 dark:text-gray-300 text-gray-600 hover:dark:bg-gray-700 hover:bg-gray-100 hover:dark:text-gray-100 hover:text-gray-900"
+                            onClick={() => setIsDeptsOpen(false)}
+                          >
+                            <span>{dept.name}</span>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
