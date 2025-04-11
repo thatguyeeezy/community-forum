@@ -5,9 +5,17 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"
 import type { ThemeProviderProps } from "next-themes"
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  // Force dark theme initially to avoid flash
+  // Use a ref to track if we've initialized
+  const initialized = React.useRef(false)
+
+  // Initialize theme only once on the client side
   React.useEffect(() => {
-    document.documentElement.classList.add("dark")
+    if (!initialized.current) {
+      // Get stored theme or default to dark
+      const storedTheme = localStorage.getItem("theme-mode") || "dark"
+      document.documentElement.classList.toggle("dark", storedTheme === "dark")
+      initialized.current = true
+    }
   }, [])
 
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
