@@ -226,7 +226,7 @@ export default function DepartmentPage() {
                 </div>
               ))}
               {/* Add more placeholder images to fill the grid */}
-              {[1, 2, 3, 4, 5].map((_, index) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((_, index) => (
                 <div key={`extra-${index}`} className="relative h-48 rounded-lg overflow-hidden group">
                   <img
                     src={`/placeholder.svg?height=300&width=400&text=FD+Image+${index + 4}`}
