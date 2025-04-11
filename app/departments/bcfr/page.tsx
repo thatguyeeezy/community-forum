@@ -103,7 +103,7 @@ export default function DepartmentPage() {
   // Breadcrumb items
   const breadcrumbItems = [
     { label: "Home", href: "/" },
-    { label: "Departments", href: "/departments" }, // No href makes this non-clickable
+    { label: "Departments", href: "/departments" },
     { label: "BCFR – Broward County Fire Rescue" },
   ]
 
@@ -132,20 +132,22 @@ export default function DepartmentPage() {
 
         {/* About Us Section */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
-            <span className="text-red-500">About</span> Us
-          </h2>
-          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              <span className="text-red-500">About</span> Us
+            </h2>
+            <div className="h-1 w-24 bg-red-500 mx-auto"></div>
+          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-            <div className="lg:col-span-3 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-8 items-start">
+            <div className="lg:col-span-4 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
               <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
                 {department.aboutUs}
               </p>
             </div>
 
-            <div className="flex flex-col items-center justify-center">
-              <div className="w-full max-w-[200px] mx-auto">
+            <div className="lg:col-span-3 flex flex-col items-center justify-center">
+              <div className="w-full max-w-[250px] mx-auto">
                 <img
                   src="https://media.discordapp.net/attachments/1336191599482503228/1360317993829138432/fcrplogofd.png?ex=67faae5b&is=67f95cdb&hm=1df9fad79737fee095c4d2f7fc80a9c29b5d4dcc7ed5c473203e229b45cb74f9&=&format=webp&quality=lossless"
                   alt="Fire Department Badge"
@@ -175,10 +177,12 @@ export default function DepartmentPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Mission Statement */}
             <div className="lg:col-span-2">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                <span className="text-red-500">Mission</span> Statement
-              </h2>
-              <div className="h-1 w-24 bg-red-500 mb-6"></div>
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  <span className="text-red-500">Mission</span> Statement
+                </h2>
+                <div className="h-1 w-24 bg-red-500 mx-auto"></div>
+              </div>
 
               <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
                 <p className="text-gray-800 dark:text-gray-200 leading-relaxed text-lg italic">
@@ -189,10 +193,12 @@ export default function DepartmentPage() {
 
             {/* Leadership - Moved to right side */}
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                <span className="text-red-500">Leadership</span>
-              </h2>
-              <div className="h-1 w-24 bg-red-500 mb-6"></div>
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  <span className="text-red-500">Leadership</span>
+                </h2>
+                <div className="h-1 w-24 bg-red-500 mx-auto"></div>
+              </div>
 
               <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
                 <DepartmentLeaders leaders={department.leaders} />
@@ -203,10 +209,12 @@ export default function DepartmentPage() {
 
         {/* Divisions */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
-            <span className="text-red-500">Specialized</span> Divisions
-          </h2>
-          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              <span className="text-red-500">Specialized</span> Divisions
+            </h2>
+            <div className="h-1 w-24 bg-red-500 mx-auto"></div>
+          </div>
 
           <div className="space-y-6">
             {department.divisions.map((division, index) => (
@@ -230,10 +238,12 @@ export default function DepartmentPage() {
 
         {/* Media Section */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
-            <span className="text-red-500">Media</span> Gallery
-          </h2>
-          <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              <span className="text-red-500">Media</span> Gallery
+            </h2>
+            <div className="h-1 w-24 bg-red-500 mx-auto"></div>
+          </div>
 
           <div className="bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
