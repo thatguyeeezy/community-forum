@@ -98,9 +98,11 @@ export default function DepartmentPage() {
 
         {/* About Us Section */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+        <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+          <span className="block text-center">
             <span className="text-red-500">About</span> Us
-          </h2>
+          </span>
+        </h2>
           <div className="h-1 w-24 bg-red-500 mx-auto mb-8"></div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
