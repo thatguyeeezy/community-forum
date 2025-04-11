@@ -12,6 +12,25 @@ body {
   }
 }
 
+@keyframes carousel {
+  0% {
+    transform: translateX(0);
+  }
+  33.33% {
+    transform: translateX(-100%);
+  }
+  66.66% {
+    transform: translateX(-200%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-carousel {
+  animation: carousel 30s infinite linear;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

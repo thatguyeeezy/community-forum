@@ -150,20 +150,20 @@ export default async function ForumHomepage() {
             <div className="flex animate-carousel absolute inset-0">
               <div className="min-w-full h-full relative">
                 <div className="absolute inset-0 bg-black opacity-50"></div>
-                <div className="w-full h-full dark:bg-gray-700 bg-gray-200 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[url('/placeholder.svg?height=500&width=800')] bg-cover bg-center opacity-60"></div>
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[url('/images/carousel-1.png')] bg-cover bg-center opacity-80"></div>
                 </div>
               </div>
               <div className="min-w-full h-full relative">
                 <div className="absolute inset-0 bg-black opacity-50"></div>
-                <div className="w-full h-full dark:bg-gray-800 bg-gray-300 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[url('/placeholder.svg?height=500&width=800')] bg-cover bg-center opacity-60"></div>
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[url('/images/carousel-2.png')] bg-cover bg-center opacity-80"></div>
                 </div>
               </div>
               <div className="min-w-full h-full relative">
                 <div className="absolute inset-0 bg-black opacity-50"></div>
-                <div className="w-full h-full dark:bg-gray-900 bg-gray-400 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[url('/placeholder.svg?height=500&width=800')] bg-cover bg-center opacity-60"></div>
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[url('/images/carousel-3.png')] bg-cover bg-center opacity-80"></div>
                 </div>
               </div>
             </div>
