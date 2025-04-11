@@ -6,68 +6,88 @@ import { authOptions } from "@/lib/auth"
 export default async function ForumHomepage() {
   const session = await getServerSession(authOptions)
 
-  // Fetch real data from the database
-  const memberCount = await prisma.user.count()
-  const activeToday = await prisma.user.count({
-    where: {
-      lastActive: {
-        gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      },
-    },
-  })
+  // Add error handling for database queries
+  let memberCount = 0
+  let activeToday = 0
+  let threadCount = 0
+  let postCount = 0
+  let recentThreads = []
+  let onlineUsers = []
+  let categories = []
 
-  const threadCount = await prisma.thread.count()
-  const postCount = await prisma.post.count()
+  try {
+    // Fetch real data from the database
+    memberCount = await prisma.user.count()
 
-  // Fetch recent threads
-  const recentThreads = await prisma.thread.findMany({
-    take: 5,
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      author: true,
-      category: true,
-      _count: {
-        select: {
-          posts: true,
+    activeToday = await prisma.user.count({
+      where: {
+        lastActive: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
         },
       },
-    },
-  })
+    })
 
-  // Fetch online users
-  const onlineUsers = await prisma.user.findMany({
-    where: {
-      lastActive: {
-        gte: new Date(Date.now() - 15 * 60 * 1000), // Active in last 15 minutes
-      },
-    },
-    take: 8,
-    orderBy: {
-      lastActive: "desc",
-    },
-  })
+    threadCount = await prisma.thread.count()
+    postCount = await prisma.post.count()
 
-  // Fetch categories with thread counts
-  const categories = await prisma.category.findMany({
-    include: {
-      _count: {
-        select: {
-          threads: true,
+    // Fetch recent threads
+    recentThreads = await prisma.thread.findMany({
+      take: 5,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        author: true,
+        category: true,
+        _count: {
+          select: {
+            posts: true,
+          },
         },
       },
-      threads: {
-        take: 2,
-        orderBy: {
-          updatedAt: "desc",
-        },
-        include: {
-          author: true,
+    })
+
+    // Fetch online users
+    onlineUsers = await prisma.user.findMany({
+      where: {
+        lastActive: {
+          gte: new Date(Date.now() - 15 * 60 * 1000), // Active in last 15 minutes
         },
       },
-    },
-  })
+      take: 8,
+      orderBy: {
+        lastActive: "desc",
+      },
+    })
+
+    // Fetch categories with thread counts
+    categories = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: {
+            threads: true,
+          },
+        },
+        threads: {
+          take: 2,
+          orderBy: {
+            updatedAt: "desc",
+          },
+          include: {
+            author: true,
+          },
+        },
+      },
+    })
+
+    console.log("Categories fetched:", categories.length)
+  } catch (error) {
+    console.error("Database error:", error)
+    // Provide fallback data if database queries fail
+    categories = []
+    recentThreads = []
+    onlineUsers = []
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
@@ -242,17 +262,21 @@ export default async function ForumHomepage() {
                 {recentThreads.slice(0, 3).map((thread) => (
                   <div key={thread.id} className="relative pl-4 border-l-2 border-blue-500">
                     <Link
-                      href={`/forums/thread/${thread.id}`}
+                      href={`/community/thread/${thread.id}`}
                       className="font-medium text-gray-100 hover:text-blue-400"
                     >
                       {thread.title}
                     </Link>
                     <div className="text-sm text-gray-400 mt-1">
-                      Posted by {thread.author.name || "Anonymous"}, {formatTimeAgo(thread.createdAt)}
+                      Posted by {thread.author?.name || "Anonymous"}, {formatTimeAgo(new Date(thread.createdAt))}
                     </div>
-                    <div className="text-sm text-gray-300 mt-2">{thread.content.substring(0, 100)}...</div>
+                    <div className="text-sm text-gray-300 mt-2">{thread.content?.substring(0, 100) || ""}...</div>
                   </div>
                 ))}
+
+                {recentThreads.length === 0 && (
+                  <div className="text-gray-400 text-sm">No recent activity to display.</div>
+                )}
               </div>
 
               <div className="mt-8">
@@ -275,11 +299,13 @@ export default async function ForumHomepage() {
                       )}
                     </Link>
                   ))}
-                  {onlineUsers.length > 0 && (
+                  {activeToday > onlineUsers.length && (
                     <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
                       +{Math.max(0, activeToday - onlineUsers.length)}
                     </div>
                   )}
+
+                  {onlineUsers.length === 0 && <div className="text-gray-400 text-sm">No users currently online.</div>}
                 </div>
               </div>
             </div>
@@ -290,39 +316,50 @@ export default async function ForumHomepage() {
             <h2 className="text-2xl font-bold mb-6 text-gray-100 border-b border-gray-700 pb-2">Categories</h2>
 
             <div className="space-y-8">
-              {categories.map((category) => (
-                <div
-                  key={category.id}
-                  className={`bg-gray-800 shadow-md border-l-4 ${category.id === 1 ? "border-blue-500" : "border-gray-600"}`}
-                >
-                  <div className="p-5">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-100">{category.name}</h3>
-                        <p className="text-gray-300 mt-1">{category.description}</p>
+              {categories.length > 0 ? (
+                categories.map((category, index) => (
+                  <div
+                    key={category.id}
+                    className={`bg-gray-800 shadow-md border-l-4 ${index === 0 ? "border-blue-500" : "border-gray-600"}`}
+                  >
+                    <div className="p-5">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-100">{category.name}</h3>
+                          <p className="text-gray-300 mt-1">{category.description}</p>
+                        </div>
+                        <div className="bg-gray-700 text-gray-300 text-sm px-3 py-1 rounded">
+                          {category._count?.threads || 0} threads
+                        </div>
                       </div>
-                      <div className="bg-gray-700 text-gray-300 text-sm px-3 py-1 rounded">
-                        {category._count.threads} threads
-                      </div>
-                    </div>
 
-                    <div className="mt-4 border-t border-gray-700 pt-3">
-                      {category.threads.map((thread) => (
-                        <Link
-                          key={thread.id}
-                          href={`/forums/thread/${thread.id}`}
-                          className="block py-2 hover:bg-gray-700 px-3 -mx-3 rounded"
-                        >
-                          <div className="font-medium text-gray-100">{thread.title}</div>
-                          <div className="text-sm text-gray-400">
-                            Started by {thread.author.name || "Anonymous"}, {formatTimeAgo(thread.createdAt)}
-                          </div>
-                        </Link>
-                      ))}
+                      <div className="mt-4 border-t border-gray-700 pt-3">
+                        {category.threads && category.threads.length > 0 ? (
+                          category.threads.map((thread) => (
+                            <Link
+                              key={thread.id}
+                              href={`/community/thread/${thread.id}`}
+                              className="block py-2 hover:bg-gray-700 px-3 -mx-3 rounded"
+                            >
+                              <div className="font-medium text-gray-100">{thread.title}</div>
+                              <div className="text-sm text-gray-400">
+                                Started by {thread.author?.name || "Anonymous"},{" "}
+                                {formatTimeAgo(new Date(thread.createdAt))}
+                              </div>
+                            </Link>
+                          ))
+                        ) : (
+                          <div className="py-2 text-gray-400 text-sm">No threads in this category yet.</div>
+                        )}
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="bg-gray-800 shadow-md p-5">
+                  <p className="text-gray-400">No categories found. Please check your database connection.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -485,7 +522,7 @@ export default async function ForumHomepage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/forums" className="hover:text-blue-400">
+                  <Link href="/community" className="hover:text-blue-400">
                     Forums
                   </Link>
                 </li>
@@ -546,7 +583,7 @@ export default async function ForumHomepage() {
                 </a>
               </div>
               <p className="text-sm text-gray-500">
-                © {new Date().getFullYear()} Florida Coast Roleplay.
+                © {new Date().getFullYear().toString()} Florida Coast Roleplay.
                 <br />
                 All rights reserved.
               </p>
