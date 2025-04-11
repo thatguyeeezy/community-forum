@@ -17,8 +17,8 @@ const department = {
     "Broward County Fire Rescue (BCFR) provides emergency medical services and fire response throughout Broward County. BCFR personnel respond to medical emergencies, fires, and other incidents requiring specialized rescue operations.",
   requirements: ["OPEN TO ANYONE / NON WHITELIST TOO", "18 Years Of Age", "Preferred Past FiveM Experience"],
   leaders: [
-    { profileId: 1, title: "Fire Chief" },
-    { profileId: 2, title: "Deputy Chief" },
+    { profileId: 3, title: "Fire Chief" },
+    { profileId: 4, title: "Deputy Chief" },
   ],
   applicationProcess:
     "Applications for BCFR are processed through our website. After submitting your application, you'll be contacted for an interview, followed by academy training if accepted.",
