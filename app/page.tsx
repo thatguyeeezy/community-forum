@@ -389,9 +389,9 @@ export default async function ForumHomepage() {
               <div className="dark:bg-gray-800 bg-white shadow-md p-5 mb-6 border-t-4 border-blue-500">
                 <h3 className="font-bold mb-2 dark:text-gray-100 text-gray-900">Featured Event</h3>
                 <p className="text-sm dark:text-gray-300 text-gray-600 mb-3">
-                  Join us this weekend for the grand opening of the new shopping mall!
+                  Placeholder for featured event!
                 </p>
-                <div className="text-sm dark:text-gray-400 text-gray-500">Saturday, 8PM EST</div>
+                <div className="text-sm dark:text-gray-400 text-gray-500">Placeholder for featured event date!</div>
               </div>
 
               {/* Server Status */}
