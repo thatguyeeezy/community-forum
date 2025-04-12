@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { MessageSquare, Users, FileText, Shield, Plus, Megaphone, UserPlus, Lock } from "lucide-react"
+import { MessageSquare, Plus, Megaphone, UserPlus, Lock } from "lucide-react"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
@@ -10,15 +10,11 @@ function getCategoryIcon(name: string) {
   const lowerName = name.toLowerCase()
   if (lowerName.includes("announcement")) return Megaphone
   if (lowerName.includes("recruitment") || lowerName.includes("retention")) return UserPlus
-  if (lowerName.includes("general") || lowerName.includes("discussion")) return MessageSquare
-  if (lowerName.includes("introduction") || lowerName.includes("member")) return Users
-  if (lowerName.includes("tutorial") || lowerName.includes("resource")) return FileText
-  if (lowerName.includes("admin")) return Shield
   return MessageSquare // Default icon
 }
 
-// Function to check if user can create threads in a category
-function canCreateInCategory(categoryId: number, userRole?: string, userDepartment?: string) {
+// Function to check if user can create announcements in a category
+function canCreateAnnouncement(categoryId: number, userRole?: string, userDepartment?: string) {
   // Community Announcements - only SPECIAL_ADVISOR, SENIOR_ADMIN and HEAD_ADMIN
   if (categoryId === 1) {
     // Announcements category ID is 1
@@ -31,8 +27,7 @@ function canCreateInCategory(categoryId: number, userRole?: string, userDepartme
     return userDepartment === "RNR_ADMINISTRATION"
   }
 
-  // General Discussions - any authenticated user (APPLICANT+)
-  return !!userRole
+  return false
 }
 
 export default async function CommunityPage() {
@@ -52,17 +47,18 @@ export default async function CommunityPage() {
           threads: true,
         },
       },
-      children: {
+      threads: {
+        take: 1,
+        orderBy: {
+          updatedAt: "desc",
+        },
         include: {
-          _count: {
+          author: {
             select: {
-              threads: true,
+              name: true,
             },
           },
         },
-      },
-      threads: {
-        take: 0, // We don't need the actual threads, just the count
       },
     },
     orderBy: {
@@ -70,41 +66,7 @@ export default async function CommunityPage() {
     },
   })
 
-  // Get post counts for each category
-  const categoryIds = categories.map((cat) => cat.id)
-  const postCounts = await prisma.post.groupBy({
-    by: ["threadId"],
-    _count: {
-      _all: true,
-    },
-    where: {
-      thread: {
-        categoryId: {
-          in: categoryIds,
-        },
-      },
-    },
-  })
-
-  // Calculate total posts per category
-  const categoryPostCounts: Record<number, number> = {}
-  for (const category of categories) {
-    const threadIds = await prisma.thread.findMany({
-      where: { categoryId: category.id },
-      select: { id: true },
-    })
-
-    const ids = threadIds.map((t) => t.id)
-    const posts = await prisma.post.count({
-      where: {
-        threadId: {
-          in: ids,
-        },
-      },
-    })
-
-    categoryPostCounts[category.id] = posts
-  }
+  console.log("Categories fetched:", categories.length)
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
@@ -114,31 +76,14 @@ export default async function CommunityPage() {
             <h1 className="text-3xl font-bold tracking-tight">Community</h1>
             <p className="text-gray-500 dark:text-gray-400">Browse announcements and recruitment information</p>
           </div>
-          <div className="flex items-center gap-2">
-            {session ? (
-              <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Link href="/community/new-thread">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Thread
-                </Link>
-              </Button>
-            ) : (
-              <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Link href="/auth/signin?callbackUrl=/community">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Thread
-                </Link>
-              </Button>
-            )}
-          </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {categories.map((category) => {
             const Icon = getCategoryIcon(category.name)
             const threadCount = category._count.threads
-            const postCount = categoryPostCounts[category.id] || 0
-            const canCreate = canCreateInCategory(
+            const latestThread = category.threads[0]
+            const canCreate = canCreateAnnouncement(
               category.id,
               session?.user?.role as string,
               // @ts-ignore - department is added to session in auth.ts
@@ -147,49 +92,71 @@ export default async function CommunityPage() {
 
             let permissionText = ""
             if (category.id === 1) {
-              // Announcements
-              permissionText = "Latest news and announcements from our Leadership Team."
+              permissionText = "Postable by Special Advisor, Senior Admin, and Head Admin only"
             } else if (category.id === 2) {
-              // Recruitment
-              permissionText = "Latest news and announcements from our Recruitment and Retention Team."
+              permissionText = "Postable by R&R Admin only"
             }
 
             return (
-              <div key={category.id} className="space-y-4">
-                <div className="bg-white dark:bg-slate-800 shadow-md border-l-4 border-blue-500 rounded-md overflow-hidden">
-                  <div className="p-5">
-                    <div className="flex items-center gap-4 pb-2">
-                      <div className="rounded-full bg-blue-600/20 p-2">
-                        <Icon className="h-5 w-5 text-blue-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                            <Link href={`/community/${category.id}`} className="hover:text-blue-400">
-                              {category.name}
-                            </Link>
-                          </h3>
-                          {!canCreate && (
-                            <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
-                              <Lock className="h-3 w-3 mr-1" />
-                              Restricted
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">{category.description}</p>
-                        {permissionText && <p className="text-xs text-amber-500 mt-1">{permissionText}</p>}
-                      </div>
+              <div key={category.id} className="bg-white dark:bg-slate-800 shadow-md rounded-lg overflow-hidden">
+                <div className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="rounded-full bg-blue-600/20 p-3">
+                      <Icon className="h-6 w-6 text-blue-500" />
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                      <div className="flex items-center">
-                        <MessageSquare className="mr-1 h-4 w-4" />
-                        {threadCount} threads
-                      </div>
-                      <div className="flex items-center">
-                        <FileText className="mr-1 h-4 w-4" />
-                        {postCount} posts
-                      </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">
+                        <Link href={`/community/${category.id}`} className="hover:text-blue-500">
+                          {category.name}
+                        </Link>
+                      </h2>
+                      <p className="text-gray-500 dark:text-gray-400">{category.description}</p>
                     </div>
+                  </div>
+
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-medium">{threadCount}</span> announcement{threadCount !== 1 && "s"}
+                    </div>
+                    {canCreate ? (
+                      <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Link href={`/community/new-announcement?categoryId=${category.id}`}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          New Announcement
+                        </Link>
+                      </Button>
+                    ) : (
+                      <div className="flex items-center text-amber-500 text-sm">
+                        <Lock className="h-3 w-3 mr-1" />
+                        {permissionText}
+                      </div>
+                    )}
+                  </div>
+
+                  {latestThread ? (
+                    <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-md">
+                      <h3 className="font-medium mb-1">
+                        <Link href={`/community/announcement/${latestThread.id}`} className="hover:text-blue-500">
+                          {latestThread.title}
+                        </Link>
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        By {latestThread.author.name} • {new Date(latestThread.updatedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-md text-center text-gray-500 dark:text-gray-400">
+                      No announcements yet
+                    </div>
+                  )}
+
+                  <div className="mt-4 text-right">
+                    <Link
+                      href={`/community/${category.id}`}
+                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                    >
+                      View all announcements →
+                    </Link>
                   </div>
                 </div>
               </div>

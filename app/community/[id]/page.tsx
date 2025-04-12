@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button"
-import { MessageSquare, Plus, ArrowLeft, Lock } from "lucide-react"
+import { Plus, ArrowLeft, Edit, Pin } from "lucide-react"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { notFound } from "next/navigation"
 
-// Function to check if user can create threads in a category
-function canCreateInCategory(categoryId: number, userRole?: string, userDepartment?: string) {
+// Function to check if user can create announcements in a category
+function canCreateAnnouncement(categoryId: number, userRole?: string, userDepartment?: string) {
   // Community Announcements - only SPECIAL_ADVISOR, SENIOR_ADMIN and HEAD_ADMIN
   if (categoryId === 1) {
     // Announcements category ID is 1
@@ -20,8 +20,7 @@ function canCreateInCategory(categoryId: number, userRole?: string, userDepartme
     return userDepartment === "RNR_ADMINISTRATION"
   }
 
-  // General Discussions - any authenticated user (APPLICANT+)
-  return !!userRole
+  return false
 }
 
 export default async function CategoryPage({ params }: { params: { id: string } }) {
@@ -47,15 +46,15 @@ export default async function CategoryPage({ params }: { params: { id: string } 
               image: true,
             },
           },
-          _count: {
-            select: {
-              posts: true,
-            },
+        },
+        orderBy: [
+          {
+            pinned: "desc",
           },
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
+          {
+            updatedAt: "desc",
+          },
+        ],
       },
     },
   })
@@ -64,7 +63,7 @@ export default async function CategoryPage({ params }: { params: { id: string } 
     notFound()
   }
 
-  const canCreate = canCreateInCategory(
+  const canCreate = canCreateAnnouncement(
     categoryId,
     session?.user?.role as string,
     // @ts-ignore - department is added to session in auth.ts
@@ -73,9 +72,9 @@ export default async function CategoryPage({ params }: { params: { id: string } 
 
   let permissionText = ""
   if (categoryId === 1) {
-    permissionText = "Only Special Advisor, Senior Admin, and Head Admin can create threads in this category."
+    permissionText = "Only Special Advisor, Senior Admin, and Head Admin can create announcements in this category."
   } else if (categoryId === 2) {
-    permissionText = "Only R&R Administration can create threads in this category."
+    permissionText = "Only R&R Administration can create announcements in this category."
   }
 
   return (
@@ -95,74 +94,92 @@ export default async function CategoryPage({ params }: { params: { id: string } 
           </div>
           <div className="flex items-center gap-2">
             {canCreate ? (
-              session ? (
-                <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Link href={`/community/new-thread?categoryId=${categoryId}`}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Thread
-                  </Link>
-                </Button>
-              ) : (
-                <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Link href={`/auth/signin?callbackUrl=/community/${categoryId}`}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Thread
-                  </Link>
-                </Button>
-              )
+              <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Link href={`/community/new-announcement?categoryId=${categoryId}`}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Announcement
+                </Link>
+              </Button>
             ) : (
-              <div className="flex items-center text-amber-500 text-sm">
-                <Lock className="h-4 w-4 mr-1" />
-                {permissionText}
-              </div>
+              <div className="text-amber-500 text-sm">{permissionText}</div>
             )}
           </div>
         </div>
 
         {category.threads.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 rounded-md p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No threads yet.</p>
-            {canCreate && session && (
+            <p className="text-gray-500 dark:text-gray-400">No announcements yet.</p>
+            {canCreate && (
               <Button asChild className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
-                <Link href={`/community/new-thread?categoryId=${categoryId}`}>
+                <Link href={`/community/new-announcement?categoryId=${categoryId}`}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create the first thread
+                  Create the first announcement
                 </Link>
               </Button>
             )}
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-800 rounded-md overflow-hidden">
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {category.threads.map((thread) => (
-                <div key={thread.id} className="p-4 hover:bg-gray-50 dark:hover:bg-slate-700">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <Link
-                        href={`/community/thread/${thread.id}`}
-                        className="text-lg font-medium hover:text-blue-600 dark:hover:text-blue-400"
-                      >
-                        {thread.title}
+          <div className="space-y-4">
+            {category.threads.map((thread) => (
+              <div
+                key={thread.id}
+                className={`bg-white dark:bg-slate-800 rounded-md overflow-hidden border ${
+                  thread.pinned ? "border-blue-500" : "border-gray-200 dark:border-gray-700"
+                }`}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <Link
+                      href={`/community/announcement/${thread.id}`}
+                      className="text-xl font-semibold hover:text-blue-600 dark:hover:text-blue-400 flex items-center"
+                    >
+                      {thread.pinned && <Pin className="h-4 w-4 mr-2 text-blue-500" />}
+                      {thread.title}
+                    </Link>
+                    {canCreate && (
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/community/edit-announcement/${thread.id}`}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Edit</span>
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center">
+                      {thread.author.image ? (
+                        <img
+                          src={thread.author.image || "/placeholder.svg"}
+                          alt={thread.author.name || "User"}
+                          className="h-5 w-5 rounded-full mr-2"
+                        />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full bg-gray-300 dark:bg-gray-600 mr-2" />
+                      )}
+                      <Link href={`/profile/${thread.author.id}`} className="hover:underline">
+                        {thread.author.name}
                       </Link>
-                      <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        <span>
-                          By{" "}
-                          <Link href={`/profile/${thread.author.id}`} className="hover:underline">
-                            {thread.author.name}
-                          </Link>
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>{new Date(thread.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      {thread._count.posts} replies
+                      <span className="mx-2">•</span>
+                      <span>{new Date(thread.createdAt).toLocaleDateString()}</span>
+                      {thread.createdAt.toString() !== thread.updatedAt.toString() && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>Updated: {new Date(thread.updatedAt).toLocaleDateString()}</span>
+                        </>
+                      )}
                     </div>
                   </div>
+                  <div className="mt-3">
+                    <Link
+                      href={`/community/announcement/${thread.id}`}
+                      className="text-blue-500 hover:text-blue-600 text-sm"
+                    >
+                      Read more →
+                    </Link>
+                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
