@@ -7,14 +7,14 @@ import { authOptions } from "@/lib/auth"
 
 // Function to check if user can create threads in a category
 function canCreateInCategory(categoryId: string, userRole?: string, userDepartment?: string) {
-  // Community Announcements - only SENIOR_ADMIN and HEAD_ADMIN
+  // Community Announcements - only SPECIAL_ADVISOR, SENIOR_ADMIN and HEAD_ADMIN
   if (categoryId === "announcements") {
-    return userRole === "SENIOR_ADMIN" || userRole === "HEAD_ADMIN"
+    return userRole === "SPECIAL_ADVISOR" || userRole === "SENIOR_ADMIN" || userRole === "HEAD_ADMIN"
   }
 
-  // Recruitment and Retention - only RNR_ADMINISTRATION and RNR_STAFF
+  // Recruitment and Retention - only RNR_ADMINISTRATION
   if (categoryId === "recruitment") {
-    return userDepartment === "RNR_ADMINISTRATION" || userDepartment === "RNR_STAFF"
+    return userDepartment === "RNR_ADMINISTRATION"
   }
 
   // General Discussions - any authenticated user (APPLICANT+)
@@ -101,7 +101,9 @@ export async function createPost(formData: FormData) {
     // Check if thread is locked
     if (thread.locked) {
       // Allow admins and moderators to post in locked threads
-      if (!["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
+      if (
+        !["SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)
+      ) {
         return { error: "This thread is locked" }
       }
     }
@@ -127,4 +129,3 @@ export async function createPost(formData: FormData) {
     return { error: "Failed to create post" }
   }
 }
-
