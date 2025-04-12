@@ -1,3 +1,9 @@
 {
-  "/page": "app/page.js"
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/metrics/route": "app/api/metrics/route.js",
+  "/page": "app/page.js",
+  "/community/page": "app/community/page.js",
+  "/community/new-thread/page": "app/community/new-thread/page.js",
+  "/community/[id]/page": "app/community/[id]/page.js",
+  "/community/thread/[id]/page": "app/community/thread/[id]/page.js"
 }
