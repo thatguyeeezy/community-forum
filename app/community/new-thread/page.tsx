@@ -36,7 +36,7 @@ export default async function NewThreadPage({
     redirect("/auth/signin?callbackUrl=/community/new-thread")
   }
 
-  // Get the category ID from the query params
+  // Fix: Handle searchParams properly
   const categoryIdParam = searchParams.categoryId
   const categoryId = categoryIdParam ? Number.parseInt(categoryIdParam.toString(), 10) : undefined
 

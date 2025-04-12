@@ -9,9 +9,10 @@ import { createPost } from "@/app/actions/thread"
 import Image from "next/image"
 
 export default async function ThreadPage({ params }: { params: { id: string } }) {
-  const threadId = params.id
+  // Fix: Convert params.id to number
+  const threadId = Number.parseInt(params.id, 10)
 
-  if (!threadId) {
+  if (isNaN(threadId)) {
     notFound()
   }
 

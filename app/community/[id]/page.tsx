@@ -25,6 +25,7 @@ function canCreateInCategory(categoryId: number, userRole?: string, userDepartme
 }
 
 export default async function CategoryPage({ params }: { params: { id: string } }) {
+  // Fix: Convert params.id to number properly
   const categoryId = Number.parseInt(params.id, 10)
 
   if (isNaN(categoryId)) {
