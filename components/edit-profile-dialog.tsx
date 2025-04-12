@@ -7,13 +7,13 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  CustomDialog as Dialog,
+  CustomDialogContent as DialogContent,
+  CustomDialogDescription as DialogDescription,
+  CustomDialogFooter as DialogFooter,
+  CustomDialogHeader as DialogHeader,
+  CustomDialogTitle as DialogTitle,
+} from "@/components/custom-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -123,36 +123,46 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Display Name</Label>
+              <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">
+                Display Name
+              </Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your display name"
-                className={error && !name.trim() ? "border-red-500" : ""}
+                className={`bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 ${error && !name.trim() ? "border-red-500" : ""}`}
               />
               {error && !name.trim() && <p className="text-sm text-red-500">Name is required</p>}
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="rank">Rank</Label>
+              <Label htmlFor="rank" className="text-gray-700 dark:text-gray-300">
+                Rank
+              </Label>
               <Input
                 id="rank"
                 value={rank}
                 onChange={(e) => setRank(e.target.value)}
                 placeholder="Your rank"
                 maxLength={30}
+                className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600"
               />
-              <p className="text-sm text-muted-foreground">{rank.length}/30 characters</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{rank.length}/30 characters</p>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="department">Primary Department</Label>
+              <Label htmlFor="department" className="text-gray-700 dark:text-gray-300">
+                Primary Department
+              </Label>
               <Select disabled value={department} onValueChange={setDepartment}>
-                <SelectTrigger id="department" className="bg-muted">
+                <SelectTrigger
+                  id="department"
+                  className="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200"
+                >
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-slate-700">
                   <SelectItem value="BSFR">BSFR</SelectItem>
                   <SelectItem value="BSO">BSO</SelectItem>
                   <SelectItem value="MPD">MPD</SelectItem>
@@ -163,28 +173,32 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
                   <SelectItem value="DEV">Dev</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Department can only be changed by staff members in the Staff Panel
               </p>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="discordId">Discord ID</Label>
+              <Label htmlFor="discordId" className="text-gray-700 dark:text-gray-300">
+                Discord ID
+              </Label>
               <Input
                 id="discordId"
                 value={discordId}
                 onChange={(e) => setDiscordId(e.target.value)}
                 placeholder="Your Discord ID"
                 readOnly
-                className="bg-muted"
+                className="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Discord ID is automatically set when you sign in with Discord
               </p>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio" className="text-gray-700 dark:text-gray-300">
+                Bio
+              </Label>
               <Textarea
                 id="bio"
                 value={bio}
@@ -192,18 +206,24 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
                 placeholder="Tell us about yourself"
                 rows={5}
                 maxLength={500}
+                className="resize-none bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-gray-100"
               />
-              <p className="text-sm text-muted-foreground">{bio.length}/500 characters</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{bio.length}/500 characters</p>
             </div>
           </div>
 
           {error && error !== "Name is required" && <p className="text-sm text-red-500 mb-4">{error}</p>}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-600"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
               {isSubmitting ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>
