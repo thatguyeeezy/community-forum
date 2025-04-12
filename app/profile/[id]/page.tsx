@@ -54,13 +54,17 @@ const roleConfig = {
     label: "Senior Administration",
     color: "bg-purple-500 text-white hover:bg-purple-600",
   },
+  SPECIAL_ADVISOR: {
+    label: "Special Advisor",
+    color: "bg-blue-800 text-white hover:bg-blue-900",
+  },
   ADMIN: {
     label: "Administration",
     color: "bg-red-800 text-white hover:bg-red-900",
   },
   JUNIOR_ADMIN: {
     label: "Junior Administration",
-    color: "bg-blue-800 text-white hover:bg-blue-900",
+    color: "bg-blue-600 text-white hover:bg-blue-900",
   },
   SENIOR_STAFF: {
     label: "Senior Staff",

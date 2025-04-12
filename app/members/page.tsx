@@ -19,14 +19,15 @@ interface Member {
 // Define role order and colors
 const roleConfig = {
   HEAD_ADMIN: { order: 1, label: "Head Administration", color: "bg-cyan-500 text-white" },
-  SENIOR_ADMIN: { order: 2, label: "Senior Administration", color: "bg-purple-500 text-white" },
-  ADMIN: { order: 3, label: "Administration", color: "bg-red-800 text-white" },
-  JUNIOR_ADMIN: { order: 4, label: "Junior Administration", color: "bg-blue-800 text-white" },
-  SENIOR_STAFF: { order: 5, label: "Senior Staff", color: "bg-green-800 text-white" },
-  STAFF: { order: 6, label: "Staff", color: "bg-yellow-500 text-black" },
-  STAFF_IN_TRAINING: { order: 7, label: "Staff In Training", color: "bg-red-400 text-white" },
-  MEMBER: { order: 8, label: "Member", color: "bg-blue-400 text-white" },
-  APPLICANT: { order: 9, label: "Applicant", color: "bg-gray-400 text-white" },
+  SENIOR_ADMIN: { order: 2, label: "Senior Administration", color: "bg-blue-800 text-white" },
+  SPECIAL_ADVISOR: { order: 3, label: "Special Advisor", color: "bg-blue-800 text-white" },
+  ADMIN: { order: 4, label: "Administration", color: "bg-red-800 text-white" },
+  JUNIOR_ADMIN: { order: 5, label: "Junior Administration", color: "bg-blue-600 text-white" },
+  SENIOR_STAFF: { order: 6, label: "Senior Staff", color: "bg-green-800 text-white" },
+  STAFF: { order: 7, label: "Staff", color: "bg-yellow-500 text-black" },
+  STAFF_IN_TRAINING: { order: 8, label: "Staff In Training", color: "bg-red-400 text-white" },
+  MEMBER: { order: 9, label: "Member", color: "bg-blue-400 text-white" },
+  APPLICANT: { order: 10, label: "Applicant", color: "bg-gray-400 text-white" },
 }
 
 export default function MembersPage() {
@@ -48,72 +49,7 @@ export default function MembersPage() {
         setMembers(data)
       } catch (error) {
         console.error("Error fetching members:", error)
-        // Fallback mock data
-        setMembers([
-          {
-            id: 1,
-            name: "Alex Johnson",
-            image: null,
-            role: "HEAD_ADMIN" as Role,
-            joinDate: new Date().toISOString(),
-          },
-          {
-            id: 2,
-            name: "Sarah Williams",
-            image: null,
-            role: "SENIOR_ADMIN" as Role,
-            joinDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 3,
-            name: "Michael Brown",
-            image: null,
-            role: "ADMIN" as Role,
-            joinDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 4,
-            name: "Emily Davis",
-            image: null,
-            role: "JUNIOR_ADMIN" as Role,
-            joinDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 5,
-            name: "David Wilson",
-            image: null,
-            role: "SENIOR_STAFF" as Role,
-            joinDate: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 6,
-            name: "Jessica Taylor",
-            image: null,
-            role: "STAFF" as Role,
-            joinDate: new Date(Date.now() - 150 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 7,
-            name: "Ryan Martinez",
-            image: null,
-            role: "STAFF_IN_TRAINING" as Role,
-            joinDate: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 8,
-            name: "Jennifer Anderson",
-            image: null,
-            role: "MEMBER" as Role,
-            joinDate: new Date(Date.now() - 210 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 9,
-            name: "Daniel Thomas",
-            image: null,
-            role: "APPLICANT" as Role,
-            joinDate: new Date(Date.now() - 240 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-        ])
+        setMembers([])
       } finally {
         setLoading(false)
       }
