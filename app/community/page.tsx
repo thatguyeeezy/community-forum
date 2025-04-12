@@ -107,12 +107,12 @@ export default async function CommunityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
       <div className="container mx-auto py-6 px-4 md:px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Community</h1>
-            <p className="text-muted-foreground">Browse announcements and recruitment information</p>
+            <p className="text-gray-500 dark:text-gray-400">Browse announcements and recruitment information</p>
           </div>
           <div className="flex items-center gap-2">
             {session ? (
@@ -148,15 +148,15 @@ export default async function CommunityPage() {
             let permissionText = ""
             if (category.id === 1) {
               // Announcements
-              permissionText = "Postable by Special Advisor, Senior Admin, and Head Admin only"
+              permissionText = "Latest news and announcements from our Leadership Team."
             } else if (category.id === 2) {
               // Recruitment
-              permissionText = "Postable by R&R Admin only"
+              permissionText = "Latest news and announcements from our Recruitment and Retention Team."
             }
 
             return (
               <div key={category.id} className="space-y-4">
-                <div className="bg-card shadow-md border-l-4 border-blue-500 rounded-md overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 shadow-md border-l-4 border-blue-500 rounded-md overflow-hidden">
                   <div className="p-5">
                     <div className="flex items-center gap-4 pb-2">
                       <div className="rounded-full bg-blue-600/20 p-2">
@@ -164,23 +164,23 @@ export default async function CommunityPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-xl font-bold">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                             <Link href={`/community/${category.id}`} className="hover:text-blue-400">
                               {category.name}
                             </Link>
                           </h3>
                           {!canCreate && (
-                            <div className="flex items-center text-muted-foreground text-sm">
+                            <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
                               <Lock className="h-3 w-3 mr-1" />
                               Restricted
                             </div>
                           )}
                         </div>
-                        <p className="text-muted-foreground text-sm">{category.description}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">{category.description}</p>
                         {permissionText && <p className="text-xs text-amber-500 mt-1">{permissionText}</p>}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-2">
+                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 mt-2">
                       <div className="flex items-center">
                         <MessageSquare className="mr-1 h-4 w-4" />
                         {threadCount} threads
