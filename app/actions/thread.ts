@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 // Function to check if user can create threads in a category
 function canCreateInCategory(categoryId: number, userRole?: string, userDepartment?: string) {
@@ -57,19 +58,24 @@ export async function createThread(formData: FormData) {
       .replace(/[^\w\s]/gi, "")
       .replace(/\s+/g, "-")
 
+    // Convert authorId to a number
+    const authorId = typeof session.user.id === "string" ? Number.parseInt(session.user.id, 10) : session.user.id
+
     const thread = await prisma.thread.create({
       data: {
         title,
         slug,
         content,
-        authorId: session.user.id,
+        authorId,
         categoryId,
       },
     })
 
     revalidatePath(`/community/${categoryId}`)
     revalidatePath(`/community`)
-    return { success: true, threadId: thread.id }
+
+    // Redirect to the newly created thread
+    redirect(`/community/thread/${thread.id}`)
   } catch (error) {
     console.error("Thread creation error:", error)
     return { error: "Failed to create thread" }
@@ -111,17 +117,20 @@ export async function createPost(formData: FormData) {
       }
     }
 
+    // Convert authorId to a number
+    const authorId = typeof session.user.id === "string" ? Number.parseInt(session.user.id, 10) : session.user.id
+
     const post = await prisma.post.create({
       data: {
         content,
-        authorId: session.user.id,
-        threadId,
+        authorId,
+        threadId: Number.parseInt(threadId, 10),
       },
     })
 
     // Update thread's updatedAt
     await prisma.thread.update({
-      where: { id: threadId },
+      where: { id: Number.parseInt(threadId, 10) },
       data: { updatedAt: new Date() },
     })
 
