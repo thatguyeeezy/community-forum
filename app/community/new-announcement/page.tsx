@@ -37,9 +37,9 @@ export default async function NewAnnouncementPage({
     redirect("/auth/signin?callbackUrl=/community/new-announcement")
   }
 
-  // Get the category ID from the query params
-  const categoryIdParam = searchParams.categoryId
-  const categoryId = categoryIdParam ? Number.parseInt(categoryIdParam.toString(), 10) : undefined
+  // Get the category ID from the query params - properly handle searchParams
+  const categoryIdParam = searchParams.categoryId ? String(searchParams.categoryId) : undefined
+  const categoryId = categoryIdParam ? Number.parseInt(categoryIdParam, 10) : undefined
 
   // Fetch available categories
   const categories = await prisma.category.findMany({

@@ -23,6 +23,16 @@ function canCreateAnnouncement(categoryId: number, userRole?: string, userDepart
   return false
 }
 
+// Function to generate a slug from a title
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with a single hyphen
+    .trim()
+}
+
 export async function createAnnouncement(formData: FormData) {
   const session = await getServerSession(authOptions)
 
@@ -47,6 +57,9 @@ export async function createAnnouncement(formData: FormData) {
     throw new Error("You don't have permission to create announcements in this category")
   }
 
+  // Generate a slug from the title
+  const slug = generateSlug(title)
+
   // Sanitize HTML content
   const sanitizedContent = DOMPurify.sanitize(content)
 
@@ -54,6 +67,7 @@ export async function createAnnouncement(formData: FormData) {
   const announcement = await prisma.thread.create({
     data: {
       title,
+      slug, // Add the slug field
       content: sanitizedContent,
       authorId: Number.parseInt(session.user.id as string, 10),
       categoryId,
@@ -98,6 +112,9 @@ export async function updateAnnouncement(formData: FormData) {
     throw new Error("You don't have permission to update this announcement")
   }
 
+  // Generate a new slug if the title has changed
+  const slug = title !== announcement.title ? generateSlug(title) : announcement.slug
+
   // Sanitize HTML content
   const sanitizedContent = DOMPurify.sanitize(content)
 
@@ -106,6 +123,7 @@ export async function updateAnnouncement(formData: FormData) {
     where: { id },
     data: {
       title,
+      slug, // Update the slug if the title changed
       content: sanitizedContent,
       pinned: isPinned,
     },
