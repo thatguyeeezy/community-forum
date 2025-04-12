@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { createAnnouncement } from "@/app/actions/announcement"
-import { RichTextEditor } from "@/components/rich-text-editor"
+import { RichTextEditorWrapper } from "@/components/rich-text-editor-wrapper"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -159,19 +159,5 @@ export default async function NewAnnouncementPage({
         </div>
       </div>
     </div>
-  )
-}
-// Client component wrapper for the rich text editor
-;("use client")
-import { useState } from "react"
-
-function RichTextEditorWrapper({ name, placeholder }: { name: string; placeholder?: string }) {
-  const [content, setContent] = useState("")
-
-  return (
-    <>
-      <input type="hidden" name={name} value={content} />
-      <RichTextEditor content={content} onChange={setContent} placeholder={placeholder} />
-    </>
   )
 }
