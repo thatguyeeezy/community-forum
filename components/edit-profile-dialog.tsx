@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { updateProfile } from "@/app/actions/profile"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 interface EditProfileDialogProps {
   open: boolean
@@ -115,14 +116,16 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-slate-700">
+      <DialogContent
+        className={cn("sm:max-w-[425px]", "!bg-white !dark:bg-slate-800", "border-gray-200 dark:border-slate-700")}
+      >
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-gray-100">Edit Profile</DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
             Update your profile information. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="text-gray-900 dark:text-gray-100">
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">
@@ -133,7 +136,11 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your display name"
-                className={`bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 ${error && !name.trim() ? "border-red-500" : ""}`}
+                className={cn(
+                  "bg-white dark:bg-slate-900",
+                  "border-gray-300 dark:border-slate-600",
+                  error && !name.trim() ? "border-red-500" : "",
+                )}
               />
               {error && !name.trim() && <p className="text-sm text-red-500">Name is required</p>}
             </div>
