@@ -115,10 +115,12 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-background text-foreground">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
-          <DialogDescription>Update your profile information. Click save when you're done.</DialogDescription>
+          <DialogDescription className="text-muted-foreground">
+            Update your profile information. Click save when you're done.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
@@ -129,9 +131,9 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your display name"
-                className={error && !name.trim() ? "border-red-500" : ""}
+                className={error && !name.trim() ? "border-destructive" : ""}
               />
-              {error && !name.trim() && <p className="text-sm text-red-500">Name is required</p>}
+              {error && !name.trim() && <p className="text-sm text-destructive">Name is required</p>}
             </div>
 
             <div className="grid gap-2">
@@ -152,7 +154,7 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
                 <SelectTrigger id="department" className="bg-muted">
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover text-popover-foreground">
                   <SelectItem value="BSFR">BSFR</SelectItem>
                   <SelectItem value="BSO">BSO</SelectItem>
                   <SelectItem value="MPD">MPD</SelectItem>
@@ -192,12 +194,13 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
                 placeholder="Tell us about yourself"
                 rows={5}
                 maxLength={500}
+                className="resize-none bg-background border-input"
               />
               <p className="text-sm text-muted-foreground">{bio.length}/500 characters</p>
             </div>
           </div>
 
-          {error && error !== "Name is required" && <p className="text-sm text-red-500 mb-4">{error}</p>}
+          {error && error !== "Name is required" && <p className="text-sm text-destructive mb-4">{error}</p>}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
