@@ -18,14 +18,16 @@ function getCategoryIcon(name: string) {
 }
 
 // Function to check if user can create threads in a category
-function canCreateInCategory(categoryId: string, userRole?: string, userDepartment?: string) {
+function canCreateInCategory(categoryId: number, userRole?: string, userDepartment?: string) {
   // Community Announcements - only SPECIAL_ADVISOR, SENIOR_ADMIN and HEAD_ADMIN
-  if (categoryId === "announcements") {
+  if (categoryId === 1) {
+    // Announcements category ID is 1
     return userRole === "SPECIAL_ADVISOR" || userRole === "SENIOR_ADMIN" || userRole === "HEAD_ADMIN"
   }
 
   // Recruitment and Retention - only RNR_ADMINISTRATION
-  if (categoryId === "recruitment") {
+  if (categoryId === 2) {
+    // Recruitment category ID is 2
     return userDepartment === "RNR_ADMINISTRATION"
   }
 
@@ -40,7 +42,7 @@ export default async function CommunityPage() {
   const categories = await prisma.category.findMany({
     where: {
       id: {
-        in: ["announcements", "recruitment"], // Only fetch these two categories
+        in: [1, 2], // Use integer IDs: 1 for Announcements, 2 for Recruitment
       },
       parentId: null, // Only top-level categories
     },
@@ -85,7 +87,7 @@ export default async function CommunityPage() {
   })
 
   // Calculate total posts per category
-  const categoryPostCounts: Record<string, number> = {}
+  const categoryPostCounts: Record<number, number> = {}
   for (const category of categories) {
     const threadIds = await prisma.thread.findMany({
       where: { categoryId: category.id },
@@ -144,9 +146,11 @@ export default async function CommunityPage() {
             )
 
             let permissionText = ""
-            if (category.id === "announcements") {
+            if (category.id === 1) {
+              // Announcements
               permissionText = "Postable by Special Advisor, Senior Admin, and Head Admin only"
-            } else if (category.id === "recruitment") {
+            } else if (category.id === 2) {
+              // Recruitment
               permissionText = "Postable by R&R Admin only"
             }
 

@@ -6,14 +6,16 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 // Function to check if user can create threads in a category
-function canCreateInCategory(categoryId: string, userRole?: string, userDepartment?: string) {
+function canCreateInCategory(categoryId: number, userRole?: string, userDepartment?: string) {
   // Community Announcements - only SPECIAL_ADVISOR, SENIOR_ADMIN and HEAD_ADMIN
-  if (categoryId === "announcements") {
+  if (categoryId === 1) {
+    // Announcements category ID is 1
     return userRole === "SPECIAL_ADVISOR" || userRole === "SENIOR_ADMIN" || userRole === "HEAD_ADMIN"
   }
 
   // Recruitment and Retention - only RNR_ADMINISTRATION
-  if (categoryId === "recruitment") {
+  if (categoryId === 2) {
+    // Recruitment category ID is 2
     return userDepartment === "RNR_ADMINISTRATION"
   }
 
@@ -30,9 +32,10 @@ export async function createThread(formData: FormData) {
 
   const title = formData.get("title") as string
   const content = formData.get("content") as string
-  const categoryId = formData.get("categoryId") as string
+  const categoryIdStr = formData.get("categoryId") as string
+  const categoryId = Number.parseInt(categoryIdStr, 10)
 
-  if (!title || !content || !categoryId) {
+  if (!title || !content || isNaN(categoryId)) {
     return { error: "Missing required fields" }
   }
 
@@ -102,7 +105,7 @@ export async function createPost(formData: FormData) {
     if (thread.locked) {
       // Allow admins and moderators to post in locked threads
       if (
-        !["SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)
+        !["ADMIN", "MODERATOR", "SPECIAL_ADVISOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)
       ) {
         return { error: "This thread is locked" }
       }
