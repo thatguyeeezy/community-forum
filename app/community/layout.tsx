@@ -13,4 +13,3 @@ export default function CommunityLayout({
 }) {
   return <div className="flex min-h-screen flex-col">{children}</div>
 }
-
