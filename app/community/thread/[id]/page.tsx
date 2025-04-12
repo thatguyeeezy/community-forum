@@ -1,29 +1,45 @@
-import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation"
-import { formatDistanceToNow } from "date-fns"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { ArrowLeft } from "lucide-react"
+import Link from "next/link"
+import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import Link from "next/link"
-import { ThreadActions } from "@/app/forums/thread-actions"
-import { CreatePostForm } from "@/app/forums/create-post-form"
+import { notFound } from "next/navigation"
+import { createPost } from "@/app/actions/thread"
+import Image from "next/image"
 
 export default async function ThreadPage({ params }: { params: { id: string } }) {
+  const threadId = params.id
+
+  if (!threadId) {
+    notFound()
+  }
+
   const session = await getServerSession(authOptions)
 
+  // Fetch the thread with its posts
   const thread = await prisma.thread.findUnique({
-    where: {
-      id: params.id,
-    },
+    where: { id: threadId },
     include: {
-      author: true,
+      author: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          role: true,
+        },
+      },
       category: true,
       posts: {
         include: {
-          author: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "asc",
@@ -36,118 +52,132 @@ export default async function ThreadPage({ params }: { params: { id: string } })
     notFound()
   }
 
-  const isAdmin =
-    session?.user?.role === "ADMIN" || session?.user?.role === "SENIOR_ADMIN" || session?.user?.role === "HEAD_ADMIN"
-  const isModerator = session?.user?.role === "MODERATOR"
-  const canModerate = isAdmin || isModerator
+  // Check if the thread is locked
+  const canReply =
+    !thread.locked ||
+    (session?.user?.role &&
+      ["ADMIN", "MODERATOR", "SPECIAL_ADVISOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string))
 
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
-      <div className="mb-6">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-          <Link href="/community" className="hover:underline">
-            Community
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
+      <div className="container mx-auto py-6 px-4 md:px-6">
+        <div className="flex items-center mb-4">
+          <Link
+            href={`/community/${thread.categoryId}`}
+            className="text-blue-500 hover:text-blue-600 flex items-center"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to {thread.category.name}
           </Link>
-          <span>/</span>
-          <Link href={`/community/${thread.category.id}`} className="hover:underline">
-            {thread.category.name}
-          </Link>
         </div>
-        <div className="flex justify-between items-start">
-          <h1 className="text-3xl font-bold tracking-tight">{thread.title}</h1>
-          {canModerate && <ThreadActions thread={thread} />}
-        </div>
-        <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-          <span>Started by {thread.author.name}</span>
-          <span>•</span>
-          <span>{formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</span>
-        </div>
-      </div>
 
-      <div className="space-y-6">
-        {/* Original post */}
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-4 pb-2">
-            <Avatar>
-              <AvatarImage src={thread.author.image || ""} alt={thread.author.name || "User"} />
-              <AvatarFallback>{thread.author.name?.charAt(0) || "U"}</AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-semibold">{thread.author.name}</div>
-              <div className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
+        <div className="bg-white dark:bg-slate-800 rounded-md overflow-hidden mb-6">
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-2">{thread.title}</h1>
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <div className="flex items-center">
+                {thread.author.image ? (
+                  <Image
+                    src={thread.author.image || "/placeholder.svg"}
+                    alt={thread.author.name || "User"}
+                    width={24}
+                    height={24}
+                    className="rounded-full mr-2"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 mr-2"></div>
+                )}
+                <Link href={`/profile/${thread.author.id}`} className="hover:underline">
+                  {thread.author.name}
+                </Link>
               </div>
+              <span className="mx-2">•</span>
+              <span>{new Date(thread.createdAt).toLocaleString()}</span>
+              {thread.locked && (
+                <>
+                  <span className="mx-2">•</span>
+                  <span className="text-amber-500">Locked</span>
+                </>
+              )}
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              {thread.content.split("\n").map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
-              ))}
+            <div className="prose dark:prose-invert max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: thread.content.replace(/\n/g, "<br />") }} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Replies */}
         {thread.posts.length > 0 && (
-          <>
-            <Separator />
-            <h2 className="text-xl font-semibold">Replies</h2>
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-4">Replies</h2>
             <div className="space-y-4">
               {thread.posts.map((post) => (
-                <Card key={post.id}>
-                  <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                    <Avatar>
-                      <AvatarImage src={post.author.image || ""} alt={post.author.name || "User"} />
-                      <AvatarFallback>{post.author.name?.charAt(0) || "U"}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-semibold">{post.author.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                <div key={post.id} className="bg-white dark:bg-slate-800 rounded-md overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <div className="flex items-center">
+                        {post.author.image ? (
+                          <Image
+                            src={post.author.image || "/placeholder.svg"}
+                            alt={post.author.name || "User"}
+                            width={24}
+                            height={24}
+                            className="rounded-full mr-2"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 mr-2"></div>
+                        )}
+                        <Link href={`/profile/${post.author.id}`} className="hover:underline">
+                          {post.author.name}
+                        </Link>
                       </div>
+                      <span className="mx-2">•</span>
+                      <span>{new Date(post.createdAt).toLocaleString()}</span>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {post.content.split("\n").map((paragraph, i) => (
-                        <p key={i}>{paragraph}</p>
-                      ))}
+                    <div className="prose dark:prose-invert max-w-none">
+                      <div dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, "<br />") }} />
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
-          </>
+          </div>
         )}
 
-        {/* Reply form */}
         {session ? (
-          !thread.locked || canModerate ? (
-            <div className="mt-6">
-              <h2 className="text-xl font-semibold mb-4">Post a Reply</h2>
-              <CreatePostForm threadId={thread.id} />
+          canReply ? (
+            <div className="bg-white dark:bg-slate-800 rounded-md p-6">
+              <h2 className="text-xl font-bold mb-4">Reply to this thread</h2>
+              <form action={createPost} className="space-y-4">
+                <input type="hidden" name="threadId" value={thread.id} />
+                <div>
+                  <textarea
+                    id="content"
+                    name="content"
+                    rows={6}
+                    required
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Write your reply here..."
+                  ></textarea>
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                    Post Reply
+                  </Button>
+                </div>
+              </form>
             </div>
           ) : (
-            <Card className="mt-6 bg-muted/50">
-              <CardContent className="pt-6">
-                <div className="text-center text-muted-foreground">
-                  <p>This thread is locked. New replies are not allowed.</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-white dark:bg-slate-800 rounded-md p-6 text-center">
+              <p className="text-amber-500">This thread is locked and cannot be replied to.</p>
+            </div>
           )
         ) : (
-          <Card className="mt-6 bg-muted/50">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="mb-4 text-muted-foreground">You need to be signed in to reply to this thread.</p>
-                <Button asChild>
-                  <Link href={`/auth/signin?callbackUrl=/community/thread/${thread.id}`}>Sign In</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-white dark:bg-slate-800 rounded-md p-6 text-center">
+            <p className="text-gray-500 dark:text-gray-400 mb-4">You must be signed in to reply to this thread.</p>
+            <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Link href={`/auth/signin?callbackUrl=/community/thread/${thread.id}`}>Sign In</Link>
+            </Button>
+          </div>
         )}
       </div>
     </div>
