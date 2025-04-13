@@ -171,17 +171,6 @@ export function SiteHeader() {
             {/* Use the ModeToggle component */}
             <ModeToggle />
 
-            <Link
-              href="/search"
-              className="p-2 dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900"
-              aria-label="Search"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </Link>
-
             {/* Replace the profile link with UserNav component */}
             {!isLoading &&
               (session ? (
