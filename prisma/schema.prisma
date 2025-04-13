@@ -221,6 +221,7 @@ model AnonymousSession {
 }
 
 enum Role {
+  WEBMASTER         // None
   HEAD_ADMIN        // Cyan
   SENIOR_ADMIN      // Dark Purple
   SPECIAL_ADVISOR   // Dark Blue
