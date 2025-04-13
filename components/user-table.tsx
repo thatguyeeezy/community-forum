@@ -21,7 +21,8 @@ import { useToast } from "@/hooks/use-toast"
 import { updateUserRole, banUser } from "@/app/actions/admin"
 import { syncUserRole } from "@/app/actions/discord"
 import { useSession } from "next-auth/react"
-import { ROLE_HIERARCHY, canAssignRole, formatRoleDisplay } from "@/lib/roles"
+import { ROLE_HIERARCHY, canAssignRole, formatRoleDisplay, BADGES, isWebmaster } from "@/lib/roles"
+import { updateUserBadge } from "@/app/actions/admin"
 
 interface UserData {
   id: number
@@ -36,6 +37,7 @@ interface UserData {
     threads: number
     posts: number
   }
+  badges?: string[]
 }
 
 interface UserTableProps {
@@ -50,6 +52,8 @@ export function UserTable({ users }: UserTableProps) {
   const { toast } = useToast()
   const { data: session } = useSession()
   const currentUserRole = session?.user?.role as string
+  const currentUserBadges = session?.user?.badges || []
+  const isCurrentUserWebmaster = isWebmaster(currentUserBadges)
 
   // Filter users based on search term
   const filteredUsers = users.filter((user) => {
@@ -167,6 +171,36 @@ export function UserTable({ users }: UserTableProps) {
     }
   }
 
+  // Add this function to handle badge updates
+  const handleBadgeToggle = async (userId: number, badge: string, hasTheBadge: boolean) => {
+    setIsLoading(userId)
+    try {
+      const result = await updateUserBadge(userId.toString(), badge, hasTheBadge ? "remove" : "add")
+
+      if (result.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Success",
+          description: hasTheBadge ? `Removed ${badge} badge from user` : `Added ${badge} badge to user`,
+        })
+        router.refresh()
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update user badge",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(null)
+    }
+  }
+
   // Get role badge
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -198,7 +232,7 @@ export function UserTable({ users }: UserTableProps) {
   }
 
   // Get assignable roles based on current user's role
-  const getAssignableRoleItems = () => {
+  const getAssignableRoleItems = (user: UserData) => {
     // Get the current user's role index
     const userRoleIndex = ROLE_HIERARCHY.indexOf(currentUserRole as any)
     if (userRoleIndex === -1) return []
@@ -295,7 +329,7 @@ export function UserTable({ users }: UserTableProps) {
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel>Change Role</DropdownMenuLabel>
                         {/* Dynamically generate role options based on current user's permissions */}
-                        {getAssignableRoleItems()}
+                        {getAssignableRoleItems(user)}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleBanToggle(user.id, user.status)}
@@ -310,6 +344,51 @@ export function UserTable({ users }: UserTableProps) {
                           <RefreshCw className="mr-2 h-4 w-4" />
                           Sync Discord Role
                         </DropdownMenuItem>
+                        {isCurrentUserWebmaster && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>Manage Badges</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleBadgeToggle(
+                                  user.id,
+                                  BADGES.WEBMASTER,
+                                  user.badges?.includes(BADGES.WEBMASTER) || false,
+                                )
+                              }
+                            >
+                              {user.badges?.includes(BADGES.WEBMASTER)
+                                ? "Remove Webmaster Badge"
+                                : "Add Webmaster Badge"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleBadgeToggle(
+                                  user.id,
+                                  BADGES.DEVELOPER,
+                                  user.badges?.includes(BADGES.DEVELOPER) || false,
+                                )
+                              }
+                            >
+                              {user.badges?.includes(BADGES.DEVELOPER)
+                                ? "Remove Developer Badge"
+                                : "Add Developer Badge"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleBadgeToggle(
+                                  user.id,
+                                  BADGES.RETIRED_ADMIN,
+                                  user.badges?.includes(BADGES.RETIRED_ADMIN) || false,
+                                )
+                              }
+                            >
+                              {user.badges?.includes(BADGES.RETIRED_ADMIN)
+                                ? "Remove Retired Admin Badge"
+                                : "Add Retired Admin Badge"}
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

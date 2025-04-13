@@ -2,7 +2,6 @@ import type { Role } from "@prisma/client"
 
 // Role hierarchy from highest to lowest
 export const ROLE_HIERARCHY = [
-  "WEBMASTER",
   "HEAD_ADMIN",
   "SENIOR_ADMIN",
   "SPECIAL_ADVISOR",
@@ -15,42 +14,42 @@ export const ROLE_HIERARCHY = [
   "APPLICANT",
 ] as const
 
+// Available badges
+export const BADGES = {
+  WEBMASTER: "WEBMASTER",
+  DEVELOPER: "DEVELOPER",
+  RETIRED_ADMIN: "RETIRED_ADMIN",
+  CONTRIBUTOR: "CONTRIBUTOR",
+} as const
+
 // Group roles by permission level
-export const ADMIN_ROLES = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN"]
+export const ADMIN_ROLES = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN"]
 export const STAFF_ROLES = ["JUNIOR_ADMIN", "SENIOR_STAFF", "STAFF"]
 export const BASIC_ROLES = ["STAFF_IN_TRAINING", "MEMBER", "APPLICANT"]
 
-// Roles that can be automatically assigned through Discord
-export const DISCORD_ASSIGNABLE_ROLES = [
-  "JUNIOR_ADMIN",
-  "SENIOR_STAFF",
-  "STAFF",
-  "STAFF_IN_TRAINING",
-  "MEMBER",
-  "APPLICANT",
-]
-
 // Check if a user has admin permissions
-export function hasAdminPermission(role?: string): boolean {
+export function hasAdminPermission(role?: string, badges?: string[]): boolean {
+  if (badges?.includes(BADGES.WEBMASTER)) return true
   return role ? ADMIN_ROLES.includes(role) : false
 }
 
 // Check if a user has staff permissions
-export function hasStaffPermission(role?: string): boolean {
+export function hasStaffPermission(role?: string, badges?: string[]): boolean {
+  if (badges?.includes(BADGES.WEBMASTER)) return true
   return role ? ADMIN_ROLES.includes(role) || STAFF_ROLES.includes(role) : false
 }
 
-// Check if a user is a webmaster (special permissions)
-export function isWebmaster(role?: string): boolean {
-  return role === "WEBMASTER"
+// Check if a user is a webmaster
+export function isWebmaster(badges?: string[]): boolean {
+  return badges?.includes(BADGES.WEBMASTER) || false
 }
 
 // Check if a user can assign a specific role
-export function canAssignRole(userRole?: string, targetRole?: string): boolean {
+export function canAssignRole(userRole?: string, targetRole?: string, badges?: string[]): boolean {
   if (!userRole || !targetRole) return false
 
   // Webmaster can assign any role
-  if (userRole === "WEBMASTER") return true
+  if (badges?.includes(BADGES.WEBMASTER)) return true
 
   // Get the indices in the hierarchy (lower index = higher rank)
   const userRoleIndex = ROLE_HIERARCHY.indexOf(userRole as any)
@@ -61,12 +60,12 @@ export function canAssignRole(userRole?: string, targetRole?: string): boolean {
 }
 
 // Get available roles that a user can assign
-export function getAssignableRoles(userRole?: string): string[] {
+export function getAssignableRoles(userRole?: string, badges?: string[]): string[] {
   if (!userRole) return []
 
-  // Webmaster can assign any role except webmaster itself
-  if (userRole === "WEBMASTER") {
-    return ROLE_HIERARCHY.filter((role) => role !== "WEBMASTER")
+  // Webmaster can assign any role
+  if (badges?.includes(BADGES.WEBMASTER)) {
+    return [...ROLE_HIERARCHY]
   }
 
   const userRoleIndex = ROLE_HIERARCHY.indexOf(userRole as any)
@@ -84,6 +83,14 @@ export function formatRoleDisplay(role: string): string {
     .join(" ")
 }
 
+// Format badge for display
+export function formatBadgeDisplay(badge: string): string {
+  return badge
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ")
+}
+
 // Discord role IDs - only for roles that can be automatically assigned
 export const DISCORD_ROLES = {
   // Staff level roles
@@ -96,6 +103,16 @@ export const DISCORD_ROLES = {
   MEMBER: "1253761018769969244",
   APPLICANT: "1253758031112568832",
 }
+
+// Roles that can be automatically assigned through Discord
+export const DISCORD_ASSIGNABLE_ROLES = [
+  "JUNIOR_ADMIN",
+  "SENIOR_STAFF",
+  "STAFF",
+  "STAFF_IN_TRAINING",
+  "MEMBER",
+  "APPLICANT",
+]
 
 // Map Discord roles to application roles
 export function mapDiscordRoleToAppRole(discordRoles: string[]): Role {

@@ -1,5 +1,4 @@
-import { Role } from "@prisma/client"
-import NextAuth from "next-auth"
+import type { Role, Department } from "@prisma/client"
 
 declare module "next-auth" {
   interface User {
@@ -10,10 +9,13 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: number
-      name?: string | null
-      email?: string | null
-      image?: string | null
-      role?: Role
+      name: string
+      email: string
+      image: string
+      role: Role
+      badges?: string[]
+      discordId?: string
+      department?: Department
     }
   }
 }
