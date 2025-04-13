@@ -39,7 +39,7 @@ model Session {
 
 model DepartmentInfo {
   id           String             @id @default(cuid())
-  name         String             @unique  // Add this unique constraint
+  name         String             @unique
   description  String?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
@@ -58,7 +58,6 @@ model SubdivisionInfo {
   
   @@unique([name, departmentId])
 }
-
 
 enum RnRStatus {
   RNR_ADMINISTRATION
@@ -125,17 +124,16 @@ model VerificationToken {
 }
 
 model Category {
-  id          Int      @id @default(autoincrement()) 
-  name        String
-  description String?  @db.Text
-  slug        String   @unique
-  order       Int      @default(0)
-  parentId    Int?     
-  parent      Category? @relation("SubCategories", fields: [parentId], references: [id], onDelete: SetNull)
-  children    Category[] @relation("SubCategories")
-  threads     Thread[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int      @id @default(autoincrement()) 
+  name          String
+  description   String?  @db.Text
+  slug          String   @unique
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isAnnouncement Boolean  @default(false)
+  minRole       Role     @default(APPLICANT)
+  threads       Thread[]
 }
 
 model Thread {
@@ -158,11 +156,11 @@ model Thread {
 }
 
 model Post {
-  id          Int      @id @default(autoincrement()) // Changed from String to Int with autoincrement
+  id          Int      @id @default(autoincrement())
   content     String   @db.Text
-  authorId    Int      // Changed from String to Int
+  authorId    Int
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  threadId    Int      // Changed from String to Int
+  threadId    Int
   thread      Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
   reactions   Reaction[]
   createdAt   DateTime @default(now())
@@ -170,13 +168,13 @@ model Post {
 }
 
 model Reaction {
-  id        Int      @id @default(autoincrement()) // Changed from String to Int with autoincrement
+  id        Int      @id @default(autoincrement())
   type      String
-  userId    Int      // Changed from String to Int
+  userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  threadId  Int?     // Changed from String to Int
+  threadId  Int?
   thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  postId    Int?     // Changed from String to Int
+  postId    Int?
   post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
@@ -184,10 +182,10 @@ model Reaction {
 }
 
 model Follow {
-  id          Int      @id @default(autoincrement()) // Changed from String to Int with autoincrement
-  followerId  Int      // Changed from String to Int
+  id          Int      @id @default(autoincrement())
+  followerId  Int
   follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
-  followingId Int      // Changed from String to Int
+  followingId Int
   following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
 
@@ -195,29 +193,28 @@ model Follow {
 }
 
 model Message {
-  id          Int      @id @default(autoincrement()) // Changed from String to Int with autoincrement
+  id          Int      @id @default(autoincrement())
   content     String   @db.Text
   read        Boolean  @default(false)
-  senderId    Int      // Changed from String to Int
+  senderId    Int
   sender      User     @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
-  recipientId Int      // Changed from String to Int
+  recipientId Int
   recipient   User     @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Notification {
-  id          Int      @id @default(autoincrement()) // Changed from String to Int with autoincrement
+  id          Int      @id @default(autoincrement())
   type        String
   message     String
   read        Boolean  @default(false)
-  recipientId Int      // Changed from String to Int
+  recipientId Int
   recipient   User     @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
   link        String?
   createdAt   DateTime @default(now())
 }
 
-// Add this to your prisma/schema.prisma file
 model AnonymousSession {
   id        String   @id @default(cuid())
   ip        String
@@ -240,4 +237,3 @@ enum Role {
   MEMBER            // Light Blue
   APPLICANT         // Grey (default)
 }
-

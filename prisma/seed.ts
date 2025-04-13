@@ -6,7 +6,7 @@ async function main() {
   try {
     console.log("Starting to seed categories...")
 
-    // Create main categories - using the actual schema fields
+    // Create main categories
     const announcements = await prisma.category.upsert({
       where: { id: 1 },
       update: {
