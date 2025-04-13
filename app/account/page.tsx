@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Camera, Loader2 } from "lucide-react"
+import { Camera, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { updateProfile } from "@/app/actions/profile"
+import { updateProfile, resetProfileImage } from "@/app/actions/profile"
 import { useToast } from "@/hooks/use-toast"
 
 export default function AccountPage() {
@@ -28,9 +28,13 @@ export default function AccountPage() {
   const [discordId, setDiscordId] = useState("")
   const [profileImage, setProfileImage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+
+  // Check if user has a custom profile image (not from Discord)
+  const hasCustomImage = session?.user?.image && !session.user.image.includes("cdn.discordapp.com")
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -64,6 +68,54 @@ export default function AccountPage() {
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  // Handle reset to Discord image
+  const handleResetImage = async () => {
+    setIsResetting(true)
+    setError(null)
+
+    try {
+      const result = await resetProfileImage()
+
+      if (result.success) {
+        // Update the session with the Discord image
+        if (session) {
+          await update({
+            image: result.discordImage,
+          })
+        }
+
+        // Clear any selected image
+        setImageFile(null)
+        setImagePreview(null)
+        setProfileImage(result.discordImage || "")
+
+        toast({
+          title: "Profile image reset",
+          description: "Your profile image has been reset to your Discord avatar.",
+        })
+
+        router.refresh()
+      } else {
+        setError(result.error || "Failed to reset profile image")
+        toast({
+          title: "Error",
+          description: result.error || "Failed to reset profile image",
+          variant: "destructive",
+        })
+      }
+    } catch (err) {
+      console.error("Error resetting profile image:", err)
+      setError("An unexpected error occurred")
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while resetting your profile image",
+        variant: "destructive",
+      })
+    }
+
+    setIsResetting(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -173,24 +225,43 @@ export default function AccountPage() {
                   onChange={handleImageChange}
                 />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <p className="text-sm dark:text-gray-400 mb-2">
                   Upload a new profile picture. Square images work best.
                 </p>
-                {imagePreview && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setImagePreview(null)
-                      setImageFile(null)
-                    }}
-                    className="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                  >
-                    Remove selected image
-                  </Button>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  {imagePreview && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setImagePreview(null)
+                        setImageFile(null)
+                      }}
+                      className="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      Remove selected image
+                    </Button>
+                  )}
+                  {(hasCustomImage || imagePreview) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResetImage}
+                      disabled={isResetting}
+                      className="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 flex items-center"
+                    >
+                      {isResetting ? (
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                      ) : (
+                        <RefreshCw className="mr-2 h-3 w-3" />
+                      )}
+                      Reset to Discord avatar
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 
