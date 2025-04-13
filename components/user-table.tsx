@@ -124,18 +124,14 @@ export function UserTable({ users }: UserTableProps) {
   // Get role badge
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "WEBMASTER":
-        return <Badge className="bg-purple-500 text-white">Webmaster</Badge>
       case "HEAD_ADMIN":
         return <Badge className="bg-cyan-500 text-white">Head Admin</Badge>
       case "SENIOR_ADMIN":
         return <Badge className="bg-purple-500 text-white">Senior Admin</Badge>
-      case "SPECIAL_ADVISOR":
-        return <Badge className="bg-blue-800 text-white">Special Advisor</Badge>
       case "ADMIN":
         return <Badge className="bg-red-800 text-white">Admin</Badge>
       case "JUNIOR_ADMIN":
-        return <Badge className="bg-blue-600 text-white">Junior Admin</Badge>
+        return <Badge className="bg-blue-800 text-white">Junior Admin</Badge>
       case "SENIOR_STAFF":
         return <Badge className="bg-green-800 text-white">Senior Staff</Badge>
       case "STAFF":
@@ -144,12 +140,8 @@ export function UserTable({ users }: UserTableProps) {
         return <Badge className="bg-red-400 text-white">Staff Trainee</Badge>
       case "MEMBER":
         return <Badge className="bg-blue-400 text-white">Member</Badge>
-      case "RECRUIT":
-        return <Badge className="bg-green-400 text-white">Recruit</Badge>
       case "APPLICANT":
         return <Badge className="bg-gray-400 text-white">Applicant</Badge>
-      case "GUEST":
-        return <Badge className="bg-gray-400 text-white">Guest</Badge>
       default:
         return <Badge variant="outline">{role}</Badge>
     }

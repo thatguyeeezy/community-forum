@@ -17,7 +17,7 @@ function canCreateAnnouncement(categoryId: number, userRole?: string, userDepart
   // Community Announcements - only SPECIAL_ADVISOR, SENIOR_ADMIN and HEAD_ADMIN
   if (categoryId === 1) {
     // Announcements category ID is 1
-    return userRole === "SPECIAL_ADVISOR" || userRole === "SENIOR_ADMIN" || userRole === "HEAD_ADMIN" || userRole === "WEBMASTER"
+    return userRole === "SPECIAL_ADVISOR" || userRole === "SENIOR_ADMIN" || userRole === "HEAD_ADMIN"
   }
 
   // Recruitment and Retention - only RNR_ADMINISTRATION
