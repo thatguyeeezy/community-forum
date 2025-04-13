@@ -41,13 +41,12 @@ export default async function NewAnnouncementPage({
   const categoryIdParam = searchParams.categoryId ? String(searchParams.categoryId) : undefined
   const categoryId = categoryIdParam ? Number.parseInt(categoryIdParam, 10) : undefined
 
-  // Fetch available categories
+  // Fetch only the two announcement categories
   const categories = await prisma.category.findMany({
     where: {
       id: {
         in: [1, 2], // Only the two categories we want
       },
-      parentId: null,
     },
     orderBy: {
       order: "asc",

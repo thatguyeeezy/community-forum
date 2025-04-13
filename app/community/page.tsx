@@ -25,8 +25,13 @@ function canCreateAnnouncement(categoryId: number, userRole?: string, userDepart
 export default async function CommunityPage() {
   const session = await getServerSession(authOptions)
 
-  // Fetch categories with their latest 5 threads
+  // Fetch only the two announcement categories
   const categories = await prisma.category.findMany({
+    where: {
+      id: {
+        in: [1, 2], // Only fetch categories with ID 1 and 2
+      },
+    },
     include: {
       threads: {
         take: 5, // Get the latest 5 threads
@@ -99,6 +104,9 @@ export default async function CommunityPage() {
                           <Link href={`/community/new-announcement?categoryId=${category.id}`}>New Announcement</Link>
                         </Button>
                       )}
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/community/${category.id}`}>View All</Link>
+                      </Button>
                     </div>
                   </div>
                 </div>
