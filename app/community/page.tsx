@@ -1,17 +1,9 @@
-import { Button } from "@/components/ui/button"
-import { MessageSquare, Plus, Megaphone, UserPlus, Lock } from "lucide-react"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-
-// Helper function to get the appropriate icon
-function getCategoryIcon(name: string) {
-  const lowerName = name.toLowerCase()
-  if (lowerName.includes("announcement")) return Megaphone
-  if (lowerName.includes("recruitment") || lowerName.includes("retention")) return UserPlus
-  return MessageSquare // Default icon
-}
+import { Megaphone, Users, MessageSquare, ChevronRight, Pin } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 // Function to check if user can create announcements in a category
 function canCreateAnnouncement(categoryId: number, userRole?: string, userDepartment?: string) {
@@ -33,56 +25,47 @@ function canCreateAnnouncement(categoryId: number, userRole?: string, userDepart
 export default async function CommunityPage() {
   const session = await getServerSession(authOptions)
 
-  // Fetch only the two categories we want to display
+  // Fetch categories with their latest 5 threads
   const categories = await prisma.category.findMany({
-    where: {
-      id: {
-        in: [1, 2], // Use integer IDs: 1 for Announcements, 2 for Recruitment
-      },
-      parentId: null, // Only top-level categories
-    },
     include: {
+      threads: {
+        take: 5, // Get the latest 5 threads
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
+        orderBy: [
+          {
+            pinned: "desc",
+          },
+          {
+            updatedAt: "desc",
+          },
+        ],
+      },
       _count: {
         select: {
           threads: true,
         },
       },
-      threads: {
-        take: 1,
-        orderBy: {
-          updatedAt: "desc",
-        },
-        include: {
-          author: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
     },
     orderBy: {
-      order: "asc",
+      id: "asc",
     },
   })
-
-  console.log("Categories fetched:", categories.length)
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
       <div className="container mx-auto py-6 px-4 md:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Community</h1>
-            <p className="text-gray-500 dark:text-gray-400">Browse announcements and recruitment information</p>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight mb-6">Community</h1>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6">
           {categories.map((category) => {
-            const Icon = getCategoryIcon(category.name)
-            const threadCount = category._count.threads
-            const latestThread = category.threads[0]
             const canCreate = canCreateAnnouncement(
               category.id,
               session?.user?.role as string,
@@ -90,74 +73,84 @@ export default async function CommunityPage() {
               session?.user?.department as string,
             )
 
-            let permissionText = ""
-            if (category.id === 1) {
-              permissionText = "Postable by Special Advisor, Senior Admin, and Head Admin only"
-            } else if (category.id === 2) {
-              permissionText = "Postable by R&R Admin only"
-            }
-
             return (
-              <div key={category.id} className="bg-white dark:bg-slate-800 shadow-md rounded-lg overflow-hidden">
-                <div className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="rounded-full bg-blue-600/20 p-3">
-                      <Icon className="h-6 w-6 text-blue-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold">
-                        <Link href={`/community/${category.id}`} className="hover:text-blue-500">
-                          {category.name}
-                        </Link>
-                      </h2>
-                      <p className="text-gray-500 dark:text-gray-400">{category.description}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-medium">{threadCount}</span> announcement{threadCount !== 1 && "s"}
-                    </div>
-                    {canCreate ? (
-                      <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                        <Link href={`/community/new-announcement?categoryId=${category.id}`}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          New Announcement
-                        </Link>
-                      </Button>
-                    ) : (
-                      <div className="flex items-center text-amber-500 text-sm">
-                        <Lock className="h-3 w-3 mr-1" />
-                        {permissionText}
+              <div
+                key={category.id}
+                className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700"
+              >
+                <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center">
+                      {category.id === 1 ? (
+                        <Megaphone className="h-5 w-5 mr-2 text-blue-500" />
+                      ) : category.id === 2 ? (
+                        <Users className="h-5 w-5 mr-2 text-green-500" />
+                      ) : (
+                        <MessageSquare className="h-5 w-5 mr-2 text-purple-500" />
+                      )}
+                      <div>
+                        <h2 className="text-xl font-semibold">{category.name}</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{category.description}</p>
                       </div>
-                    )}
-                  </div>
-
-                  {latestThread ? (
-                    <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-md">
-                      <h3 className="font-medium mb-1">
-                        <Link href={`/community/announcement/${latestThread.id}`} className="hover:text-blue-500">
-                          {latestThread.title}
-                        </Link>
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        By {latestThread.author.name} • {new Date(latestThread.updatedAt).toLocaleDateString()}
-                      </p>
                     </div>
+                    <div className="flex items-center gap-2">
+                      {canCreate && (
+                        <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                          <Link href={`/community/new-announcement?categoryId=${category.id}`}>New Announcement</Link>
+                        </Button>
+                      )}
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/community/${category.id}`}>View All</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {category.threads.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">No announcements yet.</div>
                   ) : (
-                    <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-md text-center text-gray-500 dark:text-gray-400">
-                      No announcements yet
-                    </div>
+                    category.threads.map((thread) => (
+                      <div key={thread.id} className="p-4 hover:bg-gray-50 dark:hover:bg-slate-700">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <Link
+                              href={`/community/announcement/${thread.id}`}
+                              className="text-lg font-medium hover:text-blue-600 dark:hover:text-blue-400 flex items-center"
+                            >
+                              {thread.pinned && <Pin className="h-4 w-4 mr-2 text-blue-500" />}
+                              {thread.title}
+                            </Link>
+                            <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                              <span>
+                                By{" "}
+                                <Link href={`/profile/${thread.author.id}`} className="hover:underline">
+                                  {thread.author.name}
+                                </Link>
+                              </span>
+                              <span className="mx-2">•</span>
+                              <span>{new Date(thread.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <Link
+                            href={`/community/announcement/${thread.id}`}
+                            className="text-blue-500 hover:text-blue-600 flex items-center text-sm"
+                          >
+                            Read <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    ))
                   )}
+                </div>
 
-                  <div className="mt-4 text-right">
-                    <Link
-                      href={`/community/${category.id}`}
-                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
-                    >
-                      View all announcements →
-                    </Link>
-                  </div>
+                <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-200 dark:border-gray-700 text-right">
+                  <Link
+                    href={`/community/${category.id}`}
+                    className="text-blue-500 hover:text-blue-600 text-sm flex items-center justify-end"
+                  >
+                    View all {category._count.threads} announcements <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
                 </div>
               </div>
             )
