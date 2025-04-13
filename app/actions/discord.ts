@@ -1,10 +1,9 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { syncUserRoleFromDiscord } from "@/lib/discord-roles"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
-import { ADMIN_ROLES, hasAdminPermission } from "@/lib/roles"
+import { hasAdminPermission, syncUserRoleFromDiscord, shouldPreserveRole } from "@/lib/roles"
 
 // Function to sync a specific user's role (admin only)
 export async function syncUserRole(userId: number) {
@@ -45,6 +44,12 @@ export async function syncUserRole(userId: number) {
 
     console.log(`Found user with Discord ID: ${user.discordId}, current role: ${user.role}`)
 
+    // Check if the current role should be preserved (admin roles)
+    if (shouldPreserveRole(user.role)) {
+      console.log(`Preserving admin role ${user.role} - skipping Discord sync`)
+      return { success: true, message: `Preserved admin role ${user.role}`, role: user.role }
+    }
+
     // Sync the user's role
     const syncedRole = await syncUserRoleFromDiscord(user.discordId)
 
@@ -57,12 +62,6 @@ export async function syncUserRole(userId: number) {
 
     // Only update if the role is different
     if (user.role !== syncedRole) {
-      // Admin protection: Don't downgrade admin roles unless the current user is an admin
-      if (ADMIN_ROLES.includes(user.role) && !hasAdminPermission(currentUserRole)) {
-        console.log(`Cannot downgrade admin role ${user.role} to ${syncedRole} without admin permission`)
-        return { success: false, message: "Cannot modify admin roles" }
-      }
-
       // Update the user's role
       await prisma.user.update({
         where: { id: userId },
@@ -132,6 +131,7 @@ export async function syncAllUserRoles() {
       updated: 0,
       failed: 0,
       skipped: 0,
+      preserved: 0,
     }
 
     // Process users in batches with delay between batches
@@ -146,6 +146,13 @@ export async function syncAllUserRoles() {
             continue
           }
 
+          // Check if the current role should be preserved (admin roles)
+          if (shouldPreserveRole(user.role)) {
+            console.log(`Preserving admin role ${user.role} for user ${user.id}`)
+            results.preserved++
+            continue
+          }
+
           const syncedRole = await syncUserRoleFromDiscord(user.discordId)
 
           if (!syncedRole) {
@@ -155,13 +162,6 @@ export async function syncAllUserRoles() {
           }
 
           if (user.role !== syncedRole) {
-            // Don't downgrade admin roles
-            if (ADMIN_ROLES.includes(user.role)) {
-              console.log(`Skipping admin user ${user.id} with role ${user.role}`)
-              results.skipped++
-              continue
-            }
-
             await prisma.user.update({
               where: { id: user.id },
               data: { role: syncedRole },
@@ -193,7 +193,7 @@ export async function syncAllUserRoles() {
 
     return {
       success: true,
-      message: `Processed ${results.total} users: ${results.updated} updated, ${results.skipped} skipped, ${results.failed} failed`,
+      message: `Processed ${results.total} users: ${results.updated} updated, ${results.skipped} skipped, ${results.preserved} preserved, ${results.failed} failed`,
       results,
     }
   } catch (error) {

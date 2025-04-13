@@ -5,8 +5,8 @@ import { getServerSession } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import DiscordProvider from "next-auth/providers/discord"
 import { prisma } from "@/lib/prisma"
-// Import the new Discord roles utility at the top of the file
-import { syncUserRoleFromDiscord } from "@/lib/discord-roles"
+// Import the syncUserRoleFromDiscord from our consolidated roles file
+import { syncUserRoleFromDiscord } from "@/lib/roles"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -119,7 +119,7 @@ export const authOptions: NextAuthOptions = {
               })
 
               // Only update if current role is below JUNIOR_ADMIN
-              const adminRoles = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN", "JUNIOR_ADMIN"]
+              const adminRoles = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN", "JUNIOR_ADMIN"]
               if (currentUser && !adminRoles.includes(currentUser.role)) {
                 await prisma.user.update({
                   where: { id: userId },
@@ -330,7 +330,14 @@ export const authOptions: NextAuthOptions = {
                 })
 
                 // Only update if current role is below JUNIOR_ADMIN
-                const adminRoles = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN", "JUNIOR_ADMIN"]
+                const adminRoles = [
+                  "WEBMASTER",
+                  "HEAD_ADMIN",
+                  "SENIOR_ADMIN",
+                  "SPECIAL_ADVISOR",
+                  "ADMIN",
+                  "JUNIOR_ADMIN",
+                ]
                 if (currentUser && !adminRoles.includes(currentUser.role)) {
                   await prisma.user.update({
                     where: { id: user.id },
