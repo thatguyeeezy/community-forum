@@ -3,65 +3,66 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Users, FileText, Settings, BarChart, Flag } from "lucide-react"
-
-const adminNavItems = [
-  {
-    title: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Users",
-    href: "/admin/users",
-    icon: Users,
-  },
-  {
-    title: "Content",
-    href: "/admin/content",
-    icon: FileText,
-  },
-  {
-    title: "Reports",
-    href: "/admin/reports",
-    icon: Flag,
-  },
-  {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart,
-  },
-  {
-    title: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-]
+import { LayoutDashboardIcon as Dashboard, Users, FileText, Settings, AlertTriangle } from "lucide-react"
 
 export function AdminSidebar() {
   const pathname = usePathname()
 
+  const routes = [
+    {
+      href: "/admin",
+      label: "Dashboard",
+      icon: Dashboard,
+    },
+    {
+      href: "/admin/users",
+      label: "Users",
+      icon: Users,
+    },
+    {
+      href: "/admin/content",
+      label: "Content",
+      icon: FileText,
+    },
+    {
+      href: "/admin/settings",
+      label: "Settings",
+      icon: Settings,
+    },
+    {
+      href: "/admin/reports",
+      label: "Reports",
+      icon: AlertTriangle,
+    },
+    {
+      href: "/admin/analytics",
+      label: "Analytics",
+      icon: AlertTriangle,
+    },
+    {
+      href: "/admin/discord",
+      label: "Discord",
+      icon: AlertTriangle,
+    },
+  ]
+
   return (
-    <div className="w-full md:w-64 space-y-4">
+    <div className="space-y-4 py-4">
       <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Staff Panel</h2>
+        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Admin Panel</h2>
         <div className="space-y-1">
-          {adminNavItems.map((item) => (
-            <Button
-              key={item.href}
-              variant={pathname === item.href ? "secondary" : "ghost"}
+          {routes.map((route) => (
+            <Link
+              href={route.href}
+              key={route.href}
               className={cn(
-                "w-full justify-start",
-                pathname === item.href ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline",
+                "group flex w-full items-center rounded-md border border-transparent px-3 py-2 text-sm font-medium hover:bg-secondary hover:text-secondary-foreground",
+                pathname === route.href ? "bg-secondary text-secondary-foreground" : "text-muted-foreground",
               )}
-              asChild
             >
-              <Link href={item.href}>
-                <item.icon className="mr-2 h-4 w-4" />
-                {item.title}
-              </Link>
-            </Button>
+              <route.icon className="mr-2 h-4 w-4" />
+              <span>{route.label}</span>
+            </Link>
           ))}
         </div>
       </div>
