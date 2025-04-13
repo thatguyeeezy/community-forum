@@ -1,101 +1,89 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useSession } from "next-auth/react"
-import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow } from "date-fns"
 
-interface Notification {
+type Notification = {
   id: number
   type: string
   message: string
   read: boolean
-  link: string | null
   createdAt: string
+  link: string
 }
 
 export function NotificationsDropdown() {
-  const { data: session } = useSession()
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const { toast } = useToast()
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchNotifications()
-    }
-  }, [session])
-
+  // Fetch notifications
   const fetchNotifications = async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/notifications?limit=5", {
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
+      const response = await fetch("/api/notifications?limit=5")
+      if (!response.ok) throw new Error("Failed to fetch notifications")
 
-      if (response.ok) {
-        const data = await response.json()
-        setNotifications(data.notifications)
-        setUnreadCount(data.unreadCount)
-      }
+      const data = await response.json()
+      setNotifications(data.notifications)
+      setUnreadCount(data.unreadCount)
     } catch (error) {
-      console.error("Failed to fetch notifications:", error)
+      console.error("Error fetching notifications:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  const markAsRead = async (id: number) => {
+  // Mark notification as read
+  const markAsRead = async (id: number, link: string) => {
     try {
       const response = await fetch(`/api/notifications/${id}/read`, {
         method: "POST",
       })
 
-      if (response.ok) {
-        // Update local state
-        setNotifications(notifications.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)))
-        setUnreadCount((prev) => Math.max(0, prev - 1))
-      }
+      if (!response.ok) throw new Error("Failed to mark notification as read")
+
+      // Update local state
+      setNotifications((prev) => prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)))
+      setUnreadCount((prev) => Math.max(0, prev - 1))
+
+      // Navigate to the link
+      router.push(link)
     } catch (error) {
-      console.error("Failed to mark notification as read:", error)
+      console.error("Error marking notification as read:", error)
+      toast({
+        title: "Error",
+        description: "Failed to mark notification as read",
+        variant: "destructive",
+      })
     }
   }
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "follow":
-        return "👤"
-      case "application":
-        return "📝"
-      case "mention":
-        return "💬"
-      default:
-        return "🔔"
-    }
-  }
+  // Fetch notifications on mount and set up polling
+  useEffect(() => {
+    fetchNotifications()
 
-  const formatTimeAgo = (dateString: string) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true })
-    } catch (error) {
-      return "recently"
-    }
-  }
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000)
 
-  if (!session?.user) {
-    return null
-  }
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <DropdownMenu>
@@ -103,60 +91,52 @@ export function NotificationsDropdown() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 text-[10px] font-medium text-white flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 dark:bg-gray-800 bg-white">
-        <div className="flex items-center justify-between px-4 py-2 border-b dark:border-gray-700 border-gray-200">
-          <h3 className="font-medium dark:text-gray-100 text-gray-900">Notifications</h3>
-          <Link
-            href={`/profile/${session.user.id}?tab=notifications`}
-            className="text-sm dark:text-blue-400 text-blue-600 hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="p-4 text-center dark:text-gray-400 text-gray-500">Loading notifications...</div>
-        ) : notifications.length === 0 ? (
-          <div className="p-4 text-center dark:text-gray-400 text-gray-500">No notifications yet</div>
-        ) : (
-          <>
-            {notifications.map((notification) => (
+      <DropdownMenuContent className="w-80" align="end">
+        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
+          {loading ? (
+            <div className="flex justify-center py-4">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+            </div>
+          ) : notifications.length > 0 ? (
+            notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                asChild
-                className={`px-4 py-3 cursor-pointer ${!notification.read ? "dark:bg-gray-700/50 bg-gray-100" : ""}`}
+                className={`cursor-pointer flex flex-col items-start p-3 ${
+                  !notification.read ? "bg-blue-50 dark:bg-slate-800/60" : ""
+                }`}
+                onClick={() => markAsRead(notification.id, notification.link)}
               >
-                <Link href={notification.link || "#"} onClick={() => !notification.read && markAsRead(notification.id)}>
-                  <div className="flex items-start gap-3">
-                    <div className="text-xl">{getNotificationIcon(notification.type)}</div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm dark:text-gray-200 text-gray-800">{notification.message}</p>
-                      <p className="text-xs dark:text-gray-400 text-gray-500">
-                        {formatTimeAgo(notification.createdAt)}
-                      </p>
-                    </div>
-                    {!notification.read && <div className="h-2 w-2 rounded-full bg-blue-500 mt-1"></div>}
-                  </div>
-                </Link>
+                <div className="flex w-full items-start justify-between">
+                  <span className="font-medium">
+                    {notification.type === "follow" ? "New Follower" : notification.type}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{notification.message}</p>
+                {!notification.read && <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-blue-600"></span>}
               </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator className="dark:bg-gray-700 bg-gray-200" />
-            <DropdownMenuItem asChild className="justify-center">
-              <Link
-                href={`/profile/${session.user.id}?tab=notifications`}
-                className="text-sm dark:text-gray-300 text-gray-600 py-2 text-center"
-              >
-                See all notifications
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
+            ))
+          ) : (
+            <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">No notifications</div>
+          )}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <Link
+          href="/profile/me?tab=notifications"
+          className="block w-full rounded-sm px-3 py-2 text-center text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-slate-800"
+        >
+          View all notifications
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   )
