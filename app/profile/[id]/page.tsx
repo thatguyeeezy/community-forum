@@ -82,8 +82,16 @@ const roleConfig = {
     label: "Member",
     color: "bg-blue-400 text-white hover:bg-blue-500",
   },
+  RECRUIT: {
+    label: "Recruit",
+    color: "bg-green-400 text-white hover:bg-green-500",
+  },
   APPLICANT: {
     label: "Applicant",
+    color: "bg-gray-400 text-white hover:bg-gray-500",
+  },
+  GUEST: {
+    label: "Guest",
     color: "bg-gray-400 text-white hover:bg-gray-500",
   },
 }

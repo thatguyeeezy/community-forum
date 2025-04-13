@@ -240,7 +240,7 @@ export const authOptions: NextAuthOptions = {
                   data: {
                     discordId: discordUser.providerAccountId,
                     department: "N_A",
-                    role: "APPLICANT",
+                    role: "GUEST",
                   },
                 })
 
