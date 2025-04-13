@@ -43,8 +43,8 @@ model DepartmentInfo {
   description  String?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
-  users        User[]
   subdivisions SubdivisionInfo[]
+  // Remove the users relation
 }
 
 model SubdivisionInfo {
@@ -98,11 +98,6 @@ model User {
   department    Department? @default(N_A)
   rnrStatus     RnRStatus?  @default(NONE)
   discordId     String?     @unique
-  
-  // Add the relation to DepartmentInfo
-  departmentInfoId String?
-  departmentInfo   DepartmentInfo? @relation(fields: [departmentInfoId], references: [id])
-  
   accounts      Account[]
   sessions      Session[]
   threads       Thread[]
