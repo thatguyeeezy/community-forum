@@ -39,11 +39,6 @@ export function AdminSidebar() {
       label: "Analytics",
       icon: AlertTriangle,
     },
-    {
-      href: "/admin/discord",
-      label: "Discord",
-      icon: AlertTriangle,
-    },
   ]
 
   return (

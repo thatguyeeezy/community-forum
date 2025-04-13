@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Search, UserCog, Shield, Ban, Eye } from "lucide-react"
+import { MoreHorizontal, Search, UserCog, Shield, Ban, Eye, RefreshCw } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -44,6 +44,7 @@ interface UserTableProps {
 export function UserTable({ users }: UserTableProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState<number | null>(null)
+  const [syncingUser, setSyncingUser] = useState<number | null>(null)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -120,6 +121,36 @@ export function UserTable({ users }: UserTableProps) {
       })
     } finally {
       setIsLoading(null)
+    }
+  }
+
+  // Handle Discord role sync
+  const handleDiscordRoleSync = async (userId: number) => {
+    setSyncingUser(userId)
+    try {
+      const result = await syncUserRole(userId)
+
+      if (result.success) {
+        toast({
+          title: "Role Synced",
+          description: result.message,
+        })
+        router.refresh()
+      } else {
+        toast({
+          title: "Sync Failed",
+          description: result.message,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sync Discord role",
+        variant: "destructive",
+      })
+    } finally {
+      setSyncingUser(null)
     }
   }
 
@@ -206,8 +237,8 @@ export function UserTable({ users }: UserTableProps) {
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" disabled={isLoading === user.id}>
-                          {isLoading === user.id ? (
+                        <Button variant="ghost" size="icon" disabled={isLoading === user.id || syncingUser === user.id}>
+                          {isLoading === user.id || syncingUser === user.id ? (
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                           ) : (
                             <MoreHorizontal className="h-4 w-4" />
@@ -251,24 +282,10 @@ export function UserTable({ users }: UserTableProps) {
                           <Ban className="mr-2 h-4 w-4" />
                           {user.status === "Banned" ? "Unban User" : "Ban User"}
                         </DropdownMenuItem>
-                        {/* Add this new item */}
-                        <DropdownMenuItem
-                          onClick={async () => {
-                            const result = await syncUserRole(user.id)
-                            if (result.success) {
-                              toast({
-                                title: "Role Synced",
-                                description: result.message,
-                              })
-                            } else {
-                              toast({
-                                title: "Sync Failed",
-                                description: result.message,
-                                variant: "destructive",
-                              })
-                            }
-                          }}
-                        >
+                        {/* Add Discord role sync option */}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDiscordRoleSync(user.id)}>
+                          <RefreshCw className="mr-2 h-4 w-4" />
                           Sync Discord Role
                         </DropdownMenuItem>
                       </DropdownMenuContent>

@@ -54,7 +54,6 @@ export default async function AdminUsersPage() {
             </form>
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
             <p className="text-muted-foreground">Manage users, roles, and permissions</p>
           </div>
 
