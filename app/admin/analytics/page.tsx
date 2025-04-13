@@ -10,7 +10,7 @@ export default async function AdminAnalyticsPage() {
   const session = await getServerSession(authOptions)
 
   // Check if user is authorized to access admin panel
-  if (!session?.user || !["ADMIN","SPECIAL_ADVISOR", "SENIOR_ADMIN", "HEAD_ADMIN", "WEBMASTER"].includes(session.user.role as string)) {
+  if (!session?.user || !["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
     redirect("/auth/signin?callbackUrl=/admin/analytics")
   }
 

@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 import { useState, useRef } from "react"
+import { Shield, Users, Anchor, Flame, Fish } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
-import { UserNav } from "@/components/user-nav"
 
 const departments = [
   {
@@ -107,7 +107,11 @@ export function SiteHeader() {
                   Forums
                 </Link>
               </li>
-              <li className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+              <li
+                className="relative"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
                 <button
                   onClick={() => setIsDeptsOpen(!isDeptsOpen)}
                   className={cn(
@@ -121,7 +125,7 @@ export function SiteHeader() {
                 </button>
                 {/* Dropdown menu */}
                 {isDeptsOpen && (
-                  <div
+                  <div 
                     className="absolute left-0 top-full pt-1 w-64 z-50"
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
@@ -181,11 +185,27 @@ export function SiteHeader() {
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </Link>
-
-            {/* Replace the profile link with UserNav component */}
             {!isLoading &&
               (session ? (
-                <UserNav />
+                <Link
+                  href={`/profile/${session.user?.id || ""}`}
+                  className="w-10 h-10 dark:bg-gray-700 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden"
+                >
+                  {session.user?.image ? (
+                    <img
+                      src={session.user.image || "/placeholder.svg"}
+                      alt={session.user.name || "User"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="dark:text-gray-300 text-gray-600">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                  )}
+                </Link>
               ) : (
                 <Link
                   href="/auth/signin"
