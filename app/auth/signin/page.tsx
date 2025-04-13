@@ -58,12 +58,6 @@ function SignInContent() {
           )}
           Continue with Discord
         </Button>
-        <div className="text-sm text-center text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href="/auth/signup" className="underline underline-offset-4 hover:text-primary">
-            Sign up
-          </Link>
-        </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <div className="text-sm text-muted-foreground text-center">
