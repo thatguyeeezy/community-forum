@@ -6,7 +6,7 @@ async function main() {
   try {
     console.log("Starting to seed categories...")
 
-    // Create main categories
+    // Create main categories - using the actual schema fields
     const announcements = await prisma.category.upsert({
       where: { id: 1 },
       update: {
@@ -14,6 +14,8 @@ async function main() {
         slug: "community-announcements",
         description: "Official announcements from the community team",
         order: 1,
+        isAnnouncement: true,
+        minRole: "APPLICANT",
       },
       create: {
         id: 1,
@@ -21,8 +23,11 @@ async function main() {
         slug: "community-announcements",
         description: "Official announcements from the community team",
         order: 1,
+        isAnnouncement: true,
+        minRole: "APPLICANT",
       },
     })
+    console.log("Created category:", announcements.name)
 
     const recruitment = await prisma.category.upsert({
       where: { id: 2 },
@@ -31,6 +36,8 @@ async function main() {
         slug: "recruitment-retention",
         description: "Announcements from the Recruitment & Retention team",
         order: 2,
+        isAnnouncement: true,
+        minRole: "APPLICANT",
       },
       create: {
         id: 2,
@@ -38,10 +45,11 @@ async function main() {
         slug: "recruitment-retention",
         description: "Announcements from the Recruitment & Retention team",
         order: 2,
+        isAnnouncement: true,
+        minRole: "APPLICANT",
       },
     })
-
-    console.log("Seeded categories:", { announcements, recruitment })
+    console.log("Created category:", recruitment.name)
 
     // Create departments
     const departments = [
