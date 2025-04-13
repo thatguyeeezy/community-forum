@@ -23,9 +23,9 @@ function SignInContent() {
   }
 
   return (
-    <Card className="w-full max-w-md border bg-card text-card-foreground">
+    <Card className="w-full max-w-md border bg-card text-card-foreground shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+        <CardTitle className="text-2xl font-bold text-foreground">Sign in</CardTitle>
         <CardDescription className="text-muted-foreground">
           Sign in to your account using Discord
         </CardDescription>
@@ -49,7 +49,7 @@ function SignInContent() {
           variant="outline" 
           onClick={handleDiscordSignIn}
           disabled={isLoading}
-          className="w-full bg-background hover:bg-accent hover:text-accent-foreground"
+          className="w-full bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           {isLoading ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -79,9 +79,9 @@ function SignInContent() {
 // Fallback component to show while loading
 function SignInFallback() {
   return (
-    <Card className="w-full max-w-md border bg-card text-card-foreground">
+    <Card className="w-full max-w-md border bg-card text-card-foreground shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+        <CardTitle className="text-2xl font-bold text-foreground">Sign in</CardTitle>
         <CardDescription className="text-muted-foreground">
           Loading sign-in options...
         </CardDescription>
