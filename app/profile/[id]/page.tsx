@@ -46,6 +46,10 @@ function formatJoinDateForBadge(joinDate: string): string {
 
 // Define role colors and labels
 const roleConfig = {
+  WEBMASTER: {
+    label: "Webmaster",
+    color: "bg-purple-500 text-white hover:bg-purple-600",
+  },
   HEAD_ADMIN: {
     label: "Head Administration",
     color: "bg-cyan-500 text-white hover:bg-cyan-600",

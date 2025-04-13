@@ -18,6 +18,7 @@ interface Member {
 
 // Define role order and colors
 const roleConfig = {
+  WEBMASTER: { order: 0, label: "Webmaster", color: "bg-purple-500 text-white" },
   HEAD_ADMIN: { order: 1, label: "Head Administration", color: "bg-cyan-500 text-white" },
   SENIOR_ADMIN: { order: 2, label: "Senior Administration", color: "bg-blue-800 text-white" },
   SPECIAL_ADVISOR: { order: 3, label: "Special Advisor", color: "bg-blue-800 text-white" },
@@ -27,7 +28,9 @@ const roleConfig = {
   STAFF: { order: 7, label: "Staff", color: "bg-yellow-500 text-black" },
   STAFF_IN_TRAINING: { order: 8, label: "Staff In Training", color: "bg-red-400 text-white" },
   MEMBER: { order: 9, label: "Member", color: "bg-blue-400 text-white" },
-  APPLICANT: { order: 10, label: "Applicant", color: "bg-gray-400 text-white" },
+  RECRUIT: { order: 10, label: "Recruit", color: "bg-green-400 text-white" },
+  APPLICANT: { order: 11, label: "Applicant", color: "bg-gray-400 text-white" },
+  GUEST: { order: 12, label: "Guest", color: "bg-gray-400 text-white" },
 }
 
 export default function MembersPage() {
