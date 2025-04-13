@@ -1,50 +1,45 @@
-// app/api/users/[id]/route.ts
-import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  // Await the params object
-  const resolvedParams = await params
-  const userId = resolvedParams.id
-
-  const session = await auth()
-
-  if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 })
-  }
-
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(userId, 10)
+    const { id } = params
+    const session = await auth()
 
-    // Convert both to strings for comparison
-    const sessionUserId = session?.user?.id !== undefined ? String(session.user.id) : null
+    if (!session?.user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+    }
+
+    const userId = Number.parseInt(id, 10)
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
+    }
+
+    const sessionUserId = String(session.user.id)
     const isOwnProfile = sessionUserId === String(id)
 
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: userId },
       select: {
         id: true,
         name: true,
-        email: isOwnProfile, // Only return email for own profile
+        email: isOwnProfile, // Only include email if it's the user's own profile
         image: true,
         bio: true,
+        role: true,
+        badges: true, // Add this line to include badges
         rank: true,
         department: true,
-        discordId: true, // Always include discordId
-        role: true,
-        badges: true, // Include badges
-        createdAt: true,
         rnrStatus: true,
+        discordId: true,
+        createdAt: true,
         lastActive: true,
         status: true,
-        // Get counts for stats
         _count: {
           select: {
             threads: true,
             posts: true,
-            followers: true,
-            following: true,
           },
         },
       },
@@ -54,20 +49,24 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // Format the response - create a new object without _count
-    const { _count, ...userData } = user
-    const formattedUser = {
-      ...userData,
-      threadCount: _count.threads,
-      postCount: _count.posts,
-      followers: _count.followers,
-      following: _count.following,
-      // Format dates
-      createdAt: user.createdAt.toISOString(),
-      lastActive: user.lastActive ? user.lastActive.toISOString() : null,
-    }
+    // Calculate followers and following counts
+    const followers = await prisma.follow.count({
+      where: {
+        followingId: userId,
+      },
+    })
 
-    return NextResponse.json(formattedUser)
+    const following = await prisma.follow.count({
+      where: {
+        followerId: userId,
+      },
+    })
+
+    return NextResponse.json({
+      ...user,
+      followers,
+      following,
+    })
   } catch (error) {
     console.error("Error fetching user:", error)
     return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 })

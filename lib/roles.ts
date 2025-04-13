@@ -28,37 +28,28 @@ export const STAFF_ROLES = ["JUNIOR_ADMIN", "SENIOR_STAFF", "STAFF"]
 export const BASIC_ROLES = ["STAFF_IN_TRAINING", "MEMBER", "APPLICANT"]
 
 // Check if a user has admin permissions
-export function hasAdminPermission(role?: string, badges?: string | string[]): boolean {
-  // Parse badges if it's a string
-  const badgeArray = typeof badges === "string" ? JSON.parse(badges) : badges || []
-  if (badgeArray.includes(BADGES.WEBMASTER)) return true
+export function hasAdminPermission(role?: string, badges?: string[]): boolean {
+  if (badges?.includes(BADGES.WEBMASTER)) return true
   return role ? ADMIN_ROLES.includes(role) : false
 }
 
 // Check if a user has staff permissions
-export function hasStaffPermission(role?: string, badges?: string | string[]): boolean {
-  // Parse badges if it's a string
-  const badgeArray = typeof badges === "string" ? JSON.parse(badges) : badges || []
-  if (badgeArray.includes(BADGES.WEBMASTER)) return true
+export function hasStaffPermission(role?: string, badges?: string[]): boolean {
+  if (badges?.includes(BADGES.WEBMASTER)) return true
   return role ? ADMIN_ROLES.includes(role) || STAFF_ROLES.includes(role) : false
 }
 
 // Check if a user is a webmaster
-export function isWebmaster(badges?: string | string[]): boolean {
-  // Parse badges if it's a string
-  const badgeArray = typeof badges === "string" ? JSON.parse(badges) : badges || []
-  return badgeArray.includes(BADGES.WEBMASTER) || false
+export function isWebmaster(badges?: string[]): boolean {
+  return badges?.includes(BADGES.WEBMASTER) || false
 }
 
 // Check if a user can assign a specific role
-export function canAssignRole(userRole?: string, targetRole?: string, badges?: string | string[]): boolean {
+export function canAssignRole(userRole?: string, targetRole?: string, badges?: string[]): boolean {
   if (!userRole || !targetRole) return false
 
-  // Parse badges if it's a string
-  const badgeArray = typeof badges === "string" ? JSON.parse(badges) : badges || []
-
   // Webmaster can assign any role
-  if (badgeArray.includes(BADGES.WEBMASTER)) return true
+  if (badges?.includes(BADGES.WEBMASTER)) return true
 
   // Get the indices in the hierarchy (lower index = higher rank)
   const userRoleIndex = ROLE_HIERARCHY.indexOf(userRole as any)
@@ -69,14 +60,11 @@ export function canAssignRole(userRole?: string, targetRole?: string, badges?: s
 }
 
 // Get available roles that a user can assign
-export function getAssignableRoles(userRole?: string, badges?: string | string[]): string[] {
+export function getAssignableRoles(userRole?: string, badges?: string[]): string[] {
   if (!userRole) return []
 
-  // Parse badges if it's a string
-  const badgeArray = typeof badges === "string" ? JSON.parse(badges) : badges || []
-
   // Webmaster can assign any role
-  if (badgeArray.includes(BADGES.WEBMASTER)) {
+  if (badges?.includes(BADGES.WEBMASTER)) {
     return [...ROLE_HIERARCHY]
   }
 
