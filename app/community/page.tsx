@@ -99,9 +99,6 @@ export default async function CommunityPage() {
                           <Link href={`/community/new-announcement?categoryId=${category.id}`}>New Announcement</Link>
                         </Button>
                       )}
-                      <Button size="sm" variant="outline" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                        <Link href={`/community/${category.id}`}>View All</Link>
-                      </Button>
                     </div>
                   </div>
                 </div>
