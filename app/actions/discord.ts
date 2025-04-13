@@ -4,29 +4,23 @@ import { prisma } from "@/lib/prisma"
 import { syncUserRoleFromDiscord } from "@/lib/discord-roles"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
-
-// Helper function to check if a user has admin permissions
-async function hasAdminPermission() {
-  const session = await auth()
-  if (!session?.user?.role) return false
-
-  const adminRoles = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN"]
-  return adminRoles.includes(session.user.role)
-}
+import { ADMIN_ROLES, hasAdminPermission } from "@/lib/roles"
 
 // Function to sync a specific user's role (admin only)
 export async function syncUserRole(userId: number) {
   try {
-    // Check if the current user has admin permissions
-    const isAdmin = await hasAdminPermission()
-
-    // Get the current user's ID
+    // Get the current user's session
     const session = await auth()
-    const currentUserId = session?.user?.id ? Number.parseInt(session.user.id, 10) : null
+    if (!session?.user) {
+      return { success: false, message: "Not authenticated" }
+    }
+
+    const currentUserRole = session.user.role as string
+    const currentUserId = Number.parseInt(session.user.id as string, 10)
 
     // Only allow admins to sync other users' roles
     // Regular users can only sync their own role
-    if (!isAdmin && currentUserId !== userId) {
+    if (currentUserId !== userId && !hasAdminPermission(currentUserRole)) {
       console.error(`User ${currentUserId} attempted to sync role for user ${userId} without permission`)
       return { success: false, message: "Permission denied" }
     }
@@ -64,8 +58,7 @@ export async function syncUserRole(userId: number) {
     // Only update if the role is different
     if (user.role !== syncedRole) {
       // Admin protection: Don't downgrade admin roles unless the current user is an admin
-      const adminRoles = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN", "JUNIOR_ADMIN"]
-      if (adminRoles.includes(user.role) && !isAdmin) {
+      if (ADMIN_ROLES.includes(user.role) && !hasAdminPermission(currentUserRole)) {
         console.log(`Cannot downgrade admin role ${user.role} to ${syncedRole} without admin permission`)
         return { success: false, message: "Cannot modify admin roles" }
       }
@@ -110,7 +103,7 @@ export async function syncAllUserRoles() {
       return { success: false, message: "Not authenticated" }
     }
 
-    const seniorAdminRoles = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"]
+    const seniorAdminRoles = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"]
     if (!seniorAdminRoles.includes(session.user.role)) {
       console.error(`User with role ${session.user.role} attempted to sync all roles without permission`)
       return { success: false, message: "Permission denied" }
@@ -163,8 +156,7 @@ export async function syncAllUserRoles() {
 
           if (user.role !== syncedRole) {
             // Don't downgrade admin roles
-            const adminRoles = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN", "JUNIOR_ADMIN"]
-            if (adminRoles.includes(user.role)) {
+            if (ADMIN_ROLES.includes(user.role)) {
               console.log(`Skipping admin user ${user.id} with role ${user.role}`)
               results.skipped++
               continue

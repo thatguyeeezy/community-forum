@@ -13,22 +13,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-// Add this import at the top with the other imports
 import { NotificationsDropdown } from "@/components/notifications-dropdown"
+import { hasAdminPermission, hasStaffPermission } from "@/lib/roles"
 
 export function UserNav() {
   const { data: session } = useSession()
 
-  // Check if user has admin role
-  const isAdmin =
-    session?.user?.role &&
-    ["HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "SPECIAL_ADVISOR"].includes(session.user.role as string)
-
-  // Check if user has staff role
-  const isStaff =
-    session?.user?.role &&
-    ["STAFF", "SENIOR_STAFF", "STAFF_IN_TRAINING", "JUNIOR_ADMIN"].includes(session.user.role as string)
+  // Check if user has admin or staff permissions
+  const isAdmin = session?.user?.role ? hasAdminPermission(session.user.role as string) : false
+  const isStaff = session?.user?.role ? hasStaffPermission(session.user.role as string) : false
 
   // User has staff panel access if they're admin or staff
   const hasStaffAccess = isAdmin || isStaff

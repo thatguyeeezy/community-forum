@@ -4,12 +4,19 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { canAssignRole, hasAdminPermission, hasStaffPermission } from "@/lib/roles"
 
-export async function updateUserRole(userId: string, role: "ADMIN" | "MODERATOR" | "MEMBER") {
+export async function updateUserRole(userId: string, role: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (!session?.user) {
     return { error: "Unauthorized" }
+  }
+
+  // Check if the user has permission to assign this role
+  const userRole = session.user.role as string
+  if (!canAssignRole(userRole, role)) {
+    return { error: "You don't have permission to assign this role" }
   }
 
   try {
@@ -19,7 +26,7 @@ export async function updateUserRole(userId: string, role: "ADMIN" | "MODERATOR"
     })
 
     revalidatePath(`/admin/users`)
-    revalidatePath(`/members/${userId}`)
+    revalidatePath(`/profile/${userId}`)
     return { success: true, message: `User role updated to ${role}` }
   } catch (error) {
     console.error("Role update error:", error)
@@ -30,7 +37,7 @@ export async function updateUserRole(userId: string, role: "ADMIN" | "MODERATOR"
 export async function banUser(userId: string, banned: boolean) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
     return { error: "Unauthorized" }
   }
 
@@ -45,7 +52,7 @@ export async function banUser(userId: string, banned: boolean) {
     })
 
     revalidatePath(`/admin/users`)
-    revalidatePath(`/members/${userId}`)
+    revalidatePath(`/profile/${userId}`)
     return {
       success: true,
       message: banned ? "User has been banned" : "User has been unbanned",
@@ -59,7 +66,7 @@ export async function banUser(userId: string, banned: boolean) {
 export async function deleteThread(threadId: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
     return { error: "Unauthorized" }
   }
 
@@ -91,7 +98,7 @@ export async function deleteThread(threadId: string) {
 export async function toggleThreadPin(threadId: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
     return { error: "Unauthorized" }
   }
 
@@ -128,7 +135,7 @@ export async function toggleThreadPin(threadId: string) {
 export async function toggleThreadLock(threadId: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
     return { error: "Unauthorized" }
   }
 
@@ -165,7 +172,7 @@ export async function toggleThreadLock(threadId: string) {
 export async function createCategory(formData: FormData) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (!session?.user || !hasAdminPermission(session.user.role as string)) {
     return { error: "Unauthorized" }
   }
 
@@ -209,4 +216,3 @@ export async function createCategory(formData: FormData) {
     return { error: "Failed to create category" }
   }
 }
-

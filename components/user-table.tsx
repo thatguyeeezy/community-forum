@@ -19,8 +19,9 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { updateUserRole, banUser } from "@/app/actions/admin"
-// Add the import for the syncUserRole action
 import { syncUserRole } from "@/app/actions/discord"
+import { useSession } from "next-auth/react"
+import { ROLE_HIERARCHY, canAssignRole, formatRoleDisplay } from "@/lib/roles"
 
 interface UserData {
   id: number
@@ -47,6 +48,8 @@ export function UserTable({ users }: UserTableProps) {
   const [syncingUser, setSyncingUser] = useState<number | null>(null)
   const router = useRouter()
   const { toast } = useToast()
+  const { data: session } = useSession()
+  const currentUserRole = session?.user?.role as string
 
   // Filter users based on search term
   const filteredUsers = users.filter((user) => {
@@ -63,7 +66,17 @@ export function UserTable({ users }: UserTableProps) {
   })
 
   // Handle role change
-  const handleRoleChange = async (userId: number, newRole: "ADMIN" | "MODERATOR" | "MEMBER") => {
+  const handleRoleChange = async (userId: number, newRole: string) => {
+    // Check if the current user can assign this role
+    if (!canAssignRole(currentUserRole, newRole)) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to assign this role",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(userId)
     try {
       const result = await updateUserRole(userId.toString(), newRole)
@@ -77,7 +90,7 @@ export function UserTable({ users }: UserTableProps) {
       } else {
         toast({
           title: "Success",
-          description: `User role updated to ${newRole}`,
+          description: `User role updated to ${formatRoleDisplay(newRole)}`,
         })
         router.refresh()
       }
@@ -157,6 +170,8 @@ export function UserTable({ users }: UserTableProps) {
   // Get role badge
   const getRoleBadge = (role: string) => {
     switch (role) {
+      case "WEBMASTER":
+        return <Badge className="bg-black text-white">Webmaster</Badge>
       case "HEAD_ADMIN":
         return <Badge className="bg-cyan-500 text-white">Head Admin</Badge>
       case "SENIOR_ADMIN":
@@ -180,6 +195,23 @@ export function UserTable({ users }: UserTableProps) {
       default:
         return <Badge variant="outline">{role}</Badge>
     }
+  }
+
+  // Get assignable roles based on current user's role
+  const getAssignableRoleItems = () => {
+    // Get the current user's role index
+    const userRoleIndex = ROLE_HIERARCHY.indexOf(currentUserRole as any)
+    if (userRoleIndex === -1) return []
+
+    // Return all roles that have a higher index (lower rank) than the user's role
+    const assignableRoles = ROLE_HIERARCHY.filter((_, index) => index > userRoleIndex)
+
+    return assignableRoles.map((role) => (
+      <DropdownMenuItem key={role} onClick={() => handleRoleChange(user.id, role)}>
+        <Shield className="mr-2 h-4 w-4" />
+        Make {formatRoleDisplay(role)}
+      </DropdownMenuItem>
+    ))
   }
 
   return (
@@ -262,18 +294,8 @@ export function UserTable({ users }: UserTableProps) {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, "ADMIN")}>
-                          <Shield className="mr-2 h-4 w-4" />
-                          Make Admin
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, "MODERATOR")}>
-                          <Shield className="mr-2 h-4 w-4" />
-                          Make Moderator
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, "MEMBER")}>
-                          <Shield className="mr-2 h-4 w-4" />
-                          Make Member
-                        </DropdownMenuItem>
+                        {/* Dynamically generate role options based on current user's permissions */}
+                        {getAssignableRoleItems()}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleBanToggle(user.id, user.status)}

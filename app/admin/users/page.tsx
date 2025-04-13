@@ -6,16 +6,21 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { UserTable } from "@/components/user-table"
 import { Button } from "@/components/ui/button"
-// Add the import for the new actions
 import { syncAllUserRoles } from "@/app/actions/discord"
+import { hasAdminPermission } from "@/lib/roles"
 
 export default async function AdminUsersPage() {
   const session = await getServerSession(authOptions)
 
   // Check if user is authorized to access admin panel
-  if (!session?.user || !["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
+  if (!session?.user || !hasAdminPermission(session.user.role as string)) {
     redirect("/auth/signin?callbackUrl=/admin/users")
   }
+
+  // Check if user has senior admin permissions for the sync button
+  const canSyncAllRoles = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(
+    session.user.role as string,
+  )
 
   // Fetch users
   const users = await prisma.user.findMany({
@@ -47,11 +52,13 @@ export default async function AdminUsersPage() {
         <div className="flex-1 space-y-6">
           <div className="mb-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold">User Management</h1>
-            <form action={syncAllUserRoles}>
-              <Button type="submit" variant="outline">
-                Sync All Discord Roles
-              </Button>
-            </form>
+            {canSyncAllRoles && (
+              <form action={syncAllUserRoles}>
+                <Button type="submit" variant="outline">
+                  Sync All Discord Roles
+                </Button>
+              </form>
+            )}
           </div>
           <div>
             <p className="text-muted-foreground">Manage users, roles, and permissions</p>
