@@ -2,7 +2,7 @@ import type { Role } from "@prisma/client"
 
 // Discord role IDs
 export const DISCORD_ROLES = {
-  SENIOR_STAFF: "1253761018769969244",
+  SENIOR_STAFF: "1209567769826295899",
   STAFF: "1209852842727313438",
   STAFF_IN_TRAINING: "1209852843574693918",
   MEMBER: "1209852841825669120",
@@ -49,6 +49,13 @@ export function mapDiscordRoleToAppRole(discordRoles: string[]): Role {
     }
   
     console.log(`Fetching Discord roles for user ${discordId}`)
+  
+    // Check if we have the required environment variables
+    if (!process.env.DISCORD_BOT_TOKEN || !process.env.DISCORD_GUILD_ID) {
+      console.error("Missing required environment variables: DISCORD_BOT_TOKEN or DISCORD_GUILD_ID")
+      return []
+    }
+  
     console.log(`Using Guild ID: ${process.env.DISCORD_GUILD_ID}`)
   
     try {
@@ -59,6 +66,7 @@ export function mapDiscordRoleToAppRole(discordRoles: string[]): Role {
         headers: {
           Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
         },
+        cache: "no-store", // Ensure we don't use cached responses
       })
   
       // Check for rate limiting
@@ -72,6 +80,11 @@ export function mapDiscordRoleToAppRole(discordRoles: string[]): Role {
   
         // Try again recursively after waiting
         return fetchDiscordRoles(discordId)
+      }
+  
+      if (response.status === 404) {
+        console.error(`User ${discordId} not found in Discord server`)
+        return []
       }
   
       if (!response.ok) {
@@ -92,7 +105,7 @@ export function mapDiscordRoleToAppRole(discordRoles: string[]): Role {
       }
   
       const data = await response.json()
-      console.log("Discord API response:", JSON.stringify(data, null, 2))
+      console.log("Discord API response received")
   
       if (data.roles && Array.isArray(data.roles)) {
         console.log(`Found ${data.roles.length} roles for user:`, data.roles)
