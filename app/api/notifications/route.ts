@@ -1,48 +1,38 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
+import { authOptions } from "@/lib/auth"
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userId = typeof session.user.id === "string" ? Number.parseInt(session.user.id, 10) : session.user.id
+    const { searchParams } = new URL(request.url)
+    const limit = searchParams.get("limit") ? Number.parseInt(searchParams.get("limit")!) : 10
 
-    const searchParams = request.nextUrl.searchParams
-    const limit = searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string, 10) : 10
-    const page = searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string, 10) : 1
-    const skip = (page - 1) * limit
-
-    // Get notifications for the user
     const notifications = await prisma.notification.findMany({
       where: {
-        recipientId: userId,
+        recipientId: session.user.id,
       },
       orderBy: {
         createdAt: "desc",
       },
       take: limit,
-      skip,
     })
 
-    // Get unread count
     const unreadCount = await prisma.notification.count({
       where: {
-        recipientId: userId,
+        recipientId: session.user.id,
         read: false,
       },
     })
 
-    return NextResponse.json({
-      notifications,
-      unreadCount,
-      page,
-      limit,
-    })
+    // Return as an array for compatibility with existing code
+    return NextResponse.json(notifications)
   } catch (error) {
     console.error("Error fetching notifications:", error)
     return NextResponse.json({ error: "Failed to fetch notifications" }, { status: 500 })

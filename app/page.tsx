@@ -61,11 +61,8 @@ export default async function ForumHomepage() {
       },
     })
 
-    // Fetch parent categories first
-    const parentCategories = await prisma.category.findMany({
-      where: {
-        parentId: null,
-      },
+    // Fetch categories - FIXED: removed parentId filter
+    const allCategories = await prisma.category.findMany({
       orderBy: {
         order: "asc",
       },
@@ -87,48 +84,8 @@ export default async function ForumHomepage() {
       },
     })
 
-    // Fetch child categories
-    const childCategories = await prisma.category.findMany({
-      where: {
-        NOT: {
-          parentId: null,
-        },
-      },
-      orderBy: {
-        order: "asc",
-      },
-      include: {
-        _count: {
-          select: {
-            threads: true,
-          },
-        },
-        threads: {
-          take: 1,
-          orderBy: {
-            updatedAt: "desc",
-          },
-          include: {
-            author: true,
-          },
-        },
-      },
-    })
-
-    // Group child categories by parent
-    const childCategoriesByParent = childCategories.reduce((acc, category) => {
-      if (!acc[category.parentId]) {
-        acc[category.parentId] = []
-      }
-      acc[category.parentId].push(category)
-      return acc
-    }, {})
-
-    // Combine parent categories with their children
-    categories = parentCategories.map((parent) => ({
-      ...parent,
-      children: childCategoriesByParent[parent.id] || [],
-    }))
+    // Since we don't have parent-child relationships, just use all categories
+    categories = allCategories
 
     console.log("Categories fetched:", categories.length)
   } catch (error) {
@@ -316,56 +273,6 @@ export default async function ForumHomepage() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Child categories */}
-                    {category.children && category.children.length > 0 && (
-                      <div className="ml-6 mt-4 space-y-4">
-                        {category.children.map((childCategory) => (
-                          <div
-                            key={childCategory.id}
-                            className="dark:bg-gray-800 bg-white shadow-md border-l-4 dark:border-gray-600 border-gray-300"
-                          >
-                            <div className="p-4">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <h4 className="text-lg font-bold dark:text-gray-100 text-gray-900">
-                                    {childCategory.name}
-                                  </h4>
-                                  <p className="dark:text-gray-300 text-gray-600 text-sm mt-1">
-                                    {childCategory.description}
-                                  </p>
-                                </div>
-                                <div className="dark:bg-gray-700 bg-gray-100 dark:text-gray-300 text-gray-600 text-xs px-2 py-1 rounded">
-                                  {childCategory._count?.threads || 0} threads
-                                </div>
-                              </div>
-
-                              <div className="mt-3 border-t dark:border-gray-700 border-gray-200 pt-2">
-                                {childCategory.threads && childCategory.threads.length > 0 ? (
-                                  childCategory.threads.map((thread) => (
-                                    <Link
-                                      key={thread.id}
-                                      href={`/community/thread/${thread.id}`}
-                                      className="block py-2 hover:dark:bg-gray-700 hover:bg-gray-100 px-3 -mx-3 rounded"
-                                    >
-                                      <div className="font-medium dark:text-gray-100 text-gray-900">{thread.title}</div>
-                                      <div className="text-sm dark:text-gray-400 text-gray-500">
-                                        Started by {thread.author?.name || "Anonymous"},{" "}
-                                        {formatTimeAgo(new Date(thread.createdAt))}
-                                      </div>
-                                    </Link>
-                                  ))
-                                ) : (
-                                  <div className="py-2 dark:text-gray-400 text-gray-500 text-sm">
-                                    No threads in this category yet.
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 ))
               ) : (
@@ -389,9 +296,9 @@ export default async function ForumHomepage() {
               <div className="dark:bg-gray-800 bg-white shadow-md p-5 mb-6 border-t-4 border-blue-500">
                 <h3 className="font-bold mb-2 dark:text-gray-100 text-gray-900">Featured Event</h3>
                 <p className="text-sm dark:text-gray-300 text-gray-600 mb-3">
-                  Placeholder for featured event!
+                  Join us this weekend for the grand opening of the new shopping mall!
                 </p>
-                <div className="text-sm dark:text-gray-400 text-gray-500">Placeholder for featured event date!</div>
+                <div className="text-sm dark:text-gray-400 text-gray-500">Saturday, 8PM EST</div>
               </div>
 
               {/* Server Status */}
