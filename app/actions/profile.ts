@@ -73,7 +73,7 @@ export async function updateProfile(formData: FormData) {
   }
 }
 
-// New function to reset profile image to Discord avatar
+// Function to reset profile image to Discord avatar
 export async function resetProfileImage() {
   const session = await auth()
 

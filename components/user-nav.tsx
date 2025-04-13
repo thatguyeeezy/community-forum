@@ -2,7 +2,7 @@
 
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
-import { User, Settings, LogOut, Shield, UserCircle } from "lucide-react"
+import { User, LogOut, Shield, UserCircle } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -59,15 +59,6 @@ export function UserNav() {
               >
                 <UserCircle className="mr-2 h-4 w-4" />
                 <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/account"
-                className="flex items-center cursor-pointer dark:text-gray-300 text-gray-600 dark:hover:text-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 hover:bg-gray-100"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Account Settings</span>
               </Link>
             </DropdownMenuItem>
             {hasStaffAccess && (
