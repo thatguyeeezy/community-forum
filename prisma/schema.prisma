@@ -108,7 +108,7 @@ model User {
   messages      Message[]   @relation("sender")
   receivedMessages Message[] @relation("recipient")
   notifications Notification[] @relation("recipient")
-  badges     String[]  @default([]) // Add this field to store badges like "WEBMASTER"
+  badges        String?    @default("[]") @db.Text // Updated to store JSON string
 }
 
 model VerificationToken {
