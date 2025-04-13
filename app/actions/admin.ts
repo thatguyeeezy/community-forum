@@ -24,7 +24,7 @@ export async function updateUserRole(userId: string, role: string) {
     (role === "HEAD_ADMIN" || role === "SENIOR_ADMIN" || role === "SPECIAL_ADVISOR") &&
     !isWebmaster(session.user.role as string) &&
     session.user.role !== "HEAD_ADMIN" &&
-    !isWebmaster(session.user.role as string)
+    session.user.role !== "WEBMASTER"
   ) {
     return { error: "Only webmasters and head admins can assign senior admin roles" }
   }
