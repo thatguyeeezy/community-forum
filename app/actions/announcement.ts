@@ -23,14 +23,32 @@ function canCreateAnnouncement(categoryId: number, userRole?: string, userDepart
   return false
 }
 
-// Function to generate a slug from a title
-function generateSlug(title: string): string {
+// Function to generate a base slug from a title
+function generateBaseSlug(title: string): string {
   return title
     .toLowerCase()
     .replace(/[^\w\s-]/g, "") // Remove special characters
     .replace(/\s+/g, "-") // Replace spaces with hyphens
     .replace(/-+/g, "-") // Replace multiple hyphens with a single hyphen
     .trim()
+}
+
+// Function to generate a unique slug
+async function generateUniqueSlug(title: string): Promise<string> {
+  const baseSlug = generateBaseSlug(title)
+
+  // Check if the slug exists
+  const existingThread = await prisma.thread.findUnique({
+    where: { slug: baseSlug },
+  })
+
+  if (!existingThread) {
+    return baseSlug
+  }
+
+  // If the slug exists, append a timestamp to make it unique
+  const timestamp = Date.now().toString().slice(-6)
+  return `${baseSlug}-${timestamp}`
 }
 
 export async function createAnnouncement(formData: FormData) {
@@ -57,8 +75,8 @@ export async function createAnnouncement(formData: FormData) {
     throw new Error("You don't have permission to create announcements in this category")
   }
 
-  // Generate a slug from the title
-  const slug = generateSlug(title)
+  // Generate a unique slug from the title
+  const slug = await generateUniqueSlug(title)
 
   // Sanitize HTML content
   const sanitizedContent = DOMPurify.sanitize(content)
@@ -67,7 +85,7 @@ export async function createAnnouncement(formData: FormData) {
   const announcement = await prisma.thread.create({
     data: {
       title,
-      slug, // Add the slug field
+      slug, // Add the unique slug field
       content: sanitizedContent,
       authorId: Number.parseInt(session.user.id as string, 10),
       categoryId,
@@ -113,7 +131,10 @@ export async function updateAnnouncement(formData: FormData) {
   }
 
   // Generate a new slug if the title has changed
-  const slug = title !== announcement.title ? generateSlug(title) : announcement.slug
+  let slug = announcement.slug
+  if (title !== announcement.title) {
+    slug = await generateUniqueSlug(title)
+  }
 
   // Sanitize HTML content
   const sanitizedContent = DOMPurify.sanitize(content)
