@@ -104,7 +104,19 @@ export async function updateAnnouncement(formData: FormData) {
     redirect("/auth/signin")
   }
 
-  const id = Number.parseInt(formData.get("id") as string, 10)
+  // Get the announcement ID from the form data
+  const announcementId = formData.get("announcementId")
+
+  if (!announcementId) {
+    throw new Error("Announcement ID is missing")
+  }
+
+  const id = Number.parseInt(announcementId.toString(), 10)
+
+  if (isNaN(id)) {
+    throw new Error("Invalid announcement ID")
+  }
+
   const title = formData.get("title") as string
   const content = formData.get("content") as string
   const isPinned = formData.get("isPinned") === "true"
