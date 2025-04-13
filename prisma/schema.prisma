@@ -91,7 +91,7 @@ model User {
   image         String?
   bio           String?   @db.Text
   status        String?
-  role          Role      @default(GUEST)
+  role          Role      @default(APPLICANT)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastActive    DateTime?
@@ -229,7 +229,6 @@ model AnonymousSession {
 }
 
 enum Role {
-  WEBMASTER         // Super-admin role
   HEAD_ADMIN        // Cyan
   SENIOR_ADMIN      // Dark Purple
   SPECIAL_ADVISOR   // Dark Blue
@@ -239,7 +238,6 @@ enum Role {
   STAFF             // Yellow
   STAFF_IN_TRAINING // Light Red
   MEMBER            // Light Blue
-  RECRUIT           // Light Green
   APPLICANT         // Grey (default)
-  GUEST             // Grey
 }
+
