@@ -5,9 +5,15 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import DOMPurify from "isomorphic-dompurify"
+import { isWebmaster } from "@/lib/permissions"
 
 // Function to check if user can create announcements in a category
 function canCreateAnnouncement(categoryId: number, userRole?: string, userDepartment?: string) {
+  // Webmaster can do anything
+  if (isWebmaster(userRole)) {
+    return true
+  }
+
   // Community Announcements - only SPECIAL_ADVISOR, SENIOR_ADMIN and HEAD_ADMIN
   if (categoryId === 1) {
     // Announcements category ID is 1

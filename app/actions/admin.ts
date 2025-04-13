@@ -4,12 +4,28 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { isWebmaster, isAdmin } from "@/lib/permissions"
 
-export async function updateUserRole(userId: string, role: "ADMIN" | "MODERATOR" | "MEMBER") {
+export async function updateUserRole(userId: string, role: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || session.user.role !== "ADMIN") {
+  // Only webmasters and admins can update roles
+  if (!session?.user || (!isWebmaster(session.user.role as string) && !isAdmin(session.user.role as string))) {
     return { error: "Unauthorized" }
+  }
+
+  // Only webmasters can create other webmasters
+  if (role === "WEBMASTER" && !isWebmaster(session.user.role as string)) {
+    return { error: "Only webmasters can assign the webmaster role" }
+  }
+
+  // Only webmasters and head admins can create admins
+  if (
+    (role === "HEAD_ADMIN" || role === "SENIOR_ADMIN") &&
+    !isWebmaster(session.user.role as string) &&
+    session.user.role !== "HEAD_ADMIN"
+  ) {
+    return { error: "Only webmasters and head admins can assign senior admin roles" }
   }
 
   try {
@@ -30,13 +46,12 @@ export async function updateUserRole(userId: string, role: "ADMIN" | "MODERATOR"
 export async function banUser(userId: string, banned: boolean) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  // Only admins and webmasters can ban users
+  if (!session?.user || (!isWebmaster(session.user.role as string) && !isAdmin(session.user.role as string))) {
     return { error: "Unauthorized" }
   }
 
   try {
-    // In a real implementation, you might have a 'banned' field in your User model
-    // For this example, we'll update the status to indicate banned
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -59,7 +74,8 @@ export async function banUser(userId: string, banned: boolean) {
 export async function deleteThread(threadId: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  // Only admins and webmasters can delete threads
+  if (!session?.user || (!isWebmaster(session.user.role as string) && !isAdmin(session.user.role as string))) {
     return { error: "Unauthorized" }
   }
 
@@ -91,7 +107,8 @@ export async function deleteThread(threadId: string) {
 export async function toggleThreadPin(threadId: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  // Only admins and webmasters can pin threads
+  if (!session?.user || (!isWebmaster(session.user.role as string) && !isAdmin(session.user.role as string))) {
     return { error: "Unauthorized" }
   }
 
@@ -128,7 +145,8 @@ export async function toggleThreadPin(threadId: string) {
 export async function toggleThreadLock(threadId: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "MODERATOR"].includes(session.user.role as string)) {
+  // Only admins and webmasters can lock threads
+  if (!session?.user || (!isWebmaster(session.user.role as string) && !isAdmin(session.user.role as string))) {
     return { error: "Unauthorized" }
   }
 
@@ -165,7 +183,8 @@ export async function toggleThreadLock(threadId: string) {
 export async function createCategory(formData: FormData) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user || session.user.role !== "ADMIN") {
+  // Only admins and webmasters can create categories
+  if (!session?.user || (!isWebmaster(session.user.role as string) && !isAdmin(session.user.role as string))) {
     return { error: "Unauthorized" }
   }
 
@@ -209,4 +228,3 @@ export async function createCategory(formData: FormData) {
     return { error: "Failed to create category" }
   }
 }
-
