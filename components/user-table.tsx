@@ -19,6 +19,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { updateUserRole, banUser } from "@/app/actions/admin"
+// Add the import for the syncUserRole action
+import { syncUserRole } from "@/app/actions/discord"
 
 interface UserData {
   id: number
@@ -128,10 +130,12 @@ export function UserTable({ users }: UserTableProps) {
         return <Badge className="bg-cyan-500 text-white">Head Admin</Badge>
       case "SENIOR_ADMIN":
         return <Badge className="bg-purple-500 text-white">Senior Admin</Badge>
+      case "SPECIAL_ADVISOR":
+        return <Badge className="bg-blue-800 text-white">Special Advisor</Badge>
       case "ADMIN":
         return <Badge className="bg-red-800 text-white">Admin</Badge>
       case "JUNIOR_ADMIN":
-        return <Badge className="bg-blue-800 text-white">Junior Admin</Badge>
+        return <Badge className="bg-blue-600 text-white">Junior Admin</Badge>
       case "SENIOR_STAFF":
         return <Badge className="bg-green-800 text-white">Senior Staff</Badge>
       case "STAFF":
@@ -246,6 +250,26 @@ export function UserTable({ users }: UserTableProps) {
                         >
                           <Ban className="mr-2 h-4 w-4" />
                           {user.status === "Banned" ? "Unban User" : "Ban User"}
+                        </DropdownMenuItem>
+                        {/* Add this new item */}
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            const result = await syncUserRole(user.id)
+                            if (result.success) {
+                              toast({
+                                title: "Role Synced",
+                                description: result.message,
+                              })
+                            } else {
+                              toast({
+                                title: "Sync Failed",
+                                description: result.message,
+                                variant: "destructive",
+                              })
+                            }
+                          }}
+                        >
+                          Sync Discord Role
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

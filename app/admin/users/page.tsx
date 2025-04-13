@@ -5,6 +5,9 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { UserTable } from "@/components/user-table"
+import { Button } from "@/components/ui/button"
+// Add the import for the new actions
+import { syncAllUserRoles } from "@/app/actions/discord"
 
 export default async function AdminUsersPage() {
   const session = await getServerSession(authOptions)
@@ -42,6 +45,14 @@ export default async function AdminUsersPage() {
       <div className="flex flex-col md:flex-row gap-6">
         <AdminSidebar />
         <div className="flex-1 space-y-6">
+          <div className="mb-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold">User Management</h1>
+            <form action={syncAllUserRoles}>
+              <Button type="submit" variant="outline">
+                Sync All Discord Roles
+              </Button>
+            </form>
+          </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
             <p className="text-muted-foreground">Manage users, roles, and permissions</p>

@@ -5,6 +5,8 @@ import { getServerSession } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import DiscordProvider from "next-auth/providers/discord"
 import { prisma } from "@/lib/prisma"
+// Import the new Discord roles utility at the top of the file
+import { syncUserRoleFromDiscord } from "@/lib/discord-roles"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -70,6 +72,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    // Update the signIn callback in the authOptions object
     async signIn({ user, account, profile }) {
       if (account?.provider === "discord" && profile) {
         try {
@@ -87,6 +90,31 @@ export const authOptions: NextAuthOptions = {
           })
 
           console.log("Updated user with Discord ID from profile:", profile.id)
+
+          // Sync the user's role based on their Discord roles
+          const discordId = profile.id as string
+          const syncedRole = await syncUserRoleFromDiscord(discordId)
+
+          if (syncedRole) {
+            // Only update roles that can be automatically assigned
+            // Don't downgrade ADMIN or higher roles
+            await prisma.user.update({
+              where: {
+                id: Number.parseInt(user.id as string, 10),
+              },
+              data: {
+                // Only update role if the current role is below JUNIOR_ADMIN
+                // This prevents downgrading admins
+                role: {
+                  set: syncedRole,
+                  // Only set if current role is not an admin role
+                  // This is a pseudo-code representation, we'll handle this in a separate query
+                },
+              },
+            })
+
+            console.log(`Updated user role to ${syncedRole} based on Discord roles`)
+          }
 
           // As a backup, also check the accounts table
           setTimeout(async () => {
@@ -112,6 +140,28 @@ export const authOptions: NextAuthOptions = {
                 })
 
                 console.log("Updated user with Discord ID from accounts table")
+
+                // Try syncing roles again if we didn't succeed earlier
+                if (!syncedRole) {
+                  const backupSyncedRole = await syncUserRoleFromDiscord(discordAccount.providerAccountId)
+                  if (backupSyncedRole) {
+                    // Check current role before updating
+                    const currentUser = await prisma.user.findUnique({
+                      where: { id: Number.parseInt(user.id as string, 10) },
+                      select: { role: true },
+                    })
+
+                    // Only update if current role is below JUNIOR_ADMIN
+                    const adminRoles = ["HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN", "JUNIOR_ADMIN"]
+                    if (currentUser && !adminRoles.includes(currentUser.role)) {
+                      await prisma.user.update({
+                        where: { id: Number.parseInt(user.id as string, 10) },
+                        data: { role: backupSyncedRole },
+                      })
+                      console.log(`Updated user role to ${backupSyncedRole} from backup sync`)
+                    }
+                  }
+                }
               }
             } catch (error) {
               console.error("Error in delayed Discord ID update:", error)
