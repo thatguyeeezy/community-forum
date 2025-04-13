@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils"
 import type { Role } from "@prisma/client"
 import { ProfileNotifications } from "@/components/profile-notifications"
 import { SyncRoleButton } from "@/components/sync-role-button"
-import { BADGES } from "@/lib/roles"
 
 // Format the last active time as a relative time
 function formatLastActive(lastActiveDate: string | null): string {
@@ -98,7 +97,6 @@ interface UserProfile {
   image: string
   bio: string
   role: Role
-  badges?: string[] // Add this field
   rank?: string
   department?: string
   rnrStatus?: string
@@ -414,63 +412,17 @@ export default function UserProfilePage() {
             <div className="bg-gray-800 shadow-md rounded-md overflow-hidden">
               <div className="p-4 border-b border-gray-700">
                 <h3 className="font-bold text-gray-100">Badges</h3>
-                <p className="text-sm text-gray-400">Achievements and special designations</p>
+                <p className="text-sm text-gray-400">Achievements earned</p>
               </div>
               <div className="p-4">
                 {(() => {
                   const badges = []
 
-                  // Add special designation badges
-                  if (profile.badges?.includes(BADGES.WEBMASTER)) {
-                    badges.push(
-                      <div
-                        key="webmaster"
-                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-black text-white border border-gray-600 dark:border-gray-800 mb-2 mr-2"
-                      >
-                        Webmaster
-                      </div>,
-                    )
-                  }
-
-                  if (profile.badges?.includes(BADGES.DEVELOPER)) {
-                    badges.push(
-                      <div
-                        key="developer"
-                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-purple-900 text-white border border-purple-700 dark:border-purple-800 mb-2 mr-2"
-                      >
-                        Developer
-                      </div>,
-                    )
-                  }
-
-                  if (profile.badges?.includes(BADGES.RETIRED_ADMIN)) {
-                    badges.push(
-                      <div
-                        key="retired-admin"
-                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-700 text-gray-200 border border-gray-600 dark:border-gray-800 mb-2 mr-2"
-                      >
-                        Retired Admin
-                      </div>,
-                    )
-                  }
-
-                  if (profile.badges?.includes(BADGES.CONTRIBUTOR)) {
-                    badges.push(
-                      <div
-                        key="contributor"
-                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-700 text-white border border-blue-600 dark:border-blue-800 mb-2 mr-2"
-                      >
-                        Contributor
-                      </div>,
-                    )
-                  }
-
-                  // Add achievement badges
                   if (isEarlyAdopter) {
                     badges.push(
                       <div
                         key="early-adopter"
-                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800 mb-2 mr-2"
+                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800"
                       >
                         Early Adopter
                       </div>,
@@ -481,7 +433,7 @@ export default function UserProfilePage() {
                     badges.push(
                       <div
                         key="helpful"
-                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-800 mb-2 mr-2"
+                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-800"
                       >
                         Helpful
                       </div>,
@@ -491,8 +443,8 @@ export default function UserProfilePage() {
                   if (profile.threadCount && profile.threadCount > 20) {
                     badges.push(
                       <div
-                        key="top-contributor"
-                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800 mb-2 mr-2"
+                        key="contributor"
+                        className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800"
                       >
                         Top Contributor
                       </div>,
@@ -503,7 +455,7 @@ export default function UserProfilePage() {
                     return <span className="text-sm text-gray-400">No badges earned yet</span>
                   }
 
-                  return <div className="flex flex-wrap">{badges}</div>
+                  return <div className="flex flex-wrap gap-2">{badges}</div>
                 })()}
               </div>
             </div>

@@ -1,74 +1,35 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET() {
   try {
-    const { id } = params
-    const session = await auth()
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-    }
-
-    const userId = Number.parseInt(id, 10)
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
-    }
-
-    const sessionUserId = String(session.user.id)
-    const isOwnProfile = sessionUserId === String(id)
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         name: true,
-        email: isOwnProfile, // Only include email if it's the user's own profile
         image: true,
-        bio: true,
         role: true,
-        badges: true, // Add this line to include badges
-        rank: true,
-        department: true,
-        rnrStatus: true,
-        discordId: true,
         createdAt: true,
-        lastActive: true,
-        status: true,
-        _count: {
-          select: {
-            threads: true,
-            posts: true,
-          },
-        },
+      },
+      orderBy: {
+        name: 'asc',
       },
     })
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
+    const formattedUsers = users.map(user => ({
+      id: user.id,
+      name: user.name || 'Anonymous',
+      image: user.image,
+      role: user.role,
+      joinDate: user.createdAt.toISOString(),
+    }))
 
-    // Calculate followers and following counts
-    const followers = await prisma.follow.count({
-      where: {
-        followingId: userId,
-      },
-    })
-
-    const following = await prisma.follow.count({
-      where: {
-        followerId: userId,
-      },
-    })
-
-    return NextResponse.json({
-      ...user,
-      followers,
-      following,
-    })
+    return NextResponse.json(formattedUsers)
   } catch (error) {
-    console.error("Error fetching user:", error)
-    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 })
+    console.error('Failed to fetch users:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    )
   }
 }

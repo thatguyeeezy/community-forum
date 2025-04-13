@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { canAssignRole, hasAdminPermission, hasStaffPermission } from "@/lib/roles"
-import { auth } from "@/auth"
 
 export async function updateUserRole(userId: string, role: string) {
   const session = await getServerSession(authOptions)
@@ -215,63 +214,5 @@ export async function createCategory(formData: FormData) {
   } catch (error) {
     console.error("Create category error:", error)
     return { error: "Failed to create category" }
-  }
-}
-
-// Add or remove a badge from a user
-export async function updateUserBadge(
-  userId: string,
-  badge: string,
-  action: "add" | "remove",
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      return { success: false, error: "Not authenticated" }
-    }
-
-    // Only webmasters can manage badges
-    const currentUser = await prisma.user.findUnique({
-      where: { id: Number(session.user.id) },
-      select: { badges: true },
-    })
-
-    if (!currentUser?.badges?.includes("WEBMASTER")) {
-      return { success: false, error: "Not authorized to manage badges" }
-    }
-
-    const id = Number.parseInt(userId, 10)
-    if (isNaN(id)) {
-      return { success: false, error: "Invalid user ID" }
-    }
-
-    // Get current badges
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: { badges: true },
-    })
-
-    if (!user) {
-      return { success: false, error: "User not found" }
-    }
-
-    let updatedBadges = [...(user.badges || [])]
-
-    if (action === "add" && !updatedBadges.includes(badge)) {
-      updatedBadges.push(badge)
-    } else if (action === "remove") {
-      updatedBadges = updatedBadges.filter((b) => b !== badge)
-    }
-
-    // Update the user
-    await prisma.user.update({
-      where: { id },
-      data: { badges: updatedBadges },
-    })
-
-    return { success: true }
-  } catch (error) {
-    console.error("Error updating user badge:", error)
-    return { success: false, error: "Failed to update user badge" }
   }
 }

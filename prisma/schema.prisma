@@ -108,7 +108,6 @@ model User {
   messages      Message[]   @relation("sender")
   receivedMessages Message[] @relation("recipient")
   notifications Notification[] @relation("recipient")
-  badges     String[]  @default([]) // Add this field to store badges like "WEBMASTER"
 }
 
 model VerificationToken {
@@ -222,7 +221,7 @@ model AnonymousSession {
 }
 
 enum Role {
-  WEBMASTER         // None
+  WEBMASTER         // None1
   HEAD_ADMIN        // Cyan
   SENIOR_ADMIN      // Dark Purple
   SPECIAL_ADVISOR   // Dark Blue

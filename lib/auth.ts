@@ -144,32 +144,73 @@ export const authOptions: NextAuthOptions = {
 
     // Rest of the callbacks remain the same
     async session({ session, token }) {
-      if (token.sub) {
-        session.user.id = Number.parseInt(token.sub, 10)
+      if (session.user && token.sub) {
+        session.user.id = token.sub
+        session.user.role = token.role as string
 
+        // If we have a Discord ID in the token, add it to the session
+        if (token.discordId) {
+          // @ts-ignore
+          session.user.discordId = token.discordId as string
+        }
+
+        // Fetch additional user data including discordId
         try {
           const userId = Number.parseInt(token.sub, 10)
           const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: {
-              discordId: true,
-              department: true,
-              role: true,
-              badges: true, // Add this line
-            },
+            select: { discordId: true, department: true, role: true },
           })
 
           if (user) {
-            session.user.discordId = user.discordId
+            // If the user has a Discord ID in the database, use that
+            if (user.discordId) {
+              // @ts-ignore
+              session.user.discordId = user.discordId
+            }
+
+            // @ts-ignore
             session.user.department = user.department
+
+            // Make sure role is up to date
             session.user.role = user.role
-            session.user.badges = user.badges || [] // Add this line
+
+            console.log("Session updated with user data:", {
+              discordId: user.discordId,
+              department: user.department,
+              role: user.role,
+            })
+
+            // If we still don't have a Discord ID but there's one in the accounts table, update the user
+            if (!user.discordId) {
+              const discordAccount = await prisma.account.findFirst({
+                where: {
+                  provider: "discord",
+                  userId: userId,
+                },
+              })
+
+              if (discordAccount) {
+                console.log("Found Discord account but user doesn't have Discord ID. Updating...")
+
+                await prisma.user.update({
+                  where: { id: userId },
+                  data: {
+                    discordId: discordAccount.providerAccountId,
+                  },
+                })
+
+                // @ts-ignore
+                session.user.discordId = discordAccount.providerAccountId
+
+                console.log("Updated user and session with Discord ID from accounts table")
+              }
+            }
           }
         } catch (error) {
           console.error("Error fetching user data for session:", error)
         }
       }
-
       return session
     },
 
