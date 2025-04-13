@@ -46,7 +46,9 @@ export function UserNav() {
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col space-y-1 leading-none">
                 <p className="font-medium dark:text-gray-100 text-gray-900">{session.user.name}</p>
-                <p className="text-sm dark:text-gray-400 text-gray-500">{session.user.email}</p>
+                {session.user.discordId && (
+                  <p className="text-sm dark:text-gray-400 text-gray-500">Discord ID: {session.user.discordId}</p>
+                )}
               </div>
             </div>
             <DropdownMenuSeparator className="dark:bg-gray-700 bg-gray-200" />
@@ -57,6 +59,15 @@ export function UserNav() {
               >
                 <UserCircle className="mr-2 h-4 w-4" />
                 <span>Profile</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/account"
+                className="flex items-center cursor-pointer dark:text-gray-300 text-gray-600 dark:hover:text-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 hover:bg-gray-100"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Account Settings</span>
               </Link>
             </DropdownMenuItem>
             {hasStaffAccess && (
@@ -70,15 +81,6 @@ export function UserNav() {
                 </Link>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem asChild>
-              <Link
-                href="/account"
-                className="flex items-center cursor-pointer dark:text-gray-300 text-gray-600 dark:hover:text-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 hover:bg-gray-100"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Account Settings</span>
-              </Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator className="dark:bg-gray-700 bg-gray-200" />
             <DropdownMenuItem
               onClick={() => signOut()}
