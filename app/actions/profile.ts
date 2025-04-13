@@ -171,7 +171,8 @@ export async function followUser(userId: string) {
           type: "follow",
           message: `${session.user.name} started following you`,
           recipientId: followingId,
-          link: `/members/${followerId}`,
+          link: `/profile/${followerId}`,
+          read: false,
         },
       })
 

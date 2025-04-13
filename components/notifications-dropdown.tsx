@@ -1,23 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast"
-import { formatDistanceToNow } from "date-fns"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import Link from "next/link"
+import { useSession } from "next-auth/react"
 
-type Notification = {
+interface Notification {
   id: number
   type: string
   message: string
@@ -30,114 +20,137 @@ export function NotificationsDropdown() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const { toast } = useToast()
+  const [open, setOpen] = useState(false)
+  const { data: session } = useSession()
 
-  // Fetch notifications
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch("/api/notifications?limit=5")
-      if (!response.ok) throw new Error("Failed to fetch notifications")
+  useEffect(() => {
+    if (!session?.user) return
 
-      const data = await response.json()
-      setNotifications(data.notifications)
-      setUnreadCount(data.unreadCount)
-    } catch (error) {
-      console.error("Error fetching notifications:", error)
-    } finally {
-      setLoading(false)
+    async function fetchNotifications() {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/notifications?limit=5`, {
+          cache: "no-store",
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setNotifications(data)
+          setUnreadCount(data.filter((n: Notification) => !n.read).length)
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  // Mark notification as read
-  const markAsRead = async (id: number, link: string) => {
+    fetchNotifications()
+
+    // Set up polling for new notifications
+    const interval = setInterval(fetchNotifications, 60000) // Check every minute
+
+    return () => clearInterval(interval)
+  }, [session])
+
+  const markAsRead = async (id: number) => {
     try {
       const response = await fetch(`/api/notifications/${id}/read`, {
         method: "POST",
       })
 
-      if (!response.ok) throw new Error("Failed to mark notification as read")
-
-      // Update local state
-      setNotifications((prev) => prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)))
-      setUnreadCount((prev) => Math.max(0, prev - 1))
-
-      // Navigate to the link
-      router.push(link)
+      if (response.ok) {
+        setNotifications(
+          notifications.map((notification) =>
+            notification.id === id ? { ...notification, read: true } : notification,
+          ),
+        )
+        setUnreadCount(Math.max(0, unreadCount - 1))
+      }
     } catch (error) {
-      console.error("Error marking notification as read:", error)
-      toast({
-        title: "Error",
-        description: "Failed to mark notification as read",
-        variant: "destructive",
-      })
+      console.error("Failed to mark notification as read:", error)
     }
   }
 
-  // Fetch notifications on mount and set up polling
-  useEffect(() => {
-    fetchNotifications()
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
 
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000)
+    if (diffMins < 1) return "Just now"
+    if (diffMins < 60) return `${diffMins}m ago`
 
-    return () => clearInterval(interval)
-  }, [])
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `${diffHours}h ago`
+
+    return date.toLocaleDateString()
+  }
+
+  if (!session?.user) return null
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+            <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 text-[10px] font-medium text-white flex items-center justify-center">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end">
-        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
-          {loading ? (
-            <div className="flex justify-center py-4">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-            </div>
-          ) : notifications.length > 0 ? (
-            notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`cursor-pointer flex flex-col items-start p-3 ${
-                  !notification.read ? "bg-blue-50 dark:bg-slate-800/60" : ""
-                }`}
-                onClick={() => markAsRead(notification.id, notification.link)}
-              >
-                <div className="flex w-full items-start justify-between">
-                  <span className="font-medium">
-                    {notification.type === "follow" ? "New Follower" : notification.type}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                  </span>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0" align="end">
+        <div className="bg-gray-800 text-gray-100 rounded-md overflow-hidden">
+          <div className="p-3 border-b border-gray-700 flex justify-between items-center">
+            <h4 className="font-medium">Notifications</h4>
+            {unreadCount > 0 && (
+              <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">{unreadCount} new</span>
+            )}
+          </div>
+          <div className="max-h-[300px] overflow-y-auto">
+            {loading ? (
+              <div className="p-4 text-center text-gray-400">Loading...</div>
+            ) : notifications.length === 0 ? (
+              <div className="p-4 text-center text-gray-400">
+                <Bell className="mx-auto h-8 w-8 opacity-50 mb-2" />
+                <p>No notifications yet</p>
+              </div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-3 border-b border-gray-700 last:border-0 ${!notification.read ? "bg-gray-700" : ""}`}
+                >
+                  <Link
+                    href={notification.link}
+                    className="block"
+                    onClick={() => {
+                      if (!notification.read) {
+                        markAsRead(notification.id)
+                      }
+                      setOpen(false)
+                    }}
+                  >
+                    <p className="text-sm text-gray-200">{notification.message}</p>
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(notification.createdAt)}</p>
+                  </Link>
                 </div>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{notification.message}</p>
-                {!notification.read && <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-blue-600"></span>}
-              </DropdownMenuItem>
-            ))
-          ) : (
-            <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">No notifications</div>
-          )}
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <Link
-          href="/profile/me?tab=notifications"
-          className="block w-full rounded-sm px-3 py-2 text-center text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-slate-800"
-        >
-          View all notifications
-        </Link>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              ))
+            )}
+          </div>
+          <div className="p-2 border-t border-gray-700">
+            <Link
+              href={`/profile/${session.user.id}`}
+              className="block text-center text-xs text-blue-400 hover:text-blue-300 p-1"
+              onClick={() => setOpen(false)}
+            >
+              View all notifications
+            </Link>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }

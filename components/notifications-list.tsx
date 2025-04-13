@@ -115,7 +115,7 @@ export function NotificationsList({ userId }: NotificationsListProps) {
   }
 
   return (
-    <div className="bg-gray-800 shadow-md rounded-md overflow-hidden">
+    <div className="bg-gray-800 shadow-md rounded-md overflow-hidden border border-gray-700">
       <div className="p-4 border-b border-gray-700 flex justify-between items-center">
         <h3 className="font-bold text-gray-100">Notifications</h3>
         {notifications.some((n) => !n.read) && (
@@ -145,7 +145,9 @@ export function NotificationsList({ userId }: NotificationsListProps) {
             ))
         ) : notifications.length === 0 ? (
           <div className="p-6 text-center">
-            <p className="text-gray-400">No notifications yet</p>
+            <p className="text-gray-400">
+              You don't have any notifications yet. When someone follows you or mentions you, you'll see it here.
+            </p>
           </div>
         ) : (
           <>

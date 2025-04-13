@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { EditProfileDialog } from "@/components/edit-profile-dialog"
 import { cn } from "@/lib/utils"
 import type { Role } from "@prisma/client"
+import { ProfileNotifications } from "@/components/profile-notifications"
 
 // Format the last active time as a relative time
 function formatLastActive(lastActiveDate: string | null): string {
@@ -479,6 +480,15 @@ export default function UserProfilePage() {
                 >
                   About
                 </TabsTrigger>
+                {/* Add the notifications tab only for the user's own profile */}
+                {isOwnProfile && (
+                  <TabsTrigger
+                    value="notifications"
+                    className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-gray-100"
+                  >
+                    Notifications
+                  </TabsTrigger>
+                )}
               </TabsList>
               <TabsContent value="threads">
                 <div className="bg-gray-800 shadow-md rounded-md overflow-hidden">
@@ -540,6 +550,12 @@ export default function UserProfilePage() {
                   </div>
                 </div>
               </TabsContent>
+              {/* Add the notifications tab content */}
+              {isOwnProfile && (
+                <TabsContent value="notifications">
+                  <ProfileNotifications userId={id.toString()} />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>
