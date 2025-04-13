@@ -327,8 +327,6 @@ export default function UserProfilePage() {
                       <Edit className="mr-2 h-4 w-4" />
                       Edit Profile
                     </Button>
-                    {/* Add the Sync Role button here */}
-                    <SyncRoleButton />
                   </>
                 ) : (
                   <>
