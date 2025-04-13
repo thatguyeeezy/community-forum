@@ -3,8 +3,16 @@
 import { useState } from "react"
 import { RichTextEditor } from "@/components/rich-text-editor"
 
-export function RichTextEditorWrapper({ name, placeholder }: { name: string; placeholder?: string }) {
-  const [content, setContent] = useState("")
+export function RichTextEditorWrapper({
+  name,
+  placeholder,
+  initialContent = "",
+}: {
+  name: string
+  placeholder?: string
+  initialContent?: string
+}) {
+  const [content, setContent] = useState(initialContent)
 
   return (
     <>

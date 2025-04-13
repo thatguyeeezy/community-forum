@@ -5,9 +5,9 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { notFound, redirect } from "next/navigation"
 import { updateAnnouncement } from "@/app/actions/announcement"
-import { RichTextEditor } from "@/components/rich-text-editor"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { RichTextEditorWrapper } from "@/components/rich-text-editor-wrapper"
 
 // Function to check if user can edit announcements in a category
 function canEditAnnouncement(categoryId: number, userRole?: string, userDepartment?: string) {
@@ -122,19 +122,5 @@ export default async function EditAnnouncementPage({ params }: { params: { id: s
         </div>
       </div>
     </div>
-  )
-}
-// Client component wrapper for the rich text editor
-;("use client")
-import { useState } from "react"
-
-function RichTextEditorWrapper({ name, initialContent = "" }: { name: string; initialContent?: string }) {
-  const [content, setContent] = useState(initialContent)
-
-  return (
-    <>
-      <input type="hidden" name={name} value={content} />
-      <RichTextEditor content={content} onChange={setContent} />
-    </>
   )
 }
