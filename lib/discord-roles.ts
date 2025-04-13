@@ -12,26 +12,54 @@ export const DISCORD_ROLES = {
 // Map Discord roles to application roles
 export function mapDiscordRoleToAppRole(discordRoles: string[]): Role {
   console.log("Mapping Discord roles:", discordRoles)
-  console.log("Looking for Senior Staff role:", DISCORD_ROLES.SENIOR_STAFF)
 
-  if (discordRoles.includes(DISCORD_ROLES.SENIOR_STAFF)) {
-    console.log("Found Senior Staff role!")
-    return "SENIOR_STAFF"
-  } else if (discordRoles.includes(DISCORD_ROLES.STAFF)) {
-    console.log("Found Staff role!")
-    return "STAFF"
-  } else if (discordRoles.includes(DISCORD_ROLES.STAFF_IN_TRAINING)) {
-    console.log("Found Staff in Training role!")
-    return "STAFF_IN_TRAINING"
-  } else if (discordRoles.includes(DISCORD_ROLES.MEMBER)) {
-    console.log("Found Member role!")
-    return "MEMBER"
-  } else if (discordRoles.includes(DISCORD_ROLES.APPLICANT)) {
-    console.log("Found Applicant role!")
-    return "APPLICANT"
+  // Log all the roles we're checking for
+  console.log("Role mapping configuration:")
+  console.log(`- Senior Staff: ${DISCORD_ROLES.SENIOR_STAFF}`)
+  console.log(`- Staff: ${DISCORD_ROLES.STAFF}`)
+  console.log(`- Staff in Training: ${DISCORD_ROLES.STAFF_IN_TRAINING}`)
+  console.log(`- Member: ${DISCORD_ROLES.MEMBER}`)
+  console.log(`- Applicant: ${DISCORD_ROLES.APPLICANT}`)
+
+  // Check each role in order of priority
+  for (const role of discordRoles) {
+    console.log(`Checking role: ${role}`)
+
+    if (role === DISCORD_ROLES.SENIOR_STAFF) {
+      console.log("✅ Found Senior Staff role!")
+      return "SENIOR_STAFF"
+    }
   }
 
-  console.log("No matching roles found, defaulting to APPLICANT")
+  for (const role of discordRoles) {
+    if (role === DISCORD_ROLES.STAFF) {
+      console.log("✅ Found Staff role!")
+      return "STAFF"
+    }
+  }
+
+  for (const role of discordRoles) {
+    if (role === DISCORD_ROLES.STAFF_IN_TRAINING) {
+      console.log("✅ Found Staff in Training role!")
+      return "STAFF_IN_TRAINING"
+    }
+  }
+
+  for (const role of discordRoles) {
+    if (role === DISCORD_ROLES.MEMBER) {
+      console.log("✅ Found Member role!")
+      return "MEMBER"
+    }
+  }
+
+  for (const role of discordRoles) {
+    if (role === DISCORD_ROLES.APPLICANT) {
+      console.log("✅ Found Applicant role!")
+      return "APPLICANT"
+    }
+  }
+
+  console.log("❌ No matching roles found, defaulting to APPLICANT")
   // Default role if no matching roles found
   return "APPLICANT"
 }
