@@ -23,16 +23,16 @@ function SignInContent() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md border bg-card text-card-foreground">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-muted-foreground">
           Sign in to your account using Discord
         </CardDescription>
         {error && (
-          <div className="rounded-md bg-red-50 p-4 mt-4">
+          <div className="rounded-md bg-destructive/15 p-4 mt-4">
             <div className="flex">
-              <div className="text-sm text-red-700">
+              <div className="text-sm text-destructive">
                 {error === "OAuthAccountNotLinked" 
                   ? "There was an issue with your Discord sign-in. Please try again."
                   : "An error occurred during sign in. Please try again."}
@@ -49,7 +49,7 @@ function SignInContent() {
           variant="outline" 
           onClick={handleDiscordSignIn}
           disabled={isLoading}
-          className="w-full"
+          className="w-full bg-background hover:bg-accent hover:text-accent-foreground"
         >
           {isLoading ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -79,10 +79,10 @@ function SignInContent() {
 // Fallback component to show while loading
 function SignInFallback() {
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md border bg-card text-card-foreground">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-muted-foreground">
           Loading sign-in options...
         </CardDescription>
       </CardHeader>
@@ -105,7 +105,7 @@ function SignInFallback() {
 // Main page component with Suspense
 export default function SignInPage() {
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+    <div className="container flex h-screen w-screen flex-col items-center justify-center bg-background">
       <Suspense fallback={<SignInFallback />}>
         <SignInContent />
       </Suspense>
