@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -14,49 +16,65 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 
-interface Notification {
+type Notification = {
   id: number
-  type: string
-  message: string
+  title: string
+  content: string
   read: boolean
-  link: string | null
   createdAt: string
+  recipientId: number
+  type: string
+  linkUrl?: string
 }
 
 export function NotificationsDropdown() {
   const { data: session } = useSession()
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!session?.user) return
+
+      try {
+        setIsLoading(true)
+        const response = await fetch("/api/notifications?limit=5")
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log("Notifications response:", data)
+
+          if (data.notifications && Array.isArray(data.notifications)) {
+            setNotifications(data.notifications)
+            setUnreadCount(data.unreadCount || 0)
+          } else {
+            console.error("Invalid notifications format:", data)
+            setNotifications([])
+            setUnreadCount(0)
+          }
+        } else {
+          console.error("Failed to fetch notifications:", response.statusText)
+          setNotifications([])
+          setUnreadCount(0)
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error)
+        setNotifications([])
+        setUnreadCount(0)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     if (session?.user) {
       fetchNotifications()
+
+      // Refresh notifications every minute
+      const interval = setInterval(fetchNotifications, 60000)
+      return () => clearInterval(interval)
     }
   }, [session])
-
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch("/api/notifications?limit=5", {
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        // Make sure we're handling the response correctly
-        const notificationsArray = Array.isArray(data) ? data : data.notifications || []
-        setNotifications(notificationsArray)
-        setUnreadCount(notificationsArray.filter((n: Notification) => !n.read).length)
-      }
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const markAsRead = async (id: number) => {
     try {
@@ -65,33 +83,15 @@ export function NotificationsDropdown() {
       })
 
       if (response.ok) {
-        // Update local state
-        setNotifications(notifications.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)))
-        setUnreadCount((prev) => Math.max(0, prev - 1))
+        setNotifications(
+          notifications.map((notification) =>
+            notification.id === id ? { ...notification, read: true } : notification,
+          ),
+        )
+        setUnreadCount(Math.max(0, unreadCount - 1))
       }
     } catch (error) {
       console.error("Failed to mark notification as read:", error)
-    }
-  }
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "follow":
-        return "👤"
-      case "application":
-        return "📝"
-      case "mention":
-        return "💬"
-      default:
-        return "🔔"
-    }
-  }
-
-  const formatTimeAgo = (dateString: string) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true })
-    } catch (error) {
-      return "recently"
     }
   }
 
@@ -105,60 +105,69 @@ export function NotificationsDropdown() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 text-[10px] font-medium text-white flex items-center justify-center">
-              {unreadCount > 9 ? "9+" : unreadCount}
+            <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+              {unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 dark:bg-gray-800 bg-white border dark:border-gray-700">
-        <div className="flex items-center justify-between px-4 py-2 border-b dark:border-gray-700 border-gray-200">
-          <h3 className="font-medium dark:text-gray-100 text-gray-900">Notifications</h3>
-          <Link
-            href={`/profile/${session.user.id}?tab=notifications`}
-            className="text-sm dark:text-blue-400 text-blue-600 hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="p-4 text-center dark:text-gray-400 text-gray-500">Loading notifications...</div>
-        ) : notifications.length === 0 ? (
-          <div className="p-4 text-center dark:text-gray-400 text-gray-500">No notifications yet</div>
-        ) : (
-          <>
-            {notifications.map((notification) => (
-              <DropdownMenuItem
+      <DropdownMenuContent className="w-80" align="end">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">Notifications</p>
+            <p className="text-xs leading-none text-gray-500">
+              {unreadCount} unread notification{unreadCount !== 1 && "s"}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center p-4">
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-gray-400"></div>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="p-4 text-center text-sm text-gray-500">No notifications</div>
+          ) : (
+            notifications.map((notification) => (
+              <div
                 key={notification.id}
-                asChild
-                className={`px-4 py-3 cursor-pointer ${!notification.read ? "dark:bg-gray-700/50 bg-gray-100" : ""}`}
+                className={`p-3 border-b border-gray-700 last:border-0 ${!notification.read ? "bg-gray-700" : ""}`}
               >
-                <Link href={notification.link || "#"} onClick={() => !notification.read && markAsRead(notification.id)}>
-                  <div className="flex items-start gap-3">
-                    <div className="text-xl">{getNotificationIcon(notification.type)}</div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm dark:text-gray-200 text-gray-800">{notification.message}</p>
-                      <p className="text-xs dark:text-gray-400 text-gray-500">
-                        {formatTimeAgo(notification.createdAt)}
-                      </p>
+                <DropdownMenuItem
+                  className="cursor-pointer flex flex-col items-start p-0"
+                  onClick={() => markAsRead(notification.id)}
+                >
+                  {notification.linkUrl ? (
+                    <Link href={notification.linkUrl} className="w-full">
+                      <div className="w-full">
+                        <div className="font-medium">{notification.title}</div>
+                        <div className="text-sm text-gray-400">{notification.content}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                        </div>
+                      </div>
+                    </Link>
+                  ) : (
+                    <div className="w-full">
+                      <div className="font-medium">{notification.title}</div>
+                      <div className="text-sm text-gray-400">{notification.content}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                      </div>
                     </div>
-                    {!notification.read && <div className="h-2 w-2 rounded-full bg-blue-500 mt-1"></div>}
-                  </div>
-                </Link>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator className="dark:bg-gray-700 bg-gray-200" />
-            <DropdownMenuItem asChild className="justify-center">
-              <Link
-                href={`/profile/${session.user.id}?tab=notifications`}
-                className="text-sm dark:text-gray-300 text-gray-600 py-2 text-center"
-              >
-                See all notifications
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
+                  )}
+                </DropdownMenuItem>
+              </div>
+            ))
+          )}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/profile" className="w-full cursor-pointer text-center">
+            View all notifications
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
