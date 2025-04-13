@@ -4,8 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { canAssignRole, hasAdminPermission, hasStaffPermission } from "@/lib/roles"
-import { auth } from "@/auth"
+import { canAssignRole, hasAdminPermission, hasStaffPermission, isWebmaster } from "@/lib/roles"
 
 export async function updateUserRole(userId: string, role: string) {
   const session = await getServerSession(authOptions)
@@ -16,13 +15,15 @@ export async function updateUserRole(userId: string, role: string) {
 
   // Check if the user has permission to assign this role
   const userRole = session.user.role as string
-  if (!canAssignRole(userRole, role)) {
+  const userBadges = session.user.badges || "[]"
+
+  if (!canAssignRole(userRole, role, userBadges)) {
     return { error: "You don't have permission to assign this role" }
   }
 
   try {
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: Number(userId) },
       data: { role },
     })
 
@@ -37,16 +38,15 @@ export async function updateUserRole(userId: string, role: string) {
 
 export async function banUser(userId: string, banned: boolean) {
   const session = await getServerSession(authOptions)
+  const userBadges = session?.user?.badges || "[]"
 
-  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string, userBadges)) {
     return { error: "Unauthorized" }
   }
 
   try {
-    // In a real implementation, you might have a 'banned' field in your User model
-    // For this example, we'll update the status to indicate banned
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: Number(userId) },
       data: {
         status: banned ? "Banned" : "Offline",
       },
@@ -66,8 +66,9 @@ export async function banUser(userId: string, banned: boolean) {
 
 export async function deleteThread(threadId: string) {
   const session = await getServerSession(authOptions)
+  const userBadges = session?.user?.badges || "[]"
 
-  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string, userBadges)) {
     return { error: "Unauthorized" }
   }
 
@@ -98,8 +99,9 @@ export async function deleteThread(threadId: string) {
 
 export async function toggleThreadPin(threadId: string) {
   const session = await getServerSession(authOptions)
+  const userBadges = session?.user?.badges || "[]"
 
-  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string, userBadges)) {
     return { error: "Unauthorized" }
   }
 
@@ -135,8 +137,9 @@ export async function toggleThreadPin(threadId: string) {
 
 export async function toggleThreadLock(threadId: string) {
   const session = await getServerSession(authOptions)
+  const userBadges = session?.user?.badges || "[]"
 
-  if (!session?.user || !hasStaffPermission(session.user.role as string)) {
+  if (!session?.user || !hasStaffPermission(session.user.role as string, userBadges)) {
     return { error: "Unauthorized" }
   }
 
@@ -172,8 +175,9 @@ export async function toggleThreadLock(threadId: string) {
 
 export async function createCategory(formData: FormData) {
   const session = await getServerSession(authOptions)
+  const userBadges = session?.user?.badges || "[]"
 
-  if (!session?.user || !hasAdminPermission(session.user.role as string)) {
+  if (!session?.user || !hasAdminPermission(session.user.role as string, userBadges)) {
     return { error: "Unauthorized" }
   }
 
@@ -225,18 +229,17 @@ export async function updateUserBadge(
   action: "add" | "remove",
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return { success: false, error: "Not authenticated" }
     }
 
     // Only webmasters can manage badges
-    const currentUser = await prisma.user.findUnique({
-      where: { id: Number(session.user.id) },
-      select: { badges: true },
-    })
+    const currentUserBadges = session.user.badges || "[]"
+    const parsedCurrentUserBadges =
+      typeof currentUserBadges === "string" ? JSON.parse(currentUserBadges) : currentUserBadges
 
-    if (!currentUser?.badges?.includes("WEBMASTER")) {
+    if (!isWebmaster(parsedCurrentUserBadges)) {
       return { success: false, error: "Not authorized to manage badges" }
     }
 
@@ -255,7 +258,10 @@ export async function updateUserBadge(
       return { success: false, error: "User not found" }
     }
 
-    let updatedBadges = [...(user.badges || [])]
+    // Parse badges from JSON string if needed
+    const currentBadges = user.badges ? (typeof user.badges === "string" ? JSON.parse(user.badges) : user.badges) : []
+
+    let updatedBadges = [...currentBadges]
 
     if (action === "add" && !updatedBadges.includes(badge)) {
       updatedBadges.push(badge)
@@ -263,15 +269,77 @@ export async function updateUserBadge(
       updatedBadges = updatedBadges.filter((b) => b !== badge)
     }
 
-    // Update the user
+    // Update the user with stringified JSON array
     await prisma.user.update({
       where: { id },
-      data: { badges: updatedBadges },
+      data: {
+        badges: JSON.stringify(updatedBadges),
+      },
     })
+
+    revalidatePath(`/admin/users`)
+    revalidatePath(`/profile/${id}`)
 
     return { success: true }
   } catch (error) {
     console.error("Error updating user badge:", error)
     return { success: false, error: "Failed to update user badge" }
+  }
+}
+
+// Function to sync user role from Discord
+export async function syncUserRole(userId: number) {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user) {
+    return { success: false, message: "Not authenticated" }
+  }
+
+  try {
+    // Get the user with their Discord ID
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, discordId: true, role: true },
+    })
+
+    if (!user) {
+      return { success: false, message: "User not found" }
+    }
+
+    if (!user.discordId) {
+      return { success: false, message: "User has no linked Discord account" }
+    }
+
+    // Import the Discord role syncing function
+    const { syncUserRoleFromDiscord, shouldPreserveRole } = await import("@/lib/roles")
+
+    // Get the role from Discord
+    const discordRole = await syncUserRoleFromDiscord(user.discordId)
+
+    if (!discordRole) {
+      return { success: false, message: "Failed to get Discord roles" }
+    }
+
+    // Check if we should preserve the current role (e.g., for admin roles)
+    if (shouldPreserveRole(user.role)) {
+      return { success: true, message: "Role preserved due to higher rank" }
+    }
+
+    // Update the user's role
+    await prisma.user.update({
+      where: { id: userId },
+      data: { role: discordRole },
+    })
+
+    revalidatePath(`/admin/users`)
+    revalidatePath(`/profile/${userId}`)
+
+    return {
+      success: true,
+      message: `Role updated to ${discordRole}`,
+    }
+  } catch (error) {
+    console.error("Error syncing user role:", error)
+    return { success: false, message: "Failed to sync Discord role" }
   }
 }

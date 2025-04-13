@@ -420,8 +420,15 @@ export default function UserProfilePage() {
                 {(() => {
                   const badges = []
 
+                  // Parse badges from JSON string if needed
+                  const userBadges = profile.badges
+                    ? typeof profile.badges === "string"
+                      ? JSON.parse(profile.badges)
+                      : profile.badges
+                    : []
+
                   // Add special designation badges
-                  if (profile.badges?.includes(BADGES.WEBMASTER)) {
+                  if (userBadges.includes(BADGES.WEBMASTER)) {
                     badges.push(
                       <div
                         key="webmaster"
@@ -432,7 +439,7 @@ export default function UserProfilePage() {
                     )
                   }
 
-                  if (profile.badges?.includes(BADGES.DEVELOPER)) {
+                  if (userBadges.includes(BADGES.DEVELOPER)) {
                     badges.push(
                       <div
                         key="developer"
@@ -443,7 +450,7 @@ export default function UserProfilePage() {
                     )
                   }
 
-                  if (profile.badges?.includes(BADGES.RETIRED_ADMIN)) {
+                  if (userBadges.includes(BADGES.RETIRED_ADMIN)) {
                     badges.push(
                       <div
                         key="retired-admin"
@@ -454,7 +461,7 @@ export default function UserProfilePage() {
                     )
                   }
 
-                  if (profile.badges?.includes(BADGES.CONTRIBUTOR)) {
+                  if (userBadges.includes(BADGES.CONTRIBUTOR)) {
                     badges.push(
                       <div
                         key="contributor"

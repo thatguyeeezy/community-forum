@@ -52,7 +52,11 @@ export function UserTable({ users }: UserTableProps) {
   const { toast } = useToast()
   const { data: session } = useSession()
   const currentUserRole = session?.user?.role as string
-  const currentUserBadges = session?.user?.badges || []
+  const currentUserBadges = session?.user?.badges
+    ? typeof session.user.badges === "string"
+      ? JSON.parse(session.user.badges)
+      : session.user.badges
+    : []
   const isCurrentUserWebmaster = isWebmaster(currentUserBadges)
 
   // Filter users based on search term
@@ -286,6 +290,18 @@ export function UserTable({ users }: UserTableProps) {
                           Banned
                         </Badge>
                       )}
+                      {/* Display badges */}
+                      {user.badges && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(typeof user.badges === "string" ? JSON.parse(user.badges) : user.badges).map(
+                            (badge: string) => (
+                              <Badge key={badge} variant="outline" className="text-xs bg-gray-700 text-gray-200">
+                                {formatRoleDisplay(badge)}
+                              </Badge>
+                            ),
+                          )}
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>{getRoleBadge(user.role)}</TableCell>
@@ -353,11 +369,17 @@ export function UserTable({ users }: UserTableProps) {
                                 handleBadgeToggle(
                                   user.id,
                                   BADGES.WEBMASTER,
-                                  user.badges?.includes(BADGES.WEBMASTER) || false,
+                                  (typeof user.badges === "string"
+                                    ? JSON.parse(user.badges || "[]")
+                                    : user.badges || []
+                                  ).includes(BADGES.WEBMASTER),
                                 )
                               }
                             >
-                              {user.badges?.includes(BADGES.WEBMASTER)
+                              {(typeof user.badges === "string"
+                                ? JSON.parse(user.badges || "[]")
+                                : user.badges || []
+                              ).includes(BADGES.WEBMASTER)
                                 ? "Remove Webmaster Badge"
                                 : "Add Webmaster Badge"}
                             </DropdownMenuItem>
