@@ -23,14 +23,14 @@ function SignInContent() {
   }
 
   return (
-    <Card className="w-full max-w-md border-slate-700 bg-slate-800 shadow-lg">
+    <Card>
       <CardHeader className="space-y-1 pb-2">
         <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
         <CardDescription>Sign in to your account using Discord</CardDescription>
         {error && (
-          <div className="rounded-md bg-red-900/20 border border-red-800 p-4 mt-4">
+          <div className="rounded-md bg-destructive/20 border border-destructive p-4 mt-4">
             <div className="flex">
-              <div className="text-sm text-red-400">
+              <div className="text-sm text-destructive">
                 {error === "OAuthAccountNotLinked"
                   ? "There was an issue with your Discord sign-in. Please try again."
                   : "An error occurred during sign in. Please try again."}
@@ -43,12 +43,7 @@ function SignInContent() {
         <div className="text-sm text-muted-foreground mb-2">
           Clicking the button below will redirect you to Discord to authorize access to your basic profile information.
         </div>
-        <Button
-          variant="outline"
-          onClick={handleDiscordSignIn}
-          disabled={isLoading}
-          className="w-full bg-slate-700 hover:bg-slate-600 text-white border-slate-600"
-        >
+        <Button variant="outline" onClick={handleDiscordSignIn} disabled={isLoading} className="w-full">
           {isLoading ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -77,7 +72,7 @@ function SignInContent() {
 // Fallback component to show while loading
 function SignInFallback() {
   return (
-    <Card className="w-full max-w-md border-slate-700 bg-slate-800 shadow-lg">
+    <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
         <CardDescription>Loading sign-in options...</CardDescription>
@@ -101,7 +96,7 @@ function SignInFallback() {
 // Main page component with Suspense
 export default function SignInPage() {
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center bg-background">
+    <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <Suspense fallback={<SignInFallback />}>
         <SignInContent />
       </Suspense>
