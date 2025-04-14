@@ -102,7 +102,7 @@ function SignInFallback() {
 // Main page component with Suspense
 export default function SignInPage() {
   return (
-    <div className="container flex items-center justify-center py-12 px-4">
+    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
       <Suspense fallback={<SignInFallback />}>
         <SignInContent />
       </Suspense>

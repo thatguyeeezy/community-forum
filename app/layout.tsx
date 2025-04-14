@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-[#1e293b]`} suppressHydrationWarning>
+      <body className={`${inter.className} dark:bg-slate-900 bg-slate-50`} suppressHydrationWarning>
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="theme-mode">
             <div className="flex flex-col min-h-screen">
