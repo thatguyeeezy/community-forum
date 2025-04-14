@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Icons } from "@/components/icons"
 import Link from "next/link"
+import { SiteHeader } from "@/app/forums/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import "@/app/auth-pages.css"
 
 // Create a separate component that uses useSearchParams
@@ -110,13 +112,14 @@ export default function SignInPage() {
   }, [])
 
   return (
-    <div
-      className="container flex h-screen w-screen flex-col items-center justify-center"
-      style={{ backgroundColor: "#1e293b" }}
-    >
-      <Suspense fallback={<SignInFallback />}>
-        <SignInContent />
-      </Suspense>
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#1e293b" }}>
+      <SiteHeader />
+      <div className="flex-1 flex items-center justify-center py-12 px-4">
+        <Suspense fallback={<SignInFallback />}>
+          <SignInContent />
+        </Suspense>
+      </div>
+      <SiteFooter />
     </div>
   )
 }
