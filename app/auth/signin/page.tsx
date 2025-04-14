@@ -1,105 +1,57 @@
-"use client"
-
-import { useState, Suspense } from "react"
-import { signIn } from "next-auth/react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Icons } from "@/components/icons"
 import Link from "next/link"
+import { getProviders } from "next-auth/react"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { redirect } from "next/navigation"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
-// Create a separate component that uses useSearchParams
-function SignInContent() {
-  const [isLoading, setIsLoading] = useState(false)
+export default async function SignIn() {
+  const session = await getServerSession(authOptions)
 
-  // Import useSearchParams inside the component
-  const { useSearchParams } = require("next/navigation")
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams?.get("callbackUrl") || "/"
-  const error = searchParams?.get("error")
-
-  const handleDiscordSignIn = async () => {
-    setIsLoading(true)
-    await signIn("discord", { callbackUrl })
+  if (session) {
+    redirect("/")
   }
 
+  const providers = await getProviders()
+
   return (
-    <Card>
-      <CardHeader className="space-y-1 pb-2">
-        <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-        <CardDescription>Sign in to your account using Discord</CardDescription>
-        {error && (
-          <div className="rounded-md bg-destructive/20 border border-destructive p-4 mt-4">
-            <div className="flex">
-              <div className="text-sm text-destructive">
-                {error === "OAuthAccountNotLinked"
-                  ? "There was an issue with your Discord sign-in. Please try again."
-                  : "An error occurred during sign in. Please try again."}
-              </div>
-            </div>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="text-sm text-muted-foreground mb-2">
-          Clicking the button below will redirect you to Discord to authorize access to your basic profile information.
-        </div>
-        <Button variant="outline" onClick={handleDiscordSignIn} disabled={isLoading} className="w-full">
-          {isLoading ? (
-            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Icons.discord className="mr-2 h-4 w-4" />
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+          <CardDescription>Sign in to your account using Discord</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">
+            Clicking the button below will redirect you to Discord to authorize access to your basic profile
+            information.
+          </p>
+          {providers?.discord && (
+            <Button className="w-full flex items-center justify-center gap-2 bg-[#5865F2] hover:bg-[#4752c4]" asChild>
+              <Link href="/api/auth/signin/discord">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z" />
+                </svg>
+                Continue with Discord
+              </Link>
+            </Button>
           )}
-          Continue with Discord
-        </Button>
-      </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
-        <div className="text-sm text-muted-foreground text-center">
-          By signing in, you agree to our{" "}
-          <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
-            Privacy Policy
-          </Link>
-          .
-        </div>
-      </CardFooter>
-    </Card>
-  )
-}
-
-// Fallback component to show while loading
-function SignInFallback() {
-  return (
-    <Card>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-        <CardDescription>Loading sign-in options...</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="h-[100px] flex items-center justify-center">
-          <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </CardContent>
-      <CardFooter>
-        <div className="w-full text-center text-sm text-muted-foreground">
-          <Link href="/" className="underline underline-offset-4 hover:text-primary">
-            Return to home page
-          </Link>
-        </div>
-      </CardFooter>
-    </Card>
-  )
-}
-
-// Main page component with Suspense
-export default function SignInPage() {
-  return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <Suspense fallback={<SignInFallback />}>
-        <SignInContent />
-      </Suspense>
+        </CardContent>
+        <CardFooter className="flex justify-center text-sm">
+          <p>
+            By signing in, you agree to our{" "}
+            <Link href="/terms" className="text-primary hover:underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-primary hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
