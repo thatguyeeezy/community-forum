@@ -1,101 +1,106 @@
-import Link from "next/link"
+"use client"
+
+import { useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import "@/app/auth-pages.css"
 
 export default function PrivacyPage() {
+  // Force the background color
+  useEffect(() => {
+    document.body.style.backgroundColor = "#1e293b"
+    return () => {
+      document.body.style.backgroundColor = ""
+    }
+  }, [])
+
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle className="text-3xl font-bold">Privacy Policy</CardTitle>
+    <div className="min-h-screen py-8 px-4 md:px-6" style={{ backgroundColor: "#1e293b" }}>
+      <div className="container mx-auto">
+        <Card className="auth-card">
+          <CardHeader className="border-b border-slate-700">
+            <CardTitle className="text-3xl font-bold text-white">Privacy Policy</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="prose max-w-none">
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">1. Information We Collect</h2>
-                <p className="mb-4">When you use Florida Coast RP, we may collect the following information:</p>
-                <ul className="list-disc pl-6 mb-4 space-y-2">
-                  <li>Account information from Discord (username, avatar, email)</li>
-                  <li>Information you provide in your profile</li>
-                  <li>Content you post on our forums</li>
-                  <li>Usage data and analytics</li>
-                  <li>IP address and browser information</li>
-                </ul>
-              </section>
-
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">2. How We Use Your Information</h2>
-                <p className="mb-4">We use the collected information to:</p>
-                <ul className="list-disc pl-6 mb-4 space-y-2">
-                  <li>Provide and maintain our services</li>
-                  <li>Improve and personalize your experience</li>
-                  <li>Communicate with you about updates or changes</li>
-                  <li>Monitor and analyze usage patterns</li>
-                  <li>Enforce our terms of service</li>
-                </ul>
-              </section>
-
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">3. Information Sharing</h2>
-                <p className="mb-4">
-                  We do not sell or rent your personal information to third parties. We may share information in the
-                  following circumstances:
-                </p>
-                <ul className="list-disc pl-6 mb-4 space-y-2">
-                  <li>With your consent</li>
-                  <li>To comply with legal obligations</li>
-                  <li>To protect our rights, privacy, safety, or property</li>
-                  <li>In connection with a merger, acquisition, or sale of assets</li>
-                </ul>
-              </section>
-
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">4. Data Security</h2>
-                <p className="mb-4">
-                  We implement reasonable security measures to protect your personal information. However, no method of
-                  transmission over the Internet or electronic storage is 100% secure, and we cannot guarantee absolute
-                  security.
+          <CardContent className="prose dark:prose-invert max-w-none pt-6">
+            <div className="space-y-8">
+              <section>
+                <h2 className="text-2xl font-semibold text-white">1. Information We Collect</h2>
+                <p className="text-slate-300">
+                  Florida Coast Roleplay ("FCRP") collects limited user data necessary for community management and
+                  server functionality. This includes Discord usernames, in-game character names, IP addresses, and
+                  gameplay logs. We do not collect sensitive personal information.
                 </p>
               </section>
 
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">5. Your Rights</h2>
-                <p className="mb-4">
-                  You have the right to access, correct, or delete your personal information. You can manage most of
-                  your information through your account settings or by contacting us.
+              <section>
+                <h2 className="text-2xl font-semibold text-white">2. How We Use Information</h2>
+                <p className="text-slate-300">
+                  The information collected is used solely for moderation, community engagement, rule enforcement, and
+                  improving server functionality. We do not sell or distribute user data for commercial purposes.
                 </p>
               </section>
 
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">6. Cookies and Tracking</h2>
-                <p className="mb-4">
-                  We use cookies and similar technologies to enhance your experience, analyze usage, and collect
-                  information about how you use our services.
+              <section>
+                <h2 className="text-2xl font-semibold text-white">3. Information Sharing</h2>
+                <p className="text-slate-300">
+                  We do not share your personal information with third parties, except when required by law, to enforce
+                  community guidelines, or in cases of severe rule violations where external authorities may be
+                  involved.
                 </p>
               </section>
 
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">7. Changes to This Policy</h2>
-                <p className="mb-4">
-                  We may update our Privacy Policy from time to time. We will notify you of any changes by posting the
-                  new Privacy Policy on this page and updating the "last updated" date.
+              <section>
+                <h2 className="text-2xl font-semibold text-white">4. Cookies & Tracking</h2>
+                <p className="text-slate-300">
+                  Our website may use cookies to enhance user experience, including session management and
+                  authentication. Users can adjust browser settings to disable cookies, though this may impact certain
+                  functionalities.
                 </p>
               </section>
 
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">8. Contact Us</h2>
-                <p className="mb-4">
-                  If you have any questions about this Privacy Policy, please contact us through our{" "}
-                  <Link href="/contact" className="text-primary hover:underline">
-                    contact page
-                  </Link>
+              <section>
+                <h2 className="text-2xl font-semibold text-white">5. Data Security</h2>
+                <p className="text-slate-300">
+                  We take reasonable measures to protect user data from unauthorized access, misuse, or loss. However,
+                  users acknowledge that no online platform can guarantee complete security.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold text-white">6. Community Transparency</h2>
+                <p className="text-slate-300">
+                  FCRP staff may log server activity to ensure fair play and maintain community integrity. Gameplay logs
+                  may be reviewed in case of disputes, rule enforcement, or server maintenance.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold text-white">7. Age Restrictions</h2>
+                <p className="text-slate-300">
+                  Florida Coast Roleplay is intended for users aged 16 and older. We do not knowingly collect or store
+                  data from individuals under 16. If we become aware that an individual under 16 has provided personal
+                  data, it will be promptly deleted. Additionally, in compliance with the Children's Online Privacy
+                  Protection Act (COPPA), we do not collect or retain data from users under 13 under any circumstances.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold text-white">8. Changes to This Policy</h2>
+                <p className="text-slate-300">
+                  We reserve the right to update this privacy policy at any time. Continued use of our services after
+                  modifications indicates acceptance of the revised policy.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold text-white">9. Contact Us</h2>
+                <p className="text-slate-300">
+                  If you have any questions regarding this policy, please{" "}
+                  <a href="/contact" className="text-blue-400 hover:text-blue-300 underline">
+                    contact us
+                  </a>
                   .
                 </p>
               </section>
-
-              <div className="mt-8 text-sm">
-                <p>Last updated: April 13, 2023</p>
-              </div>
             </div>
           </CardContent>
         </Card>
