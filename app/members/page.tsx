@@ -17,7 +17,7 @@ interface Member {
 }
 
 // Define role order and colors
-const roleConfig = {
+const roleConfig: Record<string, { order: number; label: string; color: string }> = {
   HEAD_ADMIN: { order: 1, label: "Head Administration", color: "bg-cyan-500 text-white" },
   SENIOR_ADMIN: { order: 2, label: "Senior Administration", color: "bg-blue-800 text-white" },
   SPECIAL_ADVISOR: { order: 3, label: "Special Advisor", color: "bg-blue-800 text-white" },
@@ -28,6 +28,8 @@ const roleConfig = {
   STAFF_IN_TRAINING: { order: 8, label: "Staff In Training", color: "bg-red-400 text-white" },
   MEMBER: { order: 9, label: "Member", color: "bg-blue-400 text-white" },
   APPLICANT: { order: 10, label: "Applicant", color: "bg-gray-400 text-white" },
+  // Default fallback for any other roles
+  DEFAULT: { order: 100, label: "User", color: "bg-gray-500 text-white" },
 }
 
 export default function MembersPage() {
@@ -75,12 +77,17 @@ export default function MembersPage() {
   )
 
   // Sort roles by order defined in roleConfig
-  const sortedRoles = Object.keys(groupedMembers).sort(
-    (a, b) => roleConfig[a as Role].order - roleConfig[b as Role].order,
-  ) as Role[]
+  const sortedRoles = Object.keys(groupedMembers).sort((a, b) => {
+    // Get the order for role a, defaulting to DEFAULT if not found
+    const orderA = roleConfig[a] ? roleConfig[a].order : roleConfig.DEFAULT.order
+    // Get the order for role b, defaulting to DEFAULT if not found
+    const orderB = roleConfig[b] ? roleConfig[b].order : roleConfig.DEFAULT.order
+    return orderA - orderB
+  }) as Role[]
 
   const getRoleBadge = (role: Role) => {
-    const config = roleConfig[role]
+    // Use the role config if it exists, otherwise use the DEFAULT config
+    const config = roleConfig[role] || roleConfig.DEFAULT
     return <Badge className={config.color}>{config.label}</Badge>
   }
 
