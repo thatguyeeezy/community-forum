@@ -13,14 +13,19 @@ export default async function AdminUsersPage() {
   const session = await getServerSession(authOptions)
 
   // Check if user is authorized to access admin panel
-  if (!session?.user || !hasAdminPermission(session.user.role as string)) {
+  if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/admin/users")
   }
 
+  const userRole = session.user.role as string
+
+  // Allow WEBMASTER role explicitly or any admin role
+  if (!(userRole === "WEBMASTER" || hasAdminPermission(userRole))) {
+    redirect("/auth/error?error=AccessDenied")
+  }
+
   // Check if user has senior admin permissions for the sync button
-  const canSyncAllRoles = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(
-    session.user.role as string,
-  )
+  const canSyncAllRoles = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(userRole)
 
   // Fetch users
   const users = await prisma.user.findMany({

@@ -3,13 +3,21 @@ import { AdminSidebar } from "@/components/admin-sidebar"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { hasAdminPermission } from "@/lib/roles"
 
 export default async function AdminReportsPage() {
   const session = await getServerSession(authOptions)
 
   // Check if user is authorized to access admin panel
-  if (!session?.user || !["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
+  if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/admin/reports")
+  }
+
+  const userRole = session.user.role as string
+
+  // Allow WEBMASTER role explicitly or any admin role
+  if (!(userRole === "WEBMASTER" || hasAdminPermission(userRole))) {
+    redirect("/auth/error?error=AccessDenied")
   }
 
   return (

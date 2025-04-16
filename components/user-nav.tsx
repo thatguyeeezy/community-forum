@@ -22,9 +22,10 @@ export function UserNav() {
   // Check if user has admin or staff permissions
   const isAdmin = session?.user?.role ? hasAdminPermission(session.user.role as string) : false
   const isStaff = session?.user?.role ? hasStaffPermission(session.user.role as string) : false
+  const isWebmasterRole = session?.user?.role === "WEBMASTER"
 
-  // User has staff panel access if they're admin or staff
-  const hasStaffAccess = isAdmin || isStaff
+  // User has staff panel access if they're admin, staff, or webmaster
+  const hasStaffAccess = isAdmin || isStaff || isWebmasterRole
 
   return (
     <div className="flex items-center gap-2">
@@ -44,6 +45,9 @@ export function UserNav() {
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
                   <p className="font-medium dark:text-gray-100 text-gray-900">{session.user.name}</p>
+                  {session.user.role && (
+                    <p className="text-sm dark:text-gray-400 text-gray-500">Role: {session.user.role}</p>
+                  )}
                   {session.user.discordId && (
                     <p className="text-sm dark:text-gray-400 text-gray-500">Discord ID: {session.user.discordId}</p>
                   )}

@@ -5,13 +5,21 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { AnalyticsCharts } from "@/components/analytics-charts"
+import { hasAdminPermission } from "@/lib/roles"
 
 export default async function AdminAnalyticsPage() {
   const session = await getServerSession(authOptions)
 
   // Check if user is authorized to access admin panel
-  if (!session?.user || !["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
+  if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/admin/analytics")
+  }
+
+  const userRole = session.user.role as string
+
+  // Allow WEBMASTER role explicitly or any admin role
+  if (!(userRole === "WEBMASTER" || hasAdminPermission(userRole))) {
+    redirect("/auth/error?error=AccessDenied")
   }
 
   // Get user registration data by month

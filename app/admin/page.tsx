@@ -16,31 +16,15 @@ import { hasAdminPermission } from "@/lib/roles"
 export default async function AdminPage() {
   const session = await getServerSession(authOptions)
 
-  // Debug session information
-  console.log("Admin page access - Session:", {
-    user: session?.user
-      ? {
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          role: session.user.role,
-        }
-      : null,
-  })
-
   // Check if user is authorized to access admin panel
-  // Allow WEBMASTER or any admin role
   if (!session?.user) {
-    console.log("Admin access denied: No user found")
     redirect("/auth/signin?callbackUrl=/admin")
   }
 
   const userRole = session.user.role as string
 
-  // IMPORTANT: We're allowing access for WEBMASTER role specifically
-  if (userRole === "WEBMASTER" || hasAdminPermission(userRole)) {
-    console.log(`Admin access granted for role: ${userRole}`)
-  } else {
+  // Allow WEBMASTER role explicitly or any admin role
+  if (!(userRole === "WEBMASTER" || hasAdminPermission(userRole))) {
     console.log(`Admin access denied for role: ${userRole}`)
     redirect("/auth/error?error=AccessDenied")
   }

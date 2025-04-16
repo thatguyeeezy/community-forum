@@ -6,13 +6,21 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ContentTable } from "@/components/content-table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { hasAdminPermission } from "@/lib/roles"
 
 export default async function AdminContentPage() {
   const session = await getServerSession(authOptions)
 
   // Check if user is authorized to access admin panel
-  if (!session?.user || !["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
+  if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/admin/content")
+  }
+
+  const userRole = session.user.role as string
+
+  // Allow WEBMASTER role explicitly or any admin role
+  if (!(userRole === "WEBMASTER" || hasAdminPermission(userRole))) {
+    redirect("/auth/error?error=AccessDenied")
   }
 
   // Fetch categories
