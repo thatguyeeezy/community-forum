@@ -11,34 +11,22 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { RecentActivityList } from "@/components/recent-activity-list"
-import { hasAdminPermission, isWebmaster, ADMIN_ROLES } from "@/lib/roles"
+import { hasAdminPermission } from "@/lib/roles"
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions)
 
-  // Debug session information
-  console.log("Admin page access - Session:", {
-    user: session?.user
-      ? {
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          role: session.user.role,
-        }
-      : null,
-  })
-
   // Check if user is authorized to access admin panel
   if (!session?.user) {
-    console.log("Admin access denied: No user found")
     redirect("/auth/signin?callbackUrl=/admin")
   }
 
   const userRole = session.user.role as string
 
-  // EXTREMELY PERMISSIVE CHECK - allow access for any logged in user for debugging
-  // We'll add a debug card to show role information
-  console.log(`Admin access granted for role: ${userRole}`)
+  // Allow WEBMASTER role explicitly or any admin role
+  if (!(userRole === "WEBMASTER" || hasAdminPermission(userRole))) {
+    redirect("/auth/error?error=AccessDenied")
+  }
 
   // Fetch recent users
   const recentUsers = await prisma.user.findMany({
@@ -97,35 +85,6 @@ export default async function AdminPage() {
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
-      {/* Debug information card */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Role Debug Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <p>
-              <strong>User:</strong> {session.user.name}
-            </p>
-            <p>
-              <strong>Role:</strong> "{userRole}"
-            </p>
-            <p>
-              <strong>hasAdminPermission:</strong> {String(hasAdminPermission(userRole))}
-            </p>
-            <p>
-              <strong>isWebmaster:</strong> {String(isWebmaster(userRole))}
-            </p>
-            <p>
-              <strong>Direct check (userRole === "WEBMASTER"):</strong> {String(userRole === "WEBMASTER")}
-            </p>
-            <p>
-              <strong>Is in ADMIN_ROLES array:</strong> {String(ADMIN_ROLES.includes(userRole))}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="flex flex-col md:flex-row gap-6">
         <AdminSidebar />
         <div className="flex-1 space-y-6">
