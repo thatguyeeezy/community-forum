@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { formatDistanceToNow } from "date-fns"
+import { MoreHorizontal, Trash2, Edit, Ban, Copy, UserCheck, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,318 +14,365 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Search, UserCog, Shield, Ban, Eye, RefreshCw } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
-import { updateUserRole, banUser } from "@/app/actions/admin"
-import { syncUserRole } from "@/app/actions/discord"
-import { useSession } from "next-auth/react"
-import { ROLE_HIERARCHY, canAssignRole, formatRoleDisplay } from "@/lib/roles"
+import { toast } from "@/hooks/use-toast"
+import { hasAdminPermission, isWebmaster } from "@/lib/roles"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
-interface UserData {
-  id: number
-  name: string | null
-  email: string | null
+interface User {
+  id: string
+  name: string
+  email: string
+  image: string | null
   role: string
-  department: string | null
-  createdAt: Date
-  lastActive: Date | null
-  status: string | null
-  _count: {
-    threads: number
-    posts: number
-  }
+  department: string
+  discordId: string | null
+  createdAt: string
+  lastActive: string | null
+  discordJoinedAt?: string | null
+  isBanned?: boolean
 }
 
-interface UserTableProps {
-  users: UserData[]
-}
-
-export function UserTable({ users }: UserTableProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isLoading, setIsLoading] = useState<number | null>(null)
-  const [syncingUser, setSyncingUser] = useState<number | null>(null)
-  const router = useRouter()
-  const { toast } = useToast()
+export function UserTable() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [syncingRoles, setSyncingRoles] = useState(false)
   const { data: session } = useSession()
-  const currentUserRole = session?.user?.role as string
+  const router = useRouter()
 
-  // Filter users based on search term
-  const filteredUsers = users.filter((user) => {
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      user.name?.toLowerCase().includes(searchLower) ||
-      false ||
-      user.email?.toLowerCase().includes(searchLower) ||
-      false ||
-      user.role.toLowerCase().includes(searchLower) ||
-      user.department?.toLowerCase().includes(searchLower) ||
-      false
-    )
-  })
+  useEffect(() => {
+    fetchUsers()
+  }, [])
 
-  // Handle role change
-  const handleRoleChange = async (userId: number, newRole: string) => {
-    // Check if the current user can assign this role
-    if (!canAssignRole(currentUserRole, newRole)) {
+  const fetchUsers = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch("/api/users")
+      if (!response.ok) throw new Error("Failed to fetch users")
+      const data = await response.json()
+      setUsers(data)
+    } catch (error) {
+      console.error("Error fetching users:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load users",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEditUser = (userId: string) => {
+    router.push(`/admin/users/${userId}`)
+  }
+
+  const handleBanUser = async (userId: string, isBanned: boolean) => {
+    // Only Admin+ can ban users
+    if (!hasAdminPermission(session?.user?.role as string)) {
       toast({
         title: "Permission Denied",
-        description: "You don't have permission to assign this role",
+        description: "You don't have permission to ban users",
         variant: "destructive",
       })
       return
     }
 
-    setIsLoading(userId)
     try {
-      const result = await updateUserRole(userId.toString(), newRole)
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isBanned: !isBanned }),
+      })
 
-      if (result.error) {
-        toast({
-          title: "Error",
-          description: result.error,
-          variant: "destructive",
-        })
-      } else {
-        toast({
-          title: "Success",
-          description: `User role updated to ${formatRoleDisplay(newRole)}`,
-        })
-        router.refresh()
-      }
+      if (!response.ok) throw new Error("Failed to update user")
+
+      // Update local state
+      setUsers(users.map((user) => (user.id === userId ? { ...user, isBanned: !isBanned } : user)))
+
+      toast({
+        title: "Success",
+        description: `User ${isBanned ? "unbanned" : "banned"} successfully`,
+      })
     } catch (error) {
+      console.error("Error updating user:", error)
       toast({
         title: "Error",
-        description: "Failed to update user role",
+        description: "Failed to update user",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(null)
     }
   }
 
-  // Handle ban/unban
-  const handleBanToggle = async (userId: number, currentStatus: string | null) => {
-    const isBanned = currentStatus === "Banned"
-    setIsLoading(userId)
-
-    try {
-      const result = await banUser(userId.toString(), !isBanned)
-
-      if (result.error) {
-        toast({
-          title: "Error",
-          description: result.error,
-          variant: "destructive",
-        })
-      } else {
-        toast({
-          title: "Success",
-          description: isBanned ? "User has been unbanned" : "User has been banned",
-        })
-        router.refresh()
-      }
-    } catch (error) {
+  const handleDeleteUser = async (userId: string) => {
+    // Only Webmaster can delete users
+    if (!isWebmaster(session?.user?.role as string)) {
       toast({
-        title: "Error",
-        description: "Failed to update user ban status",
+        title: "Permission Denied",
+        description: "Only Webmaster can delete users",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(null)
+      return
+    }
+
+    if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) throw new Error("Failed to delete user")
+
+      // Update local state
+      setUsers(users.filter((user) => user.id !== userId))
+
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      })
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      })
     }
   }
 
-  // Handle Discord role sync
-  const handleDiscordRoleSync = async (userId: number) => {
-    setSyncingUser(userId)
-    try {
-      const result = await syncUserRole(userId)
+  const handleCopyDiscordId = (discordId: string) => {
+    navigator.clipboard.writeText(discordId)
+    toast({
+      title: "Copied",
+      description: "Discord ID copied to clipboard",
+    })
+  }
 
-      if (result.success) {
-        toast({
-          title: "Role Synced",
-          description: result.message,
-        })
-        router.refresh()
-      } else {
-        toast({
-          title: "Sync Failed",
-          description: result.message,
-          variant: "destructive",
-        })
-      }
+  const syncAllDiscordRoles = async () => {
+    setSyncingRoles(true)
+    try {
+      const response = await fetch("/api/discord/sync-all-roles", {
+        method: "POST",
+      })
+
+      if (!response.ok) throw new Error("Failed to sync Discord roles")
+
+      toast({
+        title: "Success",
+        description: "Discord roles synced successfully",
+      })
+
+      // Refresh the user list
+      fetchUsers()
     } catch (error) {
+      console.error("Error syncing Discord roles:", error)
       toast({
         title: "Error",
-        description: "Failed to sync Discord role",
+        description: "Failed to sync Discord roles",
         variant: "destructive",
       })
     } finally {
-      setSyncingUser(null)
+      setSyncingRoles(false)
     }
   }
 
-  // Get role badge
-  const getRoleBadge = (role: string) => {
+  const formatDepartment = (dept: string) => {
+    if (dept === "N_A") return "Not Set"
+    return dept.replace(/_/g, " ")
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Never"
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+    } catch (e) {
+      return "Invalid date"
+    }
+  }
+
+  const getRoleColor = (role: string) => {
     switch (role) {
       case "WEBMASTER":
-        return <Badge className="bg-black text-white">Webmaster</Badge>
+        return "bg-purple-500 text-white"
       case "HEAD_ADMIN":
-        return <Badge className="bg-cyan-500 text-white">Head Admin</Badge>
+        return "bg-red-500 text-white"
       case "SENIOR_ADMIN":
-        return <Badge className="bg-purple-500 text-white">Senior Admin</Badge>
-      case "SPECIAL_ADVISOR":
-        return <Badge className="bg-blue-800 text-white">Special Advisor</Badge>
+        return "bg-orange-500 text-white"
       case "ADMIN":
-        return <Badge className="bg-red-800 text-white">Admin</Badge>
+        return "bg-yellow-500 text-black"
       case "JUNIOR_ADMIN":
-        return <Badge className="bg-blue-600 text-white">Junior Admin</Badge>
+        return "bg-blue-500 text-white"
       case "SENIOR_STAFF":
-        return <Badge className="bg-green-800 text-white">Senior Staff</Badge>
+        return "bg-green-500 text-white"
       case "STAFF":
-        return <Badge className="bg-yellow-500 text-black">Staff</Badge>
-      case "STAFF_IN_TRAINING":
-        return <Badge className="bg-red-400 text-white">Staff Trainee</Badge>
-      case "MEMBER":
-        return <Badge className="bg-blue-400 text-white">Member</Badge>
-      case "APPLICANT":
-        return <Badge className="bg-gray-400 text-white">Applicant</Badge>
+        return "bg-teal-500 text-white"
       default:
-        return <Badge variant="outline">{role}</Badge>
+        return "bg-slate-500 text-white dark:bg-slate-600"
     }
   }
 
-  // Get assignable roles based on current user's role
-  const getAssignableRoleItems = () => {
-    // Get the current user's role index
-    const userRoleIndex = ROLE_HIERARCHY.indexOf(currentUserRole as any)
-    if (userRoleIndex === -1) return []
-
-    // Return all roles that have a higher index (lower rank) than the user's role
-    const assignableRoles = ROLE_HIERARCHY.filter((_, index) => index > userRoleIndex)
-
-    return assignableRoles.map((role) => (
-      <DropdownMenuItem key={role} onClick={() => handleRoleChange(user.id, role)}>
-        <Shield className="mr-2 h-4 w-4" />
-        Make {formatRoleDisplay(role)}
-      </DropdownMenuItem>
-    ))
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2)
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search users..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-slate-500 dark:text-slate-400">{users.length} users found</div>
+        <Button
+          onClick={syncAllDiscordRoles}
+          disabled={syncingRoles}
+          className="bg-slate-700 hover:bg-slate-800 text-white"
+        >
+          {syncingRoles ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              Syncing...
+            </>
+          ) : (
+            <>
+              <UserCheck className="mr-2 h-4 w-4" />
+              Sync All Discord Roles
+            </>
+          )}
+        </Button>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead>Last Active</TableHead>
-              <TableHead>Activity</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex flex-col">
-                      <span>{user.name || "Anonymous"}</span>
-                      <span className="text-xs text-muted-foreground">{user.email}</span>
-                      {user.status === "Banned" && (
-                        <Badge variant="destructive" className="mt-1 w-fit">
-                          Banned
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
-                  <TableCell>{user.department || "N/A"}</TableCell>
-                  <TableCell>{formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</TableCell>
-                  <TableCell>
-                    {user.lastActive ? formatDistanceToNow(new Date(user.lastActive), { addSuffix: true }) : "Never"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col text-xs">
-                      <span>{user._count.threads} threads</span>
-                      <span>{user._count.posts} posts</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" disabled={isLoading === user.id || syncingUser === user.id}>
-                          {isLoading === user.id || syncingUser === user.id ? (
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      <div className="rounded-md border dark:border-slate-700 border-slate-200">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 dark:bg-slate-800">
+              <tr>
+                <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">User</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Role</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Department</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Created</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Discord Joined</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Last Active</th>
+                <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-3 text-center text-slate-500 dark:text-slate-400">
+                    Loading users...
+                  </td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-3 text-center text-slate-500 dark:text-slate-400">
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr
+                    key={user.id}
+                    className={`${
+                      user.isBanned ? "bg-red-50 dark:bg-red-900/20" : ""
+                    } hover:bg-slate-50 dark:hover:bg-slate-800/50`}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          {user.image ? (
+                            <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
                           ) : (
-                            <MoreHorizontal className="h-4 w-4" />
+                            <AvatarFallback className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                              {getInitials(user.name)}
+                            </AvatarFallback>
                           )}
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/profile/${user.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Profile
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/users/${user.id}`}>
-                            <UserCog className="mr-2 h-4 w-4" />
-                            Edit User
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                        {/* Dynamically generate role options based on current user's permissions */}
-                        {getAssignableRoleItems()}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleBanToggle(user.id, user.status)}
-                          className={user.status === "Banned" ? "text-green-600" : "text-red-600"}
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                            {user.name}
+                            {user.isBanned && (
+                              <span className="ml-2 text-xs bg-red-500 text-white px-1 py-0.5 rounded">BANNED</span>
+                            )}
+                          </div>
+                          {user.discordId && (
+                            <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                              <span className="truncate max-w-[120px]">{user.discordId}</span>
+                              <button
+                                onClick={() => handleCopyDiscordId(user.discordId!)}
+                                className="ml-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getRoleColor(user.role)}`}>
+                        {user.role.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
+                      {formatDepartment(user.department)}
+                    </td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{formatDate(user.createdAt)}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{formatDate(user.discordJoinedAt)}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{formatDate(user.lastActive)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                         >
-                          <Ban className="mr-2 h-4 w-4" />
-                          {user.status === "Banned" ? "Unban User" : "Ban User"}
-                        </DropdownMenuItem>
-                        {/* Add Discord role sync option */}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDiscordRoleSync(user.id)}>
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Sync Discord Role
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No users found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                          <DropdownMenuLabel className="text-slate-700 dark:text-slate-300">Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+                          <DropdownMenuItem
+                            onClick={() => handleEditUser(user.id)}
+                            className="text-slate-700 dark:text-slate-300 focus:bg-slate-100 dark:focus:bg-slate-800"
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit User
+                          </DropdownMenuItem>
+
+                          {hasAdminPermission(session?.user?.role as string) && (
+                            <DropdownMenuItem
+                              onClick={() => handleBanUser(user.id, !!user.isBanned)}
+                              className="text-slate-700 dark:text-slate-300 focus:bg-slate-100 dark:focus:bg-slate-800"
+                            >
+                              <Ban className="mr-2 h-4 w-4" />
+                              {user.isBanned ? "Unban User" : "Ban User"}
+                            </DropdownMenuItem>
+                          )}
+
+                          {isWebmaster(session?.user?.role as string) && (
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteUser(user.id)}
+                              className="text-red-600 dark:text-red-400 focus:bg-slate-100 dark:focus:bg-slate-800"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete User
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
