@@ -16,14 +16,37 @@ import { hasAdminPermission, isWebmaster } from "@/lib/roles"
 export default async function AdminPage() {
   const session = await getServerSession(authOptions)
 
-  // Check if user is authorized to access admin panel using our role helper functions
-  if (
-    !session?.user ||
-    !(hasAdminPermission(session.user.role as string) || isWebmaster(session.user.role as string))
-  ) {
-    console.log("Unauthorized access attempt to admin panel by:", session?.user?.email || "unknown user")
-    redirect("/auth/signin?callbackUrl=/admin")
+  // Debug session information
+  console.log("Admin page access - Session:", {
+    user: session?.user
+      ? {
+          id: session.user.id,
+          name: session.user.name,
+          email: session.user.email,
+          role: session.user.role,
+        }
+      : null,
+  })
+
+  // Check if user is authorized to access admin panel
+  // Allow WEBMASTER or any admin role
+  if (!session?.user?.role) {
+    console.log("Admin access denied: No user role found")
+    redirect("/auth/error?error=AccessDenied")
   }
+
+  const userRole = session.user.role as string
+  const isAdmin = hasAdminPermission(userRole)
+  const isWebmasterRole = isWebmaster(userRole)
+
+  console.log(`User role: ${userRole}, isAdmin: ${isAdmin}, isWebmaster: ${isWebmasterRole}`)
+
+  if (!(isAdmin || isWebmasterRole)) {
+    console.log(`Admin access denied for role: ${userRole}`)
+    redirect("/auth/error?error=AccessDenied")
+  }
+
+  console.log("Admin access granted for user:", session.user.name)
 
   // Fetch recent users
   const recentUsers = await prisma.user.findMany({
