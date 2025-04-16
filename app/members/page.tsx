@@ -14,6 +14,15 @@ interface Member {
   image: string | null
   role: Role
   joinDate: string
+  discordId?: string
+  discordJoinDate?: string
+}
+
+interface DiscordMemberInfo {
+  joinedAt: string
+  roles: string[]
+  nickname?: string
+  avatar?: string
 }
 
 // Define role order and colors
@@ -36,6 +45,7 @@ export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [discordInfo, setDiscordInfo] = useState<Record<string, DiscordMemberInfo>>({})
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -49,6 +59,30 @@ export default function MembersPage() {
 
         const data = await response.json()
         setMembers(data)
+
+        // Fetch Discord info for members with discordId
+        const discordMembers = data.filter((member: Member) => member.discordId)
+        const discordInfoMap: Record<string, DiscordMemberInfo> = {}
+
+        // Use Promise.all to fetch Discord info for all members in parallel
+        await Promise.all(
+          discordMembers.map(async (member: Member) => {
+            try {
+              const discordResponse = await fetch(`/api/discord/member/${member.discordId}`, {
+                cache: "no-store",
+              })
+
+              if (discordResponse.ok) {
+                const discordData = await discordResponse.json()
+                discordInfoMap[member.id] = discordData
+              }
+            } catch (error) {
+              console.error(`Failed to fetch Discord info for user ${member.id}:`, error)
+            }
+          }),
+        )
+
+        setDiscordInfo(discordInfoMap)
       } catch (error) {
         console.error("Error fetching members:", error)
         setMembers([])
@@ -89,6 +123,15 @@ export default function MembersPage() {
     // Use the role config if it exists, otherwise use the DEFAULT config
     const config = roleConfig[role] || roleConfig.DEFAULT
     return <Badge className={config.color}>{config.label}</Badge>
+  }
+
+  // Format the join date for display
+  const formatJoinDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
   }
 
   return (
@@ -142,9 +185,15 @@ export default function MembersPage() {
                               </Avatar>
                               <div>
                                 <p className="font-medium text-gray-100">{member.name}</p>
-                                <p className="text-xs text-gray-400">
-                                  Joined {new Date(member.joinDate).toLocaleDateString()}
-                                </p>
+                                <div className="text-xs text-gray-400 space-y-1">
+                                  {/* Show Discord join date if available, otherwise show website join date */}
+                                  <p>Joined {formatJoinDate(member.joinDate)}</p>
+                                  {discordInfo[member.id] && (
+                                    <p className="text-blue-400">
+                                      Discord: {formatJoinDate(discordInfo[member.id].joinedAt)}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
