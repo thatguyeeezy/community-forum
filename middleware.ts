@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 import type { NextRequest } from "next/server"
+import { hasAdminPermission, isWebmaster } from "./lib/roles"
 
 // Helper to get IP address from request
 function getIP(request: NextRequest): string {
@@ -57,10 +58,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/admin/signin", request.url))
     }
 
-    // Check if user has admin role
-    const userRole = session?.role
+    // Check if user has admin role using our helper functions
+    const userRole = session?.role as string
 
-    if (!["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(userRole as string)) {
+    // Use the helper functions from lib/roles.ts
+    if (!(hasAdminPermission(userRole) || isWebmaster(userRole))) {
+      console.log(`Admin access denied in middleware for role: ${userRole}`)
       return NextResponse.redirect(new URL("/auth/error?error=AccessDenied", request.url))
     }
   }
