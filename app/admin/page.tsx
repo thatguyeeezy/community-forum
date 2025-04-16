@@ -11,12 +11,17 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { RecentActivityList } from "@/components/recent-activity-list"
+import { hasAdminPermission, isWebmaster } from "@/lib/roles"
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions)
 
-  // Check if user is authorized to access admin panel
-  if (!session?.user || !["ADMIN", "MODERATOR", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(session.user.role as string)) {
+  // Check if user is authorized to access admin panel using our role helper functions
+  if (
+    !session?.user ||
+    !(hasAdminPermission(session.user.role as string) || isWebmaster(session.user.role as string))
+  ) {
+    console.log("Unauthorized access attempt to admin panel by:", session?.user?.email || "unknown user")
     redirect("/auth/signin?callbackUrl=/admin")
   }
 
