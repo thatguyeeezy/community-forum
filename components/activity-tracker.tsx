@@ -1,49 +1,54 @@
-// components/activity-tracker.tsx
 "use client"
 
 import { useEffect } from "react"
-import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
 
 export function ActivityTracker() {
-  const pathname = usePathname()
-  const { status } = useSession()
+  const { data: session } = useSession()
 
   useEffect(() => {
-    // Track user activity on page load and navigation
-    const trackActivity = async () => {
-      try {
-        if (status === "authenticated") {
-          await fetch("/api/users/update-activity", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
-        } else {
-          // For anonymous users, just ping the activity endpoint
-          await fetch("/api/activity", {
-            method: "GET",
-            cache: "no-store",
-            headers: {
-              pragma: "no-cache",
-              "cache-control": "no-cache",
-            },
-          })
-        }
-      } catch (error) {
-        console.error("Failed to track activity:", error)
-      }
+    if (!session?.user) return
+
+    // Update activity when component mounts
+    updateActivity()
+
+    // Set up interval to update activity every 5 minutes
+    const interval = setInterval(updateActivity, 5 * 60 * 1000)
+
+    // Also update on visibility change (when user returns to the tab)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
+  }, [session])
 
-    trackActivity()
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") {
+      updateActivity()
+    }
+  }
 
-    // Set up an interval to update activity every 2 minutes
-    const interval = setInterval(trackActivity, 2 * 60 * 1000)
+  const updateActivity = async () => {
+    if (!session?.user) return
 
-    return () => clearInterval(interval)
-  }, [pathname, status])
+    try {
+      console.log("Updating user activity...")
+      const response = await fetch("/api/users/update-activity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
 
-  // This component doesn't render anything
-  return null
+      if (!response.ok) {
+        console.error("Failed to update activity:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error updating activity:", error)
+    }
+  }
+
+  return null // This component doesn't render anything
 }

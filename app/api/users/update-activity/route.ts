@@ -13,11 +13,11 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = Number(session.user.id)
-
-    // Update the lastActive timestamp
     const now = new Date()
+
     console.log(`Updating lastActive for user ${userId} to ${now.toISOString()}`)
 
+    // Update the lastActive timestamp
     await prisma.user.update({
       where: { id: userId },
       data: { lastActive: now },
