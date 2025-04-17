@@ -82,20 +82,22 @@ enum Department {
 }
 
 model User {
-  id              Int       @id @default(autoincrement())
-  name            String?
-  email           String?   @unique
-  emailVerified   DateTime?
-  image           String?
-  password        String?
-  role            String    @default("APPLICANT")
-  department      String?   @default("N_A")
-  discordId       String?   @unique
-  discordJoinedAt DateTime?
-  lastActive      DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  isBanned        Boolean   @default(false)
+  id            Int       @id @default(autoincrement())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  bio           String?   @db.Text
+  status        String?
+  role          Role      @default(APPLICANT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastActive    DateTime?
+  rank          String?   @db.VarChar(30)
+  department    Department? @default(N_A)
+  rnrStatus     RnRStatus?  @default(NONE)
+  discordId     String?     @unique
   accounts      Account[]
   sessions      Session[]
   threads       Thread[]
@@ -106,8 +108,7 @@ model User {
   messages      Message[]   @relation("sender")
   receivedMessages Message[] @relation("recipient")
   notifications Notification[] @relation("recipient")
-  
-  // Add other fields and relations as needed
+  isBanned Boolean @default(false)
 }
 
 model VerificationToken {
