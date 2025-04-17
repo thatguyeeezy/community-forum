@@ -74,6 +74,7 @@ interface EditUserClientProps {
 export default function EditUserClient({ userId }: EditUserClientProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [syncingDiscord, setSyncingDiscord] = useState(false)
   const { data: session } = useSession()
@@ -86,26 +87,45 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
   })
 
   useEffect(() => {
-    fetchUser()
+    if (userId) {
+      fetchUser()
+    } else {
+      setError("No user ID provided")
+      setLoading(false)
+    }
   }, [userId])
 
   const fetchUser = async () => {
     setLoading(true)
+    setError(null)
+
     try {
+      console.log(`Fetching user with ID: ${userId}`)
       const response = await fetch(`/api/users/${userId}`)
-      if (!response.ok) throw new Error("Failed to fetch user")
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || `Server error: ${response.status}`
+        console.error(`Error fetching user: ${errorMessage}`)
+        setError(errorMessage)
+        throw new Error(errorMessage)
+      }
+
       const data = await response.json()
+      console.log("User data received:", data)
+
       setUser(data)
       setFormData({
-        name: data.name,
-        role: data.role,
-        department: data.department,
+        name: data.name || "",
+        role: data.role || "",
+        department: data.department || "",
       })
     } catch (error) {
       console.error("Error fetching user:", error)
+      setError(error instanceof Error ? error.message : "Failed to fetch user")
       toast({
         title: "Error",
-        description: "Failed to load user",
+        description: error instanceof Error ? error.message : "Failed to load user",
         variant: "destructive",
       })
     } finally {
@@ -178,14 +198,22 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
         return
       }
 
+      console.log(`Updating user ${userId} with data:`, formData)
       const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
 
-      if (!response.ok) throw new Error("Failed to update user")
+      const responseData = await response.json()
 
+      if (!response.ok) {
+        const errorMessage = responseData.error || "Failed to update user"
+        console.error(`Error updating user: ${errorMessage}`)
+        throw new Error(errorMessage)
+      }
+
+      console.log("Update successful:", responseData)
       toast({
         title: "Success",
         description: "User updated successfully",
@@ -197,7 +225,7 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       console.error("Error updating user:", error)
       toast({
         title: "Error",
-        description: "Failed to update user",
+        description: error instanceof Error ? error.message : "Failed to update user",
         variant: "destructive",
       })
     } finally {
@@ -223,7 +251,12 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
         body: JSON.stringify({ isBanned: !user?.isBanned }),
       })
 
-      if (!response.ok) throw new Error("Failed to update user")
+      const responseData = await response.json()
+
+      if (!response.ok) {
+        const errorMessage = responseData.error || "Failed to update user"
+        throw new Error(errorMessage)
+      }
 
       toast({
         title: "Success",
@@ -236,7 +269,7 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       console.error("Error updating user:", error)
       toast({
         title: "Error",
-        description: "Failed to update user",
+        description: error instanceof Error ? error.message : "Failed to update user",
         variant: "destructive",
       })
     }
@@ -263,7 +296,12 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
         method: "DELETE",
       })
 
-      if (!response.ok) throw new Error("Failed to delete user")
+      const responseData = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        const errorMessage = responseData.error || "Failed to delete user"
+        throw new Error(errorMessage)
+      }
 
       toast({
         title: "Success",
@@ -276,7 +314,7 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       console.error("Error deleting user:", error)
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: error instanceof Error ? error.message : "Failed to delete user",
         variant: "destructive",
       })
     }
@@ -301,13 +339,16 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
         body: JSON.stringify({ userId: user.id }),
       })
 
-      if (!response.ok) throw new Error("Failed to sync Discord roles")
+      const responseData = await response.json().catch(() => ({}))
 
-      const result = await response.json()
+      if (!response.ok) {
+        const errorMessage = responseData.error || "Failed to sync Discord roles"
+        throw new Error(errorMessage)
+      }
 
       toast({
         title: "Success",
-        description: result.message || "Discord roles synced successfully",
+        description: responseData.message || "Discord roles synced successfully",
       })
 
       // Refresh user data
@@ -316,7 +357,7 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       console.error("Error syncing Discord roles:", error)
       toast({
         title: "Error",
-        description: "Failed to sync Discord roles",
+        description: error instanceof Error ? error.message : "Failed to sync Discord roles",
         variant: "destructive",
       })
     } finally {
@@ -353,6 +394,24 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       <div className="p-6">
         <div className="flex justify-center">
           <RefreshCw className="h-8 w-8 animate-spin text-slate-500" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Error Loading User</h2>
+          <p className="mt-2 text-slate-500 dark:text-slate-400">{error}</p>
+          <Button
+            onClick={() => router.push("/admin/users")}
+            className="mt-4 bg-slate-700 hover:bg-slate-800 text-white"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Users
+          </Button>
         </div>
       </div>
     )

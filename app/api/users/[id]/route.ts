@@ -5,40 +5,66 @@ import { prisma } from "@/lib/prisma"
 import { hasAdminPermission } from "@/lib/roles"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  // Await the params object
-  const resolvedParams = await params
-  const userId = resolvedParams.id
-
-  const session = await auth()
-
-  if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 })
-  }
-
   try {
-    const id = Number.parseInt(userId, 10)
+    // Await the params object
+    const resolvedParams = await params
+    const userId = resolvedParams.id
+
+    if (!userId) {
+      console.error("GET user: No user ID provided")
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 })
+    }
+
+    const session = await auth()
+    if (!session?.user) {
+      console.error("GET user: No authenticated session")
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Parse the ID - handle both numeric and string IDs
+    let id: number
+    try {
+      id = Number.parseInt(userId, 10)
+      if (isNaN(id)) {
+        console.error(`GET user: Invalid user ID format: ${userId}`)
+        return NextResponse.json({ error: "Invalid user ID format" }, { status: 400 })
+      }
+    } catch (error) {
+      console.error(`GET user: Error parsing user ID: ${userId}`, error)
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
+    }
+
+    console.log(`GET user: Fetching user with ID: ${id}`)
 
     // Convert both to strings for comparison
     const sessionUserId = session?.user?.id !== undefined ? String(session.user.id) : null
     const isOwnProfile = sessionUserId === String(id)
+    const isAdmin = hasAdminPermission(session.user.role as string)
+
+    // If not admin and not own profile, restrict access
+    if (!isAdmin && !isOwnProfile) {
+      console.error(`GET user: Permission denied for user ${sessionUserId} to access user ${id}`)
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 })
+    }
 
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
         name: true,
-        email: isOwnProfile, // Only return email for own profile
+        email: true, // Always include email for admins
         image: true,
         bio: true,
         rank: true,
         department: true,
-        discordId: true, // Always include discordId
+        discordId: true,
         role: true,
         createdAt: true,
         rnrStatus: true,
         lastActive: true,
         status: true,
         isBanned: true,
+        discordJoinedAt: true,
         // Get counts for stats
         _count: {
           select: {
@@ -52,8 +78,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
     })
 
     if (!user) {
+      console.error(`GET user: User not found with ID: ${id}`)
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
+
+    console.log(`GET user: Successfully fetched user: ${user.name} (${user.id})`)
 
     // Format the response - create a new object without _count
     const { _count, ...userData } = user
@@ -66,6 +95,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       // Format dates
       createdAt: user.createdAt.toISOString(),
       lastActive: user.lastActive ? user.lastActive.toISOString() : null,
+      discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
     }
 
     return NextResponse.json(formattedUser)
@@ -79,15 +109,25 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   try {
     const resolvedParams = await params
     const userId = resolvedParams.id
-    const id = Number.parseInt(userId, 10)
 
-    if (isNaN(id)) {
+    console.log(`PATCH user: Updating user with ID: ${userId}`)
+
+    let id: number
+    try {
+      id = Number.parseInt(userId, 10)
+      if (isNaN(id)) {
+        console.error(`PATCH user: Invalid user ID format: ${userId}`)
+        return NextResponse.json({ error: "Invalid user ID format" }, { status: 400 })
+      }
+    } catch (error) {
+      console.error(`PATCH user: Error parsing user ID: ${userId}`, error)
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
     }
 
     const session = await auth()
 
     if (!session?.user) {
+      console.error("PATCH user: No authenticated session")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -97,17 +137,20 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     })
 
     if (!userToUpdate) {
+      console.error(`PATCH user: User not found with ID: ${id}`)
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
     // Parse request body
     const body = await request.json()
+    console.log(`PATCH user: Update data for user ${id}:`, body)
 
     // Validate permissions based on what's being updated
     const currentUserRole = session.user.role as string
 
     // Only admins can update other users
     if (String(session.user.id) !== String(id) && !hasAdminPermission(currentUserRole)) {
+      console.error(`PATCH user: Permission denied for user ${session.user.id} to update user ${id}`)
       return NextResponse.json({ error: "You don't have permission to update this user" }, { status: 403 })
     }
 
@@ -115,6 +158,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (body.role && body.role !== userToUpdate.role) {
       // Only webmaster can change to/from webmaster
       if ((body.role === "WEBMASTER" || userToUpdate.role === "WEBMASTER") && currentUserRole !== "WEBMASTER") {
+        console.error(`PATCH user: Permission denied for role change to/from WEBMASTER`)
         return NextResponse.json(
           {
             error: "Only a Webmaster can change Webmaster role",
@@ -128,6 +172,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         (body.role === "HEAD_ADMIN" || userToUpdate.role === "HEAD_ADMIN") &&
         !["WEBMASTER", "HEAD_ADMIN"].includes(currentUserRole)
       ) {
+        console.error(`PATCH user: Permission denied for role change to/from HEAD_ADMIN`)
         return NextResponse.json(
           {
             error: "Only a Webmaster or Head Admin can change Head Admin role",
@@ -142,6 +187,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         ["JUNIOR_ADMIN", "ADMIN", "SENIOR_ADMIN"].includes(userToUpdate.role)
       ) {
         if (!["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN"].includes(currentUserRole)) {
+          console.error(`PATCH user: Permission denied for admin role change`)
           return NextResponse.json(
             {
               error: "You don't have permission to change admin roles",
@@ -159,6 +205,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         (body.department === "LEADERSHIP" || body.department === "DEV") &&
         !["WEBMASTER", "HEAD_ADMIN"].includes(currentUserRole)
       ) {
+        console.error(`PATCH user: Permission denied for department change to LEADERSHIP or DEV`)
         return NextResponse.json(
           {
             error: "Only Head Admin or Webmaster can assign to Leadership or Dev departments",
@@ -171,6 +218,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // Handle ban status updates
     if (body.isBanned !== undefined && body.isBanned !== userToUpdate.isBanned) {
       if (!hasAdminPermission(currentUserRole)) {
+        console.error(`PATCH user: Permission denied for ban status change`)
         return NextResponse.json(
           {
             error: "Only admins can ban or unban users",
@@ -189,11 +237,15 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (body.department !== undefined) updateData.department = body.department
     if (body.isBanned !== undefined) updateData.isBanned = body.isBanned
 
+    console.log(`PATCH user: Final update data for user ${id}:`, updateData)
+
     // Update the user
     const updatedUser = await prisma.user.update({
       where: { id },
       data: updateData,
     })
+
+    console.log(`PATCH user: Successfully updated user ${updatedUser.id}`)
 
     return NextResponse.json({
       message: "User updated successfully",
@@ -215,21 +267,32 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   try {
     const resolvedParams = await params
     const userId = resolvedParams.id
-    const id = Number.parseInt(userId, 10)
 
-    if (isNaN(id)) {
+    console.log(`DELETE user: Deleting user with ID: ${userId}`)
+
+    let id: number
+    try {
+      id = Number.parseInt(userId, 10)
+      if (isNaN(id)) {
+        console.error(`DELETE user: Invalid user ID format: ${userId}`)
+        return NextResponse.json({ error: "Invalid user ID format" }, { status: 400 })
+      }
+    } catch (error) {
+      console.error(`DELETE user: Error parsing user ID: ${userId}`, error)
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
     }
 
     const session = await auth()
 
     if (!session?.user) {
+      console.error("DELETE user: No authenticated session")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Only webmaster and head admin can delete users
     const currentUserRole = session.user.role as string
     if (currentUserRole !== "WEBMASTER" && currentUserRole !== "HEAD_ADMIN") {
+      console.error(`DELETE user: Permission denied for user ${session.user.id} with role ${currentUserRole}`)
       return NextResponse.json(
         {
           error: "Only Head Admin and Webmaster can delete users",
@@ -244,11 +307,13 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     })
 
     if (!userToDelete) {
+      console.error(`DELETE user: User not found with ID: ${id}`)
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
     // Prevent deleting webmaster if you're not a webmaster
     if (userToDelete.role === "WEBMASTER" && currentUserRole !== "WEBMASTER") {
+      console.error(`DELETE user: Permission denied for deleting WEBMASTER user`)
       return NextResponse.json(
         {
           error: "Only a Webmaster can delete another Webmaster",
@@ -261,6 +326,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     await prisma.user.delete({
       where: { id },
     })
+
+    console.log(`DELETE user: Successfully deleted user ${id}`)
 
     return NextResponse.json({ message: "User deleted successfully" })
   } catch (error) {
