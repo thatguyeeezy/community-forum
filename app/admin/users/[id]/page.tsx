@@ -1,6 +1,18 @@
+import { Suspense } from "react"
+import { notFound } from "next/navigation"
 import EditUserClient from "./edit-user-client"
 
-// This is a server component that can directly use params
 export default function EditUserPage({ params }: { params: { id: string } }) {
-  return <EditUserClient userId={params.id} />
+  // Extract the ID from params
+  const userId = params.id
+
+  if (!userId) {
+    notFound()
+  }
+
+  return (
+    <Suspense fallback={<div className="p-6 text-center">Loading user...</div>}>
+      <EditUserClient userId={userId} />
+    </Suspense>
+  )
 }

@@ -6,14 +6,14 @@ import { hasAdminPermission } from "@/lib/roles"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    // Await the params object
-    const resolvedParams = await params
-    const userId = resolvedParams.id
+    const userId = params.id
 
     if (!userId) {
       console.error("GET user: No user ID provided")
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
     }
+
+    console.log(`GET user: Received request for user ID: ${userId}`)
 
     const session = await auth()
     if (!session?.user) {
@@ -107,8 +107,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
-    const resolvedParams = await params
-    const userId = resolvedParams.id
+    const userId = params.id
 
     console.log(`PATCH user: Updating user with ID: ${userId}`)
 
@@ -265,8 +264,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const resolvedParams = await params
-    const userId = resolvedParams.id
+    const userId = params.id
 
     console.log(`DELETE user: Deleting user with ID: ${userId}`)
 
