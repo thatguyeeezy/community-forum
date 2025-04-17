@@ -85,7 +85,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
           rnrStatus: true,
           lastActive: true,
           status: true,
-          discordJoinedAt: true,
           // Get counts for stats
           _count: {
             select: {
@@ -116,7 +115,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
         // Format dates
         createdAt: user.createdAt.toISOString(),
         lastActive: user.lastActive ? user.lastActive.toISOString() : null,
-        discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
         // Add a default value for isBanned if it doesn't exist in the schema yet
         isBanned: false,
       }

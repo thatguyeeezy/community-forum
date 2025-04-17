@@ -26,6 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+// Update the User interface to make discordJoinedAt optional
 interface User {
   id: string
   name: string
@@ -36,6 +37,7 @@ interface User {
   discordId: string | null
   createdAt: string
   lastActive: string | null
+  // Make this optional since it might not exist in the database
   discordJoinedAt?: string | null
   isBanned?: boolean
 }
@@ -510,9 +512,12 @@ export default function EditUserClient({ userId }: { userId: string }) {
                   <span className="text-slate-600 dark:text-slate-400">{formatDate(user.createdAt)}</span>
                 </div>
 
+                {/* Update the part that displays Discord Joined date to handle the case when it's not available */}
                 <div>
                   <span className="font-medium text-slate-700 dark:text-slate-300">Discord Joined:</span>{" "}
-                  <span className="text-slate-600 dark:text-slate-400">{formatDate(user.discordJoinedAt)}</span>
+                  <span className="text-slate-600 dark:text-slate-400">
+                    {user.discordJoinedAt ? formatDate(user.discordJoinedAt) : "Not available"}
+                  </span>
                 </div>
 
                 <div>
