@@ -1,85 +1,20 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { AdminSidebar } from "@/components/admin-sidebar"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
+import type { Metadata } from "next"
 import { UserTable } from "@/components/user-table"
-import { Button } from "@/components/ui/button"
-import { syncAllUserRoles } from "@/app/actions/discord"
-import { hasAdminPermission } from "@/lib/roles"
 
-export default async function AdminUsersPage() {
-  const session = await getServerSession(authOptions)
+export const metadata: Metadata = {
+  title: "User Management",
+  description: "Manage users in the community forum",
+}
 
-  // Check if user is authorized to access admin panel
-  if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/admin/users")
-  }
-
-  const userRole = session.user.role as string
-
-  // Allow WEBMASTER role explicitly or any admin role
-  if (!(userRole === "WEBMASTER" || hasAdminPermission(userRole))) {
-    redirect("/auth/error?error=AccessDenied")
-  }
-
-  // Check if user has senior admin permissions for the sync button
-  const canSyncAllRoles = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(userRole)
-
-  // Fetch users
-  const users = await prisma.user.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      department: true,
-      createdAt: true,
-      lastActive: true,
-      status: true,
-      _count: {
-        select: {
-          threads: true,
-          posts: true,
-        },
-      },
-    },
-  })
-
+export default function UsersPage() {
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
-      <div className="flex flex-col md:flex-row gap-6">
-        <AdminSidebar />
-        <div className="flex-1 space-y-6">
-          <div className="mb-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">User Management</h1>
-            {canSyncAllRoles && (
-              <form action={syncAllUserRoles}>
-                <Button type="submit" variant="outline">
-                  Sync All Discord Roles
-                </Button>
-              </form>
-            )}
-          </div>
-          <div>
-            <p className="text-muted-foreground">Manage users, roles, and permissions</p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Users</CardTitle>
-              <CardDescription>Manage all users in the system</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <UserTable users={users} />
-            </CardContent>
-          </Card>
-        </div>
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">User Management</h1>
+        <p className="text-slate-500 dark:text-slate-400">View and manage all users in the system</p>
       </div>
+
+      <UserTable />
     </div>
   )
 }

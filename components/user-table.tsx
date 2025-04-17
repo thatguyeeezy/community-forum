@@ -159,9 +159,11 @@ export function UserTable() {
 
       if (!response.ok) throw new Error("Failed to sync Discord roles")
 
+      const result = await response.json()
+
       toast({
         title: "Success",
-        description: "Discord roles synced successfully",
+        description: result.message || "Discord roles synced successfully",
       })
 
       // Refresh the user list

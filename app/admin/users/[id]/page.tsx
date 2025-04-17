@@ -43,12 +43,15 @@ const departments = [
 ]
 
 const roles = [
-  { id: "USER", name: "User" },
+  { id: "APPLICANT", name: "Applicant" },
+  { id: "MEMBER", name: "Member" },
+  { id: "STAFF_IN_TRAINING", name: "Staff in Training" },
   { id: "STAFF", name: "Staff" },
   { id: "SENIOR_STAFF", name: "Senior Staff" },
   { id: "JUNIOR_ADMIN", name: "Junior Admin" },
   { id: "ADMIN", name: "Admin" },
   { id: "SENIOR_ADMIN", name: "Senior Admin" },
+  { id: "SPECIAL_ADVISOR", name: "Special Advisor" },
   { id: "HEAD_ADMIN", name: "Head Admin" },
   { id: "WEBMASTER", name: "Webmaster" },
 ]
@@ -113,7 +116,9 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     // Admins can only edit roles below Junior Admin
     if (hasAdminPermission(currentUserRole)) {
       const editingRole = user?.role || ""
-      return !["JUNIOR_ADMIN", "ADMIN", "SENIOR_ADMIN", "HEAD_ADMIN", "WEBMASTER"].includes(editingRole)
+      return !["JUNIOR_ADMIN", "ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "HEAD_ADMIN", "WEBMASTER"].includes(
+        editingRole,
+      )
     }
 
     return false
@@ -126,7 +131,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     if (isWebmaster(currentUserRole) || hasAdminPermission(currentUserRole)) return true
 
     // Junior Admins and Senior Staff can edit departments except leadership and dev
-    if (["JUNIOR_ADMIN", "ADMIN", "SENIOR_ADMIN", "HEAD_ADMIN"].includes(currentUserRole)) {
+    if (["JUNIOR_ADMIN", "SENIOR_STAFF"].includes(currentUserRole)) {
       return formData.department !== "LEADERSHIP" && formData.department !== "DEV"
     }
 
@@ -186,10 +191,10 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
   }
 
   const syncDiscordRoles = async () => {
-    if (!user?.discordId) {
+    if (!user?.id) {
       toast({
         title: "Error",
-        description: "User does not have a Discord ID",
+        description: "User ID is missing",
         variant: "destructive",
       })
       return
@@ -197,15 +202,20 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
     setSyncingDiscord(true)
     try {
-      const response = await fetch(`/api/discord/roles/${user.discordId}`, {
-        method: "GET",
+      // Call the server action to sync user role
+      const response = await fetch("/api/discord/sync-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
       })
 
       if (!response.ok) throw new Error("Failed to sync Discord roles")
 
+      const result = await response.json()
+
       toast({
         title: "Success",
-        description: "Discord roles synced successfully",
+        description: result.message || "Discord roles synced successfully",
       })
 
       // Refresh user data
