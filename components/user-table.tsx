@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { formatDistanceToNow } from "date-fns"
-import { MoreHorizontal, Trash2, Edit, Ban, Copy, UserCheck, RefreshCw } from "lucide-react"
+import { MoreHorizontal, Edit, ExternalLink, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -15,8 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { toast } from "@/hooks/use-toast"
-import { hasAdminPermission, isWebmaster } from "@/lib/roles"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import Link from "next/link"
 
 interface User {
   id: string
@@ -66,88 +66,8 @@ export function UserTable() {
     router.push(`/admin/users/${userId}`)
   }
 
-  const handleBanUser = async (userId: string, isBanned: boolean) => {
-    // Only Admin+ can ban users
-    if (!hasAdminPermission(session?.user?.role as string)) {
-      toast({
-        title: "Permission Denied",
-        description: "You don't have permission to ban users",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isBanned: !isBanned }),
-      })
-
-      if (!response.ok) throw new Error("Failed to update user")
-
-      // Update local state
-      setUsers(users.map((user) => (user.id === userId ? { ...user, isBanned: !isBanned } : user)))
-
-      toast({
-        title: "Success",
-        description: `User ${isBanned ? "unbanned" : "banned"} successfully`,
-      })
-    } catch (error) {
-      console.error("Error updating user:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update user",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleDeleteUser = async (userId: string) => {
-    // Only Webmaster can delete users
-    if (!isWebmaster(session?.user?.role as string)) {
-      toast({
-        title: "Permission Denied",
-        description: "Only Webmaster can delete users",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "DELETE",
-      })
-
-      if (!response.ok) throw new Error("Failed to delete user")
-
-      // Update local state
-      setUsers(users.filter((user) => user.id !== userId))
-
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-      })
-    } catch (error) {
-      console.error("Error deleting user:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleCopyDiscordId = (discordId: string) => {
-    navigator.clipboard.writeText(discordId)
-    toast({
-      title: "Copied",
-      description: "Discord ID copied to clipboard",
-    })
+  const handleViewProfile = (userId: string) => {
+    router.push(`/profile/${userId}`)
   }
 
   const syncAllDiscordRoles = async () => {
@@ -189,9 +109,12 @@ export function UserTable() {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Never"
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+      const date = new Date(dateString)
+      // Check if date is valid
+      if (isNaN(date.getTime())) return "Never"
+      return formatDistanceToNow(date, { addSuffix: true })
     } catch (e) {
-      return "Invalid date"
+      return "Never"
     }
   }
 
@@ -227,26 +150,31 @@ export function UserTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-slate-500 dark:text-slate-400">{users.length} users found</div>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin")}
+            className="mr-4 border-slate-200 dark:border-slate-700"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Admin
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">User Management</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">View and manage all users in the system</p>
+          </div>
+        </div>
         <Button
           onClick={syncAllDiscordRoles}
           disabled={syncingRoles}
           className="bg-slate-700 hover:bg-slate-800 text-white"
         >
-          {syncingRoles ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Syncing...
-            </>
-          ) : (
-            <>
-              <UserCheck className="mr-2 h-4 w-4" />
-              Sync All Discord Roles
-            </>
-          )}
+          {syncingRoles ? "Syncing..." : "Sync All Discord Roles"}
         </Button>
       </div>
+
+      <div className="text-sm text-slate-500 dark:text-slate-400 mb-2">{users.length} users found</div>
 
       <div className="rounded-md border dark:border-slate-700 border-slate-200">
         <div className="overflow-x-auto">
@@ -284,7 +212,7 @@ export function UserTable() {
                     } hover:bg-slate-50 dark:hover:bg-slate-800/50`}
                   >
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/profile/${user.id}`} className="flex items-center gap-3 hover:underline">
                         <Avatar className="h-8 w-8">
                           {user.image ? (
                             <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
@@ -302,18 +230,12 @@ export function UserTable() {
                             )}
                           </div>
                           {user.discordId && (
-                            <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                              <span className="truncate max-w-[120px]">{user.discordId}</span>
-                              <button
-                                onClick={() => handleCopyDiscordId(user.discordId!)}
-                                className="ml-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </button>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px]">
+                              {user.discordId}
                             </div>
                           )}
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${getRoleColor(user.role)}`}>
@@ -347,26 +269,13 @@ export function UserTable() {
                             <Edit className="mr-2 h-4 w-4" />
                             Edit User
                           </DropdownMenuItem>
-
-                          {hasAdminPermission(session?.user?.role as string) && (
-                            <DropdownMenuItem
-                              onClick={() => handleBanUser(user.id, !!user.isBanned)}
-                              className="text-slate-700 dark:text-slate-300 focus:bg-slate-100 dark:focus:bg-slate-800"
-                            >
-                              <Ban className="mr-2 h-4 w-4" />
-                              {user.isBanned ? "Unban User" : "Ban User"}
-                            </DropdownMenuItem>
-                          )}
-
-                          {isWebmaster(session?.user?.role as string) && (
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="text-red-600 dark:text-red-400 focus:bg-slate-100 dark:focus:bg-slate-800"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete User
-                            </DropdownMenuItem>
-                          )}
+                          <DropdownMenuItem
+                            onClick={() => handleViewProfile(user.id)}
+                            className="text-slate-700 dark:text-slate-300 focus:bg-slate-100 dark:focus:bg-slate-800"
+                          >
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Visit Profile
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>

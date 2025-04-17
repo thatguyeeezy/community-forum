@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { ArrowLeft, Save, RefreshCw, Shield } from "lucide-react"
+import { ArrowLeft, Save, RefreshCw, Shield, Ban, Trash2, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +14,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { hasAdminPermission, isWebmaster } from "@/lib/roles"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface User {
   id: string
@@ -190,6 +201,83 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     }
   }
 
+  const handleBanUser = async () => {
+    // Only Admin+ can ban users
+    if (!hasAdminPermission(session?.user?.role as string)) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to ban users",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/users/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isBanned: !user?.isBanned }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update user")
+
+      toast({
+        title: "Success",
+        description: `User ${user?.isBanned ? "unbanned" : "banned"} successfully`,
+      })
+
+      // Refresh user data
+      fetchUser()
+    } catch (error) {
+      console.error("Error updating user:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update user",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const canDeleteUser = () => {
+    const currentUserRole = session?.user?.role as string
+    return currentUserRole === "WEBMASTER" || currentUserRole === "HEAD_ADMIN"
+  }
+
+  const handleDeleteUser = async () => {
+    // Only Head Admin and Webmaster can delete users
+    if (!canDeleteUser()) {
+      toast({
+        title: "Permission Denied",
+        description: "Only Head Admin and Webmaster can delete users",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/users/${params.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) throw new Error("Failed to delete user")
+
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      })
+
+      // Redirect back to users list
+      router.push("/admin/users")
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      })
+    }
+  }
+
   const syncDiscordRoles = async () => {
     if (!user?.id) {
       toast({
@@ -241,6 +329,21 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
       .substring(0, 2)
   }
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Never"
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    } catch (e) {
+      return "Invalid date"
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-6">
@@ -281,25 +384,36 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
           Back to Users
         </Button>
 
-        {user.discordId && (
+        <div className="flex space-x-2">
           <Button
-            onClick={syncDiscordRoles}
-            disabled={syncingDiscord}
-            className="bg-slate-700 hover:bg-slate-800 text-white"
+            onClick={() => router.push(`/profile/${user.id}`)}
+            variant="outline"
+            className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
           >
-            {syncingDiscord ? (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Syncing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Sync Discord Roles
-              </>
-            )}
+            <ExternalLink className="mr-2 h-4 w-4" />
+            View Profile
           </Button>
-        )}
+
+          {user.discordId && (
+            <Button
+              onClick={syncDiscordRoles}
+              disabled={syncingDiscord}
+              className="bg-slate-700 hover:bg-slate-800 text-white"
+            >
+              {syncingDiscord ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Sync Discord Roles
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -329,14 +443,25 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
                 <p className="text-sm text-blue-500 dark:text-blue-400 mt-1">Discord ID: {user.discordId}</p>
               )}
 
-              <div className="mt-2">
-                <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                  Joined {new Date(user.createdAt).toLocaleDateString()}
-                </span>
+              <div className="mt-4 space-y-2 text-sm">
+                <div>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Account Created:</span>{" "}
+                  <span className="text-slate-600 dark:text-slate-400">{formatDate(user.createdAt)}</span>
+                </div>
+
+                <div>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Discord Joined:</span>{" "}
+                  <span className="text-slate-600 dark:text-slate-400">{formatDate(user.discordJoinedAt)}</span>
+                </div>
+
+                <div>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Last Active:</span>{" "}
+                  <span className="text-slate-600 dark:text-slate-400">{formatDate(user.lastActive)}</span>
+                </div>
               </div>
 
               {user.isBanned && (
-                <div className="mt-2">
+                <div className="mt-4">
                   <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
                     BANNED
                   </span>
@@ -424,20 +549,59 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
               </Select>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button onClick={handleSave} disabled={saving} className="bg-slate-700 hover:bg-slate-800 text-white">
-              {saving ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="flex justify-between w-full">
+              <Button onClick={handleSave} disabled={saving} className="bg-slate-700 hover:bg-slate-800 text-white">
+                {saving ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+
+              {hasAdminPermission(session?.user?.role as string) && (
+                <Button
+                  onClick={handleBanUser}
+                  variant="outline"
+                  className={user?.isBanned ? "border-green-200 text-green-700" : "border-red-200 text-red-700"}
+                >
+                  <Ban className="mr-2 h-4 w-4" />
+                  {user?.isBanned ? "Unban User" : "Ban User"}
+                </Button>
               )}
-            </Button>
+            </div>
+
+            {canDeleteUser() && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete User
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the user account and remove all
+                      associated data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </CardFooter>
         </Card>
       </div>
