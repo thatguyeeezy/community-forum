@@ -265,26 +265,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         )
       }
 
-      // Store the original role and department when disabling an account
+      // When disabling an account, set role to APPLICANT and department to N_A
       if (body.isBanned === true) {
-        // Store the original values in the request body for re-enabling later
-        body.previousRole = userToUpdate.role
-        body.previousDepartment = userToUpdate.department
-
-        // Set role to APPLICANT and department to N_A when disabling
         body.role = "APPLICANT"
         body.department = "N_A"
-
         console.log(`PATCH user: Disabling account and setting role to APPLICANT and department to N_A`)
-      } else if (body.isBanned === false && body.restoreSettings) {
-        // When re-enabling, restore the previous role and department if available
-        if (body.previousRole) {
-          body.role = body.previousRole
-        }
-        if (body.previousDepartment) {
-          body.department = body.previousDepartment
-        }
-        console.log(`PATCH user: Re-enabling account and restoring previous settings`)
       }
     }
 
@@ -296,12 +281,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (body.role !== undefined) updateData.role = body.role
     if (body.department !== undefined) updateData.department = body.department
     if (body.isBanned !== undefined) updateData.isBanned = body.isBanned
-
-    // Store previous settings when disabling an account
-    if (body.isBanned === true) {
-      updateData.previousRole = userToUpdate.role
-      updateData.previousDepartment = userToUpdate.department
-    }
 
     console.log(`PATCH user: Final update data for user ${id}:`, updateData)
 
@@ -322,8 +301,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
           role: updatedUser.role,
           department: updatedUser.department,
           isBanned: updatedUser.isBanned,
-          previousRole: updatedUser.previousRole,
-          previousDepartment: updatedUser.previousDepartment,
         },
       })
     } catch (error) {

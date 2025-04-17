@@ -25,9 +25,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Checkbox } from "@/components/ui/checkbox"
 
-// Update the User interface to include previous role and department
+// Update the User interface to make discordJoinedAt optional
 interface User {
   id: string
   name: string
@@ -38,10 +37,9 @@ interface User {
   discordId: string | null
   createdAt: string
   lastActive: string | null
+  // Make this optional since it might not exist in the database
   discordJoinedAt?: string | null
   isBanned?: boolean
-  previousRole?: string
-  previousDepartment?: string
 }
 
 const departments = [
@@ -77,7 +75,6 @@ export default function EditUserClient({ userId }: { userId: string }) {
   const [saving, setSaving] = useState(false)
   const [syncingDiscord, setSyncingDiscord] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [restoreSettings, setRestoreSettings] = useState(true)
   const { data: session } = useSession()
   const router = useRouter()
 
@@ -252,13 +249,10 @@ export default function EditUserClient({ userId }: { userId: string }) {
       const newStatus = !user?.isBanned
       console.log(`Toggling account status to ${newStatus ? "disabled" : "enabled"}`)
 
-      // When enabling an account, include the restoreSettings flag
-      const requestBody = newStatus ? { isBanned: true } : { isBanned: false, restoreSettings: restoreSettings }
-
       const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ isBanned: newStatus }),
       })
 
       if (!response.ok) {
@@ -393,18 +387,6 @@ export default function EditUserClient({ userId }: { userId: string }) {
     } catch (e) {
       return "Invalid date"
     }
-  }
-
-  // Function to get department name from ID
-  const getDepartmentName = (id: string) => {
-    const dept = departments.find((d) => d.id === id)
-    return dept ? dept.name : "Unknown"
-  }
-
-  // Function to get role name from ID
-  const getRoleName = (id: string) => {
-    const role = roles.find((r) => r.id === id)
-    return role ? role.name : "Unknown"
   }
 
   if (loading) {
@@ -551,21 +533,6 @@ export default function EditUserClient({ userId }: { userId: string }) {
                   </span>
                 </div>
               )}
-
-              {/* Show previous role and department if account is disabled */}
-              {user.isBanned && user.previousRole && (
-                <div className="mt-4 text-sm">
-                  <p className="text-slate-600 dark:text-slate-400">
-                    <span className="font-medium">Previous Role:</span> {getRoleName(user.previousRole)}
-                  </p>
-                  {user.previousDepartment && (
-                    <p className="text-slate-600 dark:text-slate-400">
-                      <span className="font-medium">Previous Department:</span>{" "}
-                      {getDepartmentName(user.previousDepartment)}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -685,20 +652,6 @@ export default function EditUserClient({ userId }: { userId: string }) {
                 </Button>
               )}
             </div>
-
-            {/* Add restore settings option when re-enabling an account */}
-            {user?.isBanned && (
-              <div className="flex items-center space-x-2 mt-2">
-                <Checkbox
-                  id="restore-settings"
-                  checked={restoreSettings}
-                  onCheckedChange={(checked) => setRestoreSettings(checked as boolean)}
-                />
-                <Label htmlFor="restore-settings" className="text-sm text-slate-600 dark:text-slate-400">
-                  Restore previous role and department when enabling account
-                </Label>
-              </div>
-            )}
 
             {canDeleteUser() && (
               <AlertDialog>
