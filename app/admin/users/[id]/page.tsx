@@ -68,6 +68,7 @@ const roles = [
 ]
 
 export default function EditUserPage({ params }: { params: { id: string } }) {
+  const userId = params.id // Extract ID immediately to avoid Promise issues
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -83,12 +84,12 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchUser()
-  }, [params.id])
+  }, [userId]) // Use extracted userId instead of params.id
 
   const fetchUser = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/users/${params.id}`)
+      const response = await fetch(`/api/users/${userId}`) // Use extracted userId
       if (!response.ok) throw new Error("Failed to fetch user")
       const data = await response.json()
       setUser(data)
@@ -174,7 +175,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
         return
       }
 
-      const response = await fetch(`/api/users/${params.id}`, {
+      const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -213,7 +214,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      const response = await fetch(`/api/users/${params.id}`, {
+      const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isBanned: !user?.isBanned }),
@@ -255,7 +256,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      const response = await fetch(`/api/users/${params.id}`, {
+      const response = await fetch(`/api/users/${userId}`, {
         method: "DELETE",
       })
 
