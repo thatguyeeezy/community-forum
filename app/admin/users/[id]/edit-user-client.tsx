@@ -25,8 +25,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 
-// Update the User interface to make discordJoinedAt optional
+// Update the User interface to include previous role and department
 interface User {
   id: string
   name: string
@@ -37,9 +38,10 @@ interface User {
   discordId: string | null
   createdAt: string
   lastActive: string | null
-  // Make this optional since it might not exist in the database
   discordJoinedAt?: string | null
   isBanned?: boolean
+  previousRole?: string
+  previousDepartment?: string
 }
 
 const departments = [
@@ -75,6 +77,7 @@ export default function EditUserClient({ userId }: { userId: string }) {
   const [saving, setSaving] = useState(false)
   const [syncingDiscord, setSyncingDiscord] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [restoreSettings, setRestoreSettings] = useState(true)
   const { data: session } = useSession()
   const router = useRouter()
 
@@ -249,10 +252,13 @@ export default function EditUserClient({ userId }: { userId: string }) {
       const newStatus = !user?.isBanned
       console.log(`Toggling account status to ${newStatus ? "disabled" : "enabled"}`)
 
+      // When enabling an account, include the restoreSettings flag
+      const requestBody = newStatus ? { isBanned: true } : { isBanned: false, restoreSettings: restoreSettings }
+
       const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isBanned: newStatus }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -387,6 +393,18 @@ export default function EditUserClient({ userId }: { userId: string }) {
     } catch (e) {
       return "Invalid date"
     }
+  }
+
+  // Function to get department name from ID
+  const getDepartmentName = (id: string) => {
+    const dept = departments.find((d) => d.id === id)
+    return dept ? dept.name : "Unknown"
+  }
+
+  // Function to get role name from ID
+  const getRoleName = (id: string) => {
+    const role = roles.find((r) => r.id === id)
+    return role ? role.name : "Unknown"
   }
 
   if (loading) {
@@ -533,6 +551,21 @@ export default function EditUserClient({ userId }: { userId: string }) {
                   </span>
                 </div>
               )}
+
+              {/* Show previous role and department if account is disabled */}
+              {user.isBanned && user.previousRole && (
+                <div className="mt-4 text-sm">
+                  <p className="text-slate-600 dark:text-slate-400">
+                    <span className="font-medium">Previous Role:</span> {getRoleName(user.previousRole)}
+                  </p>
+                  {user.previousDepartment && (
+                    <p className="text-slate-600 dark:text-slate-400">
+                      <span className="font-medium">Previous Department:</span>{" "}
+                      {getDepartmentName(user.previousDepartment)}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -568,7 +601,7 @@ export default function EditUserClient({ userId }: { userId: string }) {
                 )}
               </Label>
               <Select
-                disabled={!canEditRole()}
+                disabled={!canEditRole() || user.isBanned}
                 value={formData.role}
                 onValueChange={(value) => handleSelectChange("role", value)}
               >
@@ -586,6 +619,9 @@ export default function EditUserClient({ userId }: { userId: string }) {
                   ))}
                 </SelectContent>
               </Select>
+              {user.isBanned && (
+                <p className="text-xs text-amber-600 mt-1">Role cannot be changed while account is disabled</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -598,7 +634,7 @@ export default function EditUserClient({ userId }: { userId: string }) {
                 )}
               </Label>
               <Select
-                disabled={!canEditDepartment()}
+                disabled={!canEditDepartment() || user.isBanned}
                 value={formData.department}
                 onValueChange={(value) => handleSelectChange("department", value)}
               >
@@ -613,11 +649,18 @@ export default function EditUserClient({ userId }: { userId: string }) {
                   ))}
                 </SelectContent>
               </Select>
+              {user.isBanned && (
+                <p className="text-xs text-amber-600 mt-1">Department cannot be changed while account is disabled</p>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="flex justify-between w-full">
-              <Button onClick={handleSave} disabled={saving} className="bg-slate-700 hover:bg-slate-800 text-white">
+              <Button
+                onClick={handleSave}
+                disabled={saving || user.isBanned}
+                className="bg-slate-700 hover:bg-slate-800 text-white"
+              >
                 {saving ? (
                   <>
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -642,6 +685,20 @@ export default function EditUserClient({ userId }: { userId: string }) {
                 </Button>
               )}
             </div>
+
+            {/* Add restore settings option when re-enabling an account */}
+            {user?.isBanned && (
+              <div className="flex items-center space-x-2 mt-2">
+                <Checkbox
+                  id="restore-settings"
+                  checked={restoreSettings}
+                  onCheckedChange={(checked) => setRestoreSettings(checked as boolean)}
+                />
+                <Label htmlFor="restore-settings" className="text-sm text-slate-600 dark:text-slate-400">
+                  Restore previous role and department when enabling account
+                </Label>
+              </div>
+            )}
 
             {canDeleteUser() && (
               <AlertDialog>
