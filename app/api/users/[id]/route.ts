@@ -6,7 +6,9 @@ import { hasAdminPermission } from "@/lib/roles"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const userId = params.id
+    // Properly await params before accessing properties
+    const resolvedParams = await params
+    const userId = resolvedParams.id
 
     if (!userId) {
       console.error("GET user: No user ID provided")
@@ -47,6 +49,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Permission denied" }, { status: 403 })
     }
 
+    // Now include isBanned field since it's been added to the schema
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -63,7 +66,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         rnrStatus: true,
         lastActive: true,
         status: true,
-        isBanned: true,
+        isBanned: true, // Now included since it exists in the schema
         discordJoinedAt: true,
         // Get counts for stats
         _count: {
@@ -107,7 +110,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
-    const userId = params.id
+    // Properly await params before accessing properties
+    const resolvedParams = await params
+    const userId = resolvedParams.id
 
     console.log(`PATCH user: Updating user with ID: ${userId}`)
 
@@ -217,10 +222,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // Handle ban status updates
     if (body.isBanned !== undefined && body.isBanned !== userToUpdate.isBanned) {
       if (!hasAdminPermission(currentUserRole)) {
-        console.error(`PATCH user: Permission denied for ban status change`)
+        console.error(`PATCH user: Permission denied for account disable status change`)
         return NextResponse.json(
           {
-            error: "Only admins can ban or unban users",
+            error: "Only admins can disable or enable user accounts",
           },
           { status: 403 },
         )
@@ -264,7 +269,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const userId = params.id
+    // Properly await params before accessing properties
+    const resolvedParams = await params
+    const userId = resolvedParams.id
 
     console.log(`DELETE user: Deleting user with ID: ${userId}`)
 

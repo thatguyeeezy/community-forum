@@ -226,7 +226,9 @@ export function UserTable() {
                           <div className="font-medium text-slate-900 dark:text-slate-100">
                             {user.name}
                             {user.isBanned && (
-                              <span className="ml-2 text-xs bg-red-500 text-white px-1 py-0.5 rounded">BANNED</span>
+                              <span className="ml-2 text-xs bg-red-500 text-white px-1 py-0.5 rounded">
+                                ACCOUNT DISABLED
+                              </span>
                             )}
                           </div>
                           {user.discordId && (

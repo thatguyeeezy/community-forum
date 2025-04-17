@@ -108,6 +108,7 @@ model User {
   messages      Message[]   @relation("sender")
   receivedMessages Message[] @relation("recipient")
   notifications Notification[] @relation("recipient")
+  isBanned Boolean @default(false)
 }
 
 model VerificationToken {
