@@ -67,16 +67,12 @@ const roles = [
   { id: "WEBMASTER", name: "Webmaster" },
 ]
 
-interface EditUserClientProps {
-  userId: string
-}
-
-export default function EditUserClient({ userId }: EditUserClientProps) {
+export default function EditUserClient({ userId }: { userId: string }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [syncingDiscord, setSyncingDiscord] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { data: session } = useSession()
   const router = useRouter()
 
@@ -87,20 +83,15 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
   })
 
   useEffect(() => {
-    if (userId) {
-      fetchUser()
-    } else {
-      setError("No user ID provided")
-      setLoading(false)
-    }
+    console.log("Fetching user with ID:", userId)
+    fetchUser()
   }, [userId])
 
   const fetchUser = async () => {
     setLoading(true)
     setError(null)
-
     try {
-      console.log(`Fetching user with ID: ${userId}`)
+      console.log(`Making API request to /api/users/${userId}`)
       const response = await fetch(`/api/users/${userId}`)
 
       if (!response.ok) {
@@ -108,12 +99,17 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
         const errorMessage = errorData.error || `Server error: ${response.status}`
         console.error(`Error fetching user: ${errorMessage}`)
         setError(errorMessage)
-        throw new Error(errorMessage)
+        setLoading(false)
+        toast({
+          title: "Error",
+          description: `Failed to load user: ${errorMessage}`,
+          variant: "destructive",
+        })
+        return
       }
 
       const data = await response.json()
       console.log("User data received:", data)
-
       setUser(data)
       setFormData({
         name: data.name || "",
@@ -122,10 +118,10 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       })
     } catch (error) {
       console.error("Error fetching user:", error)
-      setError(error instanceof Error ? error.message : "Failed to fetch user")
+      setError(error instanceof Error ? error.message : "Unknown error")
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load user",
+        description: "Failed to load user",
         variant: "destructive",
       })
     } finally {
@@ -173,6 +169,11 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
     return false
   }
 
+  const canDeleteUser = () => {
+    const currentUserRole = session?.user?.role as string
+    return currentUserRole === "WEBMASTER" || currentUserRole === "HEAD_ADMIN"
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -198,22 +199,20 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
         return
       }
 
-      console.log(`Updating user ${userId} with data:`, formData)
+      console.log(`Sending PATCH request to /api/users/${userId} with data:`, formData)
       const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
 
-      const responseData = await response.json()
-
       if (!response.ok) {
-        const errorMessage = responseData.error || "Failed to update user"
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || `Server error: ${response.status}`
         console.error(`Error updating user: ${errorMessage}`)
         throw new Error(errorMessage)
       }
 
-      console.log("Update successful:", responseData)
       toast({
         title: "Success",
         description: "User updated successfully",
@@ -233,34 +232,36 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
     }
   }
 
-  const handleBanUser = async () => {
-    // Only Admin+ can ban users
+  const handleToggleAccountStatus = async () => {
+    // Only Admin+ can disable/enable accounts
     if (!hasAdminPermission(session?.user?.role as string)) {
       toast({
         title: "Permission Denied",
-        description: "You don't have permission to ban users",
+        description: "You don't have permission to disable or enable accounts",
         variant: "destructive",
       })
       return
     }
 
     try {
+      const newStatus = !user?.isBanned
+      console.log(`Toggling account status to ${newStatus ? "disabled" : "enabled"}`)
+
       const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isBanned: !user?.isBanned }),
+        body: JSON.stringify({ isBanned: newStatus }),
       })
 
-      const responseData = await response.json()
-
       if (!response.ok) {
-        const errorMessage = responseData.error || "Failed to update user"
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || `Server error: ${response.status}`
         throw new Error(errorMessage)
       }
 
       toast({
         title: "Success",
-        description: `User ${user?.isBanned ? "unbanned" : "banned"} successfully`,
+        description: `Account ${newStatus ? "disabled" : "enabled"} successfully`,
       })
 
       // Refresh user data
@@ -269,15 +270,10 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       console.error("Error updating user:", error)
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update user",
+        description: error instanceof Error ? error.message : "Failed to update user status",
         variant: "destructive",
       })
     }
-  }
-
-  const canDeleteUser = () => {
-    const currentUserRole = session?.user?.role as string
-    return currentUserRole === "WEBMASTER" || currentUserRole === "HEAD_ADMIN"
   }
 
   const handleDeleteUser = async () => {
@@ -292,14 +288,14 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
     }
 
     try {
+      console.log(`Sending DELETE request to /api/users/${userId}`)
       const response = await fetch(`/api/users/${userId}`, {
         method: "DELETE",
       })
 
-      const responseData = await response.json().catch(() => ({}))
-
       if (!response.ok) {
-        const errorMessage = responseData.error || "Failed to delete user"
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || `Server error: ${response.status}`
         throw new Error(errorMessage)
       }
 
@@ -333,22 +329,24 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
     setSyncingDiscord(true)
     try {
       // Call the server action to sync user role
+      console.log(`Sending POST request to /api/discord/sync-role for user ${user.id}`)
       const response = await fetch("/api/discord/sync-role", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id }),
       })
 
-      const responseData = await response.json().catch(() => ({}))
-
       if (!response.ok) {
-        const errorMessage = responseData.error || "Failed to sync Discord roles"
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || `Server error: ${response.status}`
         throw new Error(errorMessage)
       }
 
+      const result = await response.json()
+
       toast({
         title: "Success",
-        description: responseData.message || "Discord roles synced successfully",
+        description: result.message || "Discord roles synced successfully",
       })
 
       // Refresh user data
@@ -374,7 +372,7 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       .substring(0, 2)
   }
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "Never"
     try {
       return new Date(dateString).toLocaleDateString("en-US", {
@@ -404,7 +402,7 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
       <div className="p-6">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Error Loading User</h2>
-          <p className="mt-2 text-slate-500 dark:text-slate-400">{error}</p>
+          <p className="mt-2 text-red-500 dark:text-red-400">{error}</p>
           <Button
             onClick={() => router.push("/admin/users")}
             className="mt-4 bg-slate-700 hover:bg-slate-800 text-white"
@@ -526,7 +524,7 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
               {user.isBanned && (
                 <div className="mt-4">
                   <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
-                    BANNED
+                    ACCOUNT DISABLED
                   </span>
                 </div>
               )}
@@ -630,12 +628,12 @@ export default function EditUserClient({ userId }: EditUserClientProps) {
 
               {hasAdminPermission(session?.user?.role as string) && (
                 <Button
-                  onClick={handleBanUser}
+                  onClick={handleToggleAccountStatus}
                   variant="outline"
                   className={user?.isBanned ? "border-green-200 text-green-700" : "border-red-200 text-red-700"}
                 >
                   <Ban className="mr-2 h-4 w-4" />
-                  {user?.isBanned ? "Unban User" : "Ban User"}
+                  {user?.isBanned ? "Enable Account" : "Disable Account"}
                 </Button>
               )}
             </div>

@@ -23,6 +23,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    console.log("Session user data:", {
+      id: session.user.id,
+      role: session.user.role,
+    })
+
     // Parse the ID - handle both numeric and string IDs
     let id: number
     try {
@@ -36,7 +41,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
     }
 
-    console.log(`GET user: Fetching user with ID: ${id}`)
+    console.log(`GET user: Fetching user with ID: ${id} (type: ${typeof id})`)
 
     // Convert both to strings for comparison
     const sessionUserId = session?.user?.id !== undefined ? String(session.user.id) : null
@@ -49,65 +54,95 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Permission denied" }, { status: 403 })
     }
 
-    // Now include isBanned field since it's been added to the schema
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true, // Always include email for admins
-        image: true,
-        bio: true,
-        rank: true,
-        department: true,
-        discordId: true,
-        role: true,
-        createdAt: true,
-        rnrStatus: true,
-        lastActive: true,
-        status: true,
-        isBanned: true, // Now included since it exists in the schema
-        discordJoinedAt: true,
-        // Get counts for stats
-        _count: {
-          select: {
-            threads: true,
-            posts: true,
-            followers: true,
-            following: true,
+    try {
+      // Check if the user exists first with a simple query
+      const userExists = await prisma.user.findUnique({
+        where: { id },
+        select: { id: true },
+      })
+
+      if (!userExists) {
+        console.error(`GET user: User not found with ID: ${id}`)
+        return NextResponse.json({ error: "User not found" }, { status: 404 })
+      }
+
+      console.log(`GET user: User exists with ID: ${id}, fetching details`)
+
+      // Now fetch the full user details
+      const user = await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          bio: true,
+          rank: true,
+          department: true,
+          discordId: true,
+          role: true,
+          createdAt: true,
+          rnrStatus: true,
+          lastActive: true,
+          status: true,
+          discordJoinedAt: true,
+          // Get counts for stats
+          _count: {
+            select: {
+              threads: true,
+              posts: true,
+              followers: true,
+              following: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    if (!user) {
-      console.error(`GET user: User not found with ID: ${id}`)
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      if (!user) {
+        console.error(`GET user: User details not found with ID: ${id}`)
+        return NextResponse.json({ error: "User details not found" }, { status: 404 })
+      }
+
+      console.log(`GET user: Successfully fetched user: ${user.name} (${user.id})`)
+
+      // Format the response - create a new object without _count
+      const { _count, ...userData } = user
+      const formattedUser = {
+        ...userData,
+        threadCount: _count.threads,
+        postCount: _count.posts,
+        followers: _count.followers,
+        following: _count.following,
+        // Format dates
+        createdAt: user.createdAt.toISOString(),
+        lastActive: user.lastActive ? user.lastActive.toISOString() : null,
+        discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
+        // Add a default value for isBanned if it doesn't exist in the schema yet
+        isBanned: false,
+      }
+
+      return NextResponse.json(formattedUser)
+    } catch (error) {
+      console.error(`GET user: Prisma error fetching user with ID: ${id}`, error)
+      return NextResponse.json(
+        {
+          error: `Database error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        },
+        { status: 500 },
+      )
     }
-
-    console.log(`GET user: Successfully fetched user: ${user.name} (${user.id})`)
-
-    // Format the response - create a new object without _count
-    const { _count, ...userData } = user
-    const formattedUser = {
-      ...userData,
-      threadCount: _count.threads,
-      postCount: _count.posts,
-      followers: _count.followers,
-      following: _count.following,
-      // Format dates
-      createdAt: user.createdAt.toISOString(),
-      lastActive: user.lastActive ? user.lastActive.toISOString() : null,
-      discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
-    }
-
-    return NextResponse.json(formattedUser)
   } catch (error) {
     console.error("Error fetching user:", error)
-    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: `Server error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      },
+      { status: 500 },
+    )
   }
 }
 
+// Rest of the file remains the same as before
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     // Properly await params before accessing properties
@@ -243,24 +278,34 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     console.log(`PATCH user: Final update data for user ${id}:`, updateData)
 
-    // Update the user
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: updateData,
-    })
+    try {
+      // Update the user
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: updateData,
+      })
 
-    console.log(`PATCH user: Successfully updated user ${updatedUser.id}`)
+      console.log(`PATCH user: Successfully updated user ${updatedUser.id}`)
 
-    return NextResponse.json({
-      message: "User updated successfully",
-      user: {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        role: updatedUser.role,
-        department: updatedUser.department,
-        isBanned: updatedUser.isBanned,
-      },
-    })
+      return NextResponse.json({
+        message: "User updated successfully",
+        user: {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          role: updatedUser.role,
+          department: updatedUser.department,
+          isBanned: updatedUser.isBanned,
+        },
+      })
+    } catch (error) {
+      console.error(`PATCH user: Database error updating user ${id}:`, error)
+      return NextResponse.json(
+        {
+          error: `Database error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        },
+        { status: 500 },
+      )
+    }
   } catch (error) {
     console.error("Error updating user:", error)
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 })
@@ -327,14 +372,24 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       )
     }
 
-    // Delete the user
-    await prisma.user.delete({
-      where: { id },
-    })
+    try {
+      // Delete the user
+      await prisma.user.delete({
+        where: { id },
+      })
 
-    console.log(`DELETE user: Successfully deleted user ${id}`)
+      console.log(`DELETE user: Successfully deleted user ${id}`)
 
-    return NextResponse.json({ message: "User deleted successfully" })
+      return NextResponse.json({ message: "User deleted successfully" })
+    } catch (error) {
+      console.error(`DELETE user: Database error deleting user ${id}:`, error)
+      return NextResponse.json(
+        {
+          error: `Database error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        },
+        { status: 500 },
+      )
+    }
   } catch (error) {
     console.error("Error deleting user:", error)
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 })
