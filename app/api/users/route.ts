@@ -12,9 +12,9 @@ export async function GET() {
         role: true,
         department: true,
         discordId: true,
+        discordJoinedAt: true,
         createdAt: true,
         lastActive: true,
-        discordJoinedAt: true,
         isBanned: true,
       },
       orderBy: {
@@ -30,9 +30,9 @@ export async function GET() {
       role: user.role,
       department: user.department || "N_A",
       discordId: user.discordId,
+      discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
       createdAt: user.createdAt.toISOString(),
       lastActive: user.lastActive ? user.lastActive.toISOString() : null,
-      discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
       isBanned: user.isBanned || false,
     }))
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { formatDistanceToNow } from "date-fns"
-import { MoreHorizontal, Edit, ExternalLink, ArrowLeft } from 'lucide-react'
+import { MoreHorizontal, Edit, ExternalLink, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -26,9 +26,9 @@ interface User {
   role: string
   department: string | null
   discordId: string | null
+  discordJoinedAt: string | null
   createdAt: string
   lastActive: string | null
-  discordJoinedAt: string | null
   isBanned?: boolean
 }
 
@@ -142,6 +142,7 @@ export function UserTable() {
   }
 
   const getInitials = (name: string) => {
+    if (!name) return "??"
     return name
       .split(" ")
       .map((part) => part[0])
