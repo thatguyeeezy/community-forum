@@ -180,7 +180,8 @@ export function UserTable() {
     }
   }
 
-  const formatDepartment = (dept: string) => {
+  const formatDepartment = (dept: string | null | undefined) => {
+    if (!dept) return "Not Set"
     if (dept === "N_A") return "Not Set"
     return dept.replace(/_/g, " ")
   }
