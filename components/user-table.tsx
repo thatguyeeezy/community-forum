@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { formatDistanceToNow } from "date-fns"
-import { MoreHorizontal, Edit, ExternalLink, ArrowLeft } from "lucide-react"
+import { MoreHorizontal, Edit, ExternalLink, ArrowLeft } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -28,6 +28,7 @@ interface User {
   discordId: string | null
   createdAt: string
   lastActive: string | null
+  discordJoinedAt: string | null
   isBanned?: boolean
 }
 
@@ -48,6 +49,7 @@ export function UserTable() {
       const response = await fetch("/api/users")
       if (!response.ok) throw new Error("Failed to fetch users")
       const data = await response.json()
+      console.log("Fetched users data:", data) // Debug log
       setUsers(data)
     } catch (error) {
       console.error("Error fetching users:", error)
@@ -185,6 +187,7 @@ export function UserTable() {
                 <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Role</th>
                 <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Department</th>
                 <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Created</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Discord Joined</th>
                 <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Last Active</th>
                 <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Actions</th>
               </tr>
@@ -192,13 +195,13 @@ export function UserTable() {
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-3 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={7} className="px-4 py-3 text-center text-slate-500 dark:text-slate-400">
                     Loading users...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-3 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={7} className="px-4 py-3 text-center text-slate-500 dark:text-slate-400">
                     No users found
                   </td>
                 </tr>
@@ -247,6 +250,7 @@ export function UserTable() {
                       {formatDepartment(user.department)}
                     </td>
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{formatDate(user.createdAt)}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{formatDate(user.discordJoinedAt)}</td>
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{formatDate(user.lastActive)}</td>
                     <td className="px-4 py-3 text-right">
                       <DropdownMenu>

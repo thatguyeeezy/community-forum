@@ -14,6 +14,7 @@ export async function GET() {
         discordId: true,
         createdAt: true,
         lastActive: true,
+        discordJoinedAt: true,
         isBanned: true,
       },
       orderBy: {
@@ -31,6 +32,7 @@ export async function GET() {
       discordId: user.discordId,
       createdAt: user.createdAt.toISOString(),
       lastActive: user.lastActive ? user.lastActive.toISOString() : null,
+      discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
       isBanned: user.isBanned || false,
     }))
 

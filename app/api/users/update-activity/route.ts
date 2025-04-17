@@ -1,28 +1,44 @@
-// app/api/users/update-activity/route.ts
-import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function POST(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-    }
-
-    const userId = Number(session.user.id)
-
-    // Update the lastActive timestamp
-    await prisma.user.update({
-      where: { id: userId },
-      data: { lastActive: new Date() },
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        department: true,
+        discordId: true,
+        createdAt: true,
+        lastActive: true,
+        discordJoinedAt: true,
+        isBanned: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
     })
 
-    return NextResponse.json({ success: true })
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.name || "Anonymous",
+      email: user.email || "",
+      image: user.image,
+      role: user.role,
+      department: user.department || "N_A",
+      discordId: user.discordId,
+      createdAt: user.createdAt.toISOString(),
+      lastActive: user.lastActive ? user.lastActive.toISOString() : null,
+      discordJoinedAt: user.discordJoinedAt ? user.discordJoinedAt.toISOString() : null,
+      isBanned: user.isBanned || false,
+    }))
+
+    return NextResponse.json(formattedUsers)
   } catch (error) {
-    console.error("Error updating activity:", error)
-    return NextResponse.json({ error: "Failed to update activity" }, { status: 500 })
+    console.error("Failed to fetch users:", error)
+    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 }
