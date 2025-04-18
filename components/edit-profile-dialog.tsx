@@ -233,11 +233,9 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
                   {userId && (
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
                       onClick={handleSyncDepartment}
                       disabled={isSyncingDepartment}
-                      className="h-8 text-xs"
+                      className="h-8 px-3 bg-gray-800 hover:bg-gray-700 text-gray-100"
                     >
                       {isSyncingDepartment ? (
                         <>
@@ -301,7 +299,7 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
         </DialogContent>
       </Dialog>
 
-      {/* Add the department selection dialog */}
+      {/* Add the department selection dialog with improved visibility */}
       {userId && (
         <SelectDepartmentDialog
           open={showDepartmentDialog}

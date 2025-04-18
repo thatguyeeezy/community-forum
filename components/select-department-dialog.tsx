@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -34,12 +35,12 @@ export function SelectDepartmentDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
 
-  // Set the first department as default when the dialog opens
-  useState(() => {
-    if (departments.length > 0 && !selectedDepartment) {
+  // Set the first department as default when the dialog opens or departments change
+  useEffect(() => {
+    if (departments.length > 0 && (!selectedDepartment || !departments.includes(selectedDepartment))) {
       setSelectedDepartment(departments[0])
     }
-  })
+  }, [departments, selectedDepartment])
 
   const handleSubmit = async () => {
     if (!selectedDepartment) {
@@ -87,10 +88,11 @@ export function SelectDepartmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogOverlay className="bg-black/70" /> {/* Increased opacity for better visibility */}
+      <DialogContent className="sm:max-w-[425px] bg-gray-900 border-gray-700">
         <DialogHeader>
-          <DialogTitle>Select Primary Department</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-100">Select Primary Department</DialogTitle>
+          <DialogDescription className="text-gray-300">
             We found multiple departments in your Discord roles. Please select your primary department.
           </DialogDescription>
         </DialogHeader>
@@ -99,7 +101,7 @@ export function SelectDepartmentDialog({
             {departments.map((dept) => (
               <div key={dept} className="flex items-center space-x-2 mb-2">
                 <RadioGroupItem value={dept} id={`dept-${dept}`} />
-                <Label htmlFor={`dept-${dept}`} className="cursor-pointer">
+                <Label htmlFor={`dept-${dept}`} className="cursor-pointer text-gray-200">
                   {dept}
                 </Label>
               </div>
@@ -111,7 +113,7 @@ export function SelectDepartmentDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-600"
+            className="bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700"
           >
             Cancel
           </Button>
