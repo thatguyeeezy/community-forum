@@ -10,36 +10,34 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get all users with limited fields for the members page
-    const members = await prisma.user.findMany({
+    // Fetch all users with selected fields
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         name: true,
         image: true,
         role: true,
-        department: true,
         discordId: true,
         createdAt: true,
-        lastActive: true,
+        department: true,
       },
       orderBy: {
-        role: "asc", // Order by role to show admins first
+        role: "asc",
       },
     })
 
     // Format the response
-    const formattedMembers = members.map((member) => ({
-      id: member.id,
-      name: member.name || "Anonymous",
-      image: member.image,
-      role: member.role,
-      department: member.department || "N_A",
-      discordId: member.discordId,
-      joinDate: member.createdAt.toISOString(),
-      lastActive: member.lastActive ? member.lastActive.toISOString() : null,
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.name || "Anonymous",
+      image: user.image,
+      role: user.role,
+      department: user.department || "N_A",
+      discordId: user.discordId || null,
+      joinDate: user.createdAt.toISOString(),
     }))
 
-    return NextResponse.json(formattedMembers)
+    return NextResponse.json(formattedUsers)
   } catch (error) {
     console.error("Error fetching members:", error)
     return NextResponse.json(

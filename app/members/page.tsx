@@ -187,14 +187,12 @@ export default function MembersPage() {
                               </Avatar>
                               <div>
                                 <p className="font-medium text-gray-100">{member.name}</p>
-                                <div className="text-xs text-gray-400 space-y-1">
-                                  {/* Show Discord join date if available, otherwise show website join date */}
-                                  <p>Joined {formatJoinDate(member.joinDate)}</p>
-                                  {discordInfo[member.id] && (
-                                    <p className="text-blue-400">
-                                      Discord: {formatJoinDate(discordInfo[member.id].joinedAt)}
-                                    </p>
-                                  )}
+                                <div className="text-xs text-gray-400">
+                                  {/* Only show Discord join date, or N/A if not available */}
+                                  <p>
+                                    Joined:{" "}
+                                    {discordInfo[member.id] ? formatJoinDate(discordInfo[member.id].joinedAt) : "N/A"}
+                                  </p>
                                 </div>
                               </div>
                             </div>
