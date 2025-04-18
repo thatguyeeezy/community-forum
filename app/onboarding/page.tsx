@@ -35,6 +35,13 @@ export default function OnboardingPage() {
     }
   }, [status, router])
 
+  // Redirect if already completed onboarding
+  useEffect(() => {
+    if (session?.user && session.user.needsOnboarding === false) {
+      router.push("/")
+    }
+  }, [session, router])
+
   // Load user data from session
   useEffect(() => {
     if (session?.user) {
@@ -74,26 +81,13 @@ export default function OnboardingPage() {
       })
 
       if (result.success) {
-        // Update the session with the new data
-        if (session) {
-          await update({
-            ...session,
-            user: {
-              ...session.user,
-              name,
-              department,
-              needsOnboarding: false,
-            },
-          })
-        }
-
         toast({
           title: "Profile setup complete",
           description: "Welcome to Florida Coast RP! Your profile has been set up successfully.",
         })
 
-        // Redirect to home page
-        router.push("/")
+        // Force a hard refresh to ensure session is updated
+        window.location.href = "/"
       } else {
         setError(result.error || "Failed to complete profile setup")
         toast({

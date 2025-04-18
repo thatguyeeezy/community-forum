@@ -77,6 +77,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Special case: If user is on onboarding page but needsOnboarding is false, redirect to home
+  if (path === "/onboarding" && session && session.needsOnboarding === false) {
+    return NextResponse.redirect(new URL("/", request.url))
+  }
+
   // Continue with the request
   return response
 }
