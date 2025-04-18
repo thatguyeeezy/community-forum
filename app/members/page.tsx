@@ -16,6 +16,7 @@ interface Member {
   joinDate: string
   discordId?: string
   discordJoinDate?: string
+  department?: string
 }
 
 interface DiscordMemberInfo {
@@ -51,7 +52,8 @@ export default function MembersPage() {
     const fetchMembers = async () => {
       try {
         setLoading(true)
-        const response = await fetch("/api/users")
+        // Use the new members API endpoint instead of /api/users
+        const response = await fetch("/api/members")
 
         if (!response.ok) {
           throw new Error("Failed to fetch members")
