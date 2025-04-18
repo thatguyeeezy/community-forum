@@ -24,6 +24,15 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   })
 
+  // Debug session info
+  if (session) {
+    console.log(`Middleware session for ${path}:`, {
+      sub: session.sub,
+      role: session.role,
+      needsOnboarding: session.needsOnboarding,
+    })
+  }
+
   // Create a response object
   const response = NextResponse.next()
 
@@ -71,14 +80,18 @@ export async function middleware(request: NextRequest) {
   // Handle first-time users from Main Discord
   // Check if user is logged in and needs onboarding
   if (session && session.needsOnboarding === true) {
+    console.log(`User ${session.sub} needs onboarding, current path: ${path}`)
+
     // Don't redirect if already on onboarding page or accessing API routes
     if (!path.startsWith("/onboarding") && !path.startsWith("/api/") && !shouldSkip) {
+      console.log(`Redirecting user ${session.sub} to onboarding`)
       return NextResponse.redirect(new URL("/onboarding", request.url))
     }
   }
 
   // Special case: If user is on onboarding page but needsOnboarding is false, redirect to home
   if (path === "/onboarding" && session && session.needsOnboarding === false) {
+    console.log(`User ${session.sub} doesn't need onboarding, redirecting to home`)
     return NextResponse.redirect(new URL("/", request.url))
   }
 

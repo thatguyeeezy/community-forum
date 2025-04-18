@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -28,14 +28,12 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Redirect if not authenticated or if needsOnboarding is false
+  // Redirect if not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin")
-    } else if (session?.user && session.user.needsOnboarding === false) {
-      router.push("/")
     }
-  }, [status, session, router])
+  }, [status, router])
 
   // Load user data from session
   useEffect(() => {
@@ -51,8 +49,6 @@ export default function OnboardingPage() {
           setDepartment(session.user.mainDiscordDepartments[0])
         }
       }
-
-      // We're not setting discordId here, ensuring it can't be changed
     }
   }, [session])
 
@@ -68,7 +64,6 @@ export default function OnboardingPage() {
     }
 
     try {
-      // Note: We're only sending name, bio, and department - NOT discordId
       const result = await completeOnboarding({
         name,
         bio,
@@ -81,8 +76,13 @@ export default function OnboardingPage() {
           description: "Welcome to Florida Coast RP! Your profile has been set up successfully.",
         })
 
-        // Force a hard refresh to ensure the session is updated
-        window.location.href = "/"
+        // Sign out and redirect to home page to force a complete session refresh
+        signOut({ redirect: false }).then(() => {
+          // Short delay to ensure the signout completes
+          setTimeout(() => {
+            window.location.href = "/"
+          }, 500)
+        })
       } else {
         setError(result.error || "Failed to complete profile setup")
         toast({
@@ -90,6 +90,7 @@ export default function OnboardingPage() {
           description: result.error || "Failed to complete profile setup",
           variant: "destructive",
         })
+        setIsSubmitting(false)
       }
     } catch (err) {
       console.error("Error setting up profile:", err)
@@ -99,9 +100,8 @@ export default function OnboardingPage() {
         description: "An unexpected error occurred while setting up your profile",
         variant: "destructive",
       })
+      setIsSubmitting(false)
     }
-
-    setIsSubmitting(false)
   }
 
   if (status === "loading") {
