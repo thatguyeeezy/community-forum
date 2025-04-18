@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { updateProfile } from "@/app/actions/profile"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { RefreshCw, Lock } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 import { syncDepartmentIfWhitelisted } from "@/app/actions/sync-department"
 import { SelectDepartmentDialog } from "@/components/select-department-dialog"
 
@@ -66,6 +66,8 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
       setRank(defaultValues.rank || "")
       setDepartment(defaultValues.department || "N_A")
       setDiscordId(defaultValues.discordId || "")
+
+      console.log("Default values in dialog:", defaultValues) // Debug log
     }
   }, [open, defaultValues])
 
@@ -86,6 +88,14 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
     formData.append("rank", rank)
     formData.append("department", department)
     formData.append("discordId", discordId)
+
+    console.log("Submitting form data:", {
+      name,
+      bio,
+      rank,
+      department,
+      discordId,
+    }) // Debug log
 
     const result = await updateProfile(formData)
 
@@ -241,16 +251,15 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
                     </Button>
                   )}
                 </div>
-                <div className="flex items-center">
-                  <div className="flex-1 px-3 py-2 bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md text-gray-800 dark:text-gray-200">
-                    {department || "Not set"}
-                  </div>
-                  <div className="ml-2 text-gray-500 dark:text-gray-400">
-                    <Lock className="h-4 w-4" />
-                  </div>
-                </div>
+                <Input
+                  id="department"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  placeholder="Your department"
+                  className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600"
+                />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Department can only be updated via "Sync from Discord"
+                  Click "Sync from Discord" to update your department from Discord roles
                 </p>
               </div>
 
@@ -290,7 +299,7 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
         </DialogContent>
       </Dialog>
 
-      {/* Add the department selection dialog */}
+      {/* Add the department selection dialog with improved visibility */}
       {userId && (
         <SelectDepartmentDialog
           open={showDepartmentDialog}
