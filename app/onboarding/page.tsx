@@ -113,13 +113,13 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="container max-w-4xl py-10 mx-auto flex flex-col items-center">
       <h1 className="text-3xl font-bold mb-6 dark:text-gray-100">Welcome to Florida Coast RP!</h1>
       <p className="text-lg mb-8 dark:text-gray-300">
         We've detected that you're a member of our Main Discord server. Let's set up your profile with your information.
       </p>
 
-      <Card className="dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <Card className="dark:bg-gray-800 border-gray-200 dark:border-gray-700 w-full">
         <CardHeader>
           <CardTitle className="text-2xl dark:text-gray-100">Complete Your Profile</CardTitle>
           <CardDescription className="dark:text-gray-400">
