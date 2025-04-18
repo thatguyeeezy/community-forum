@@ -149,7 +149,8 @@ export default function OnboardingPage() {
               </div>
               <div className="flex-1 space-y-2">
                 <p className="text-sm dark:text-gray-400 mb-2">
-                  Your Discord profile picture will be used as your profile image.
+                  Your Discord profile picture is automatically used as your avatar. To change your avatar, update it on
+                  Discord.
                 </p>
               </div>
             </div>

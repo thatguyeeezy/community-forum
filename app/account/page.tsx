@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Camera, Loader2, RefreshCw } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { updateProfile, resetProfileImage } from "@/app/actions/profile"
+import { updateProfile } from "@/app/actions/profile"
 import { useToast } from "@/hooks/use-toast"
 
 export default function AccountPage() {
@@ -26,15 +26,8 @@ export default function AccountPage() {
   const [rank, setRank] = useState("")
   const [department, setDepartment] = useState("")
   const [discordId, setDiscordId] = useState("")
-  const [profileImage, setProfileImage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-
-  // Check if user has a custom profile image (not from Discord)
-  const hasCustomImage = session?.user?.image && !session.user.image.includes("cdn.discordapp.com")
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -51,72 +44,8 @@ export default function AccountPage() {
       setRank(session.user.rank || "")
       setDepartment(session.user.department || "")
       setDiscordId(session.user.discordId || "")
-      setProfileImage(session.user.image || "")
     }
   }, [session])
-
-  // Handle image selection
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setImageFile(file)
-
-      // Create preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  // Handle reset to Discord image
-  const handleResetImage = async () => {
-    setIsResetting(true)
-    setError(null)
-
-    try {
-      const result = await resetProfileImage()
-
-      if (result.success) {
-        // Update the session with the Discord image
-        if (session) {
-          await update({
-            image: result.discordImage,
-          })
-        }
-
-        // Clear any selected image
-        setImageFile(null)
-        setImagePreview(null)
-        setProfileImage(result.discordImage || "")
-
-        toast({
-          title: "Profile image reset",
-          description: "Your profile image has been reset to your Discord avatar.",
-        })
-
-        router.refresh()
-      } else {
-        setError(result.error || "Failed to reset profile image")
-        toast({
-          title: "Error",
-          description: result.error || "Failed to reset profile image",
-          variant: "destructive",
-        })
-      }
-    } catch (err) {
-      console.error("Error resetting profile image:", err)
-      setError("An unexpected error occurred")
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while resetting your profile image",
-        variant: "destructive",
-      })
-    }
-
-    setIsResetting(false)
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -136,11 +65,6 @@ export default function AccountPage() {
     formData.append("department", department)
     formData.append("discordId", discordId)
 
-    // Add image if selected
-    if (imageFile) {
-      formData.append("profileImage", imageFile)
-    }
-
     try {
       const result = await updateProfile(formData)
 
@@ -151,7 +75,6 @@ export default function AccountPage() {
             name,
             bio,
             rank,
-            image: result.imageUrl || session.user.image,
           })
         }
 
@@ -197,71 +120,18 @@ export default function AccountPage() {
       <Card className="dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader>
           <CardTitle className="text-2xl dark:text-gray-100">Profile Information</CardTitle>
-          <CardDescription className="dark:text-gray-400">
-            Update your account information and profile picture
-          </CardDescription>
+          <CardDescription className="dark:text-gray-400">Update your account information</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
-            {/* Profile Image */}
+            {/* Profile Image - Discord Only */}
             <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
-              <div className="relative">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={imagePreview || profileImage} alt={name} />
-                  <AvatarFallback className="text-lg">{name?.slice(0, 2).toUpperCase() || "US"}</AvatarFallback>
-                </Avatar>
-                <label
-                  htmlFor="profile-image"
-                  className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full cursor-pointer"
-                >
-                  <Camera className="h-4 w-4" />
-                  <span className="sr-only">Change profile picture</span>
-                </label>
-                <input
-                  id="profile-image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </div>
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={session?.user?.image || ""} alt={name} />
+                <AvatarFallback className="text-lg">{name?.slice(0, 2).toUpperCase() || "US"}</AvatarFallback>
+              </Avatar>
               <div className="flex-1 space-y-2">
-                <p className="text-sm dark:text-gray-400 mb-2">
-                  Upload a new profile picture. Square images work best.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {imagePreview && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setImagePreview(null)
-                        setImageFile(null)
-                      }}
-                      className="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                    >
-                      Remove selected image
-                    </Button>
-                  )}
-                  {(hasCustomImage || imagePreview) && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleResetImage}
-                      disabled={isResetting}
-                      className="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 flex items-center"
-                    >
-                      {isResetting ? (
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      ) : (
-                        <RefreshCw className="mr-2 h-3 w-3" />
-                      )}
-                      Reset to Discord avatar
-                    </Button>
-                  )}
-                </div>
+                <p className="text-sm dark:text-gray-400 mb-2">Your Discord profile picture is used as your avatar.</p>
               </div>
             </div>
 
