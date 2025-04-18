@@ -68,6 +68,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Handle first-time users from Main Discord
+  // Check if user is logged in and needs onboarding
+  if (session && session.needsOnboarding === true && session.isInMainDiscord === true) {
+    // Don't redirect if already on onboarding page or accessing API routes
+    if (!path.startsWith("/onboarding") && !path.startsWith("/api/") && !shouldSkip) {
+      return NextResponse.redirect(new URL("/onboarding", request.url))
+    }
+  }
+
   // Continue with the request
   return response
 }
@@ -88,5 +97,8 @@ export const config = {
     "/threads/:path*",
     "/profile/:path*",
     "/members",
+
+    // Add onboarding path for first-time users
+    "/onboarding",
   ],
 }
