@@ -81,7 +81,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role || "MEMBER"
 
         // Pass through the onboarding flags
-        if (token.needsOnboarding) {
+        if (token.needsOnboarding !== undefined) {
           session.user.needsOnboarding = token.needsOnboarding as boolean
         }
 
@@ -105,6 +105,7 @@ export const authOptions: NextAuthOptions = {
         // Check if user exists in database
         const existingUser = await prisma.user.findUnique({
           where: { discordId: profile.id as string },
+          select: { id: true, needsOnboarding: true },
         })
 
         // If this is a new user or first sign-in
@@ -113,6 +114,8 @@ export const authOptions: NextAuthOptions = {
           const isInMainDiscord = await isUserInMainDiscord(profile.id as string)
 
           if (isInMainDiscord) {
+            // For Main Discord members, set needsOnboarding to true
+            // This will be used by middleware to redirect to onboarding
             token.needsOnboarding = true
             token.isInMainDiscord = true
 
@@ -121,6 +124,39 @@ export const authOptions: NextAuthOptions = {
             if (departments.length > 0) {
               token.mainDiscordDepartments = departments
             }
+
+            // Create user with needsOnboarding flag
+            await prisma.user.update({
+              where: { id: Number(token.sub) },
+              data: {
+                needsOnboarding: true,
+                discordId: profile.id as string,
+              },
+            })
+          } else {
+            // For Fan Discord members, just create as APPLICANT with no onboarding
+            token.needsOnboarding = false
+            token.isInMainDiscord = false
+
+            // Update the user with discordId
+            await prisma.user.update({
+              where: { id: Number(token.sub) },
+              data: {
+                needsOnboarding: false,
+                discordId: profile.id as string,
+                role: "APPLICANT",
+              },
+            })
+          }
+        } else {
+          // Existing user - get their needsOnboarding status
+          const dbUser = await prisma.user.findUnique({
+            where: { id: Number(token.sub) },
+            select: { needsOnboarding: true },
+          })
+
+          if (dbUser) {
+            token.needsOnboarding = dbUser.needsOnboarding
           }
         }
       }

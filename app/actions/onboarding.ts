@@ -39,12 +39,6 @@ export async function completeOnboarding(data: OnboardingData) {
       },
     })
 
-    // Force clear the session to remove the needsOnboarding flag
-    // This will cause the session to be refreshed on the next request
-    await fetch("/api/auth/session", {
-      method: "DELETE",
-    })
-
     revalidatePath("/")
     return { success: true }
   } catch (error) {

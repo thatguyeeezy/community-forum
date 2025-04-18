@@ -28,19 +28,14 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated or if needsOnboarding is false
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin")
-    }
-  }, [status, router])
-
-  // Redirect if already completed onboarding
-  useEffect(() => {
-    if (session?.user && session.user.needsOnboarding === false) {
+    } else if (session?.user && session.user.needsOnboarding === false) {
       router.push("/")
     }
-  }, [session, router])
+  }, [status, session, router])
 
   // Load user data from session
   useEffect(() => {
@@ -86,7 +81,7 @@ export default function OnboardingPage() {
           description: "Welcome to Florida Coast RP! Your profile has been set up successfully.",
         })
 
-        // Force a hard refresh to ensure session is updated
+        // Force a hard refresh to ensure the session is updated
         window.location.href = "/"
       } else {
         setError(result.error || "Failed to complete profile setup")
