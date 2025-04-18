@@ -21,7 +21,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { updateProfile } from "@/app/actions/profile"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { RefreshCw } from "lucide-react"
+import { syncDepartmentIfWhitelisted } from "@/app/actions/sync-department"
+import { SelectDepartmentDialog } from "@/components/select-department-dialog"
 
+// Update the interface to include userId
 interface EditProfileDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -33,9 +37,10 @@ interface EditProfileDialogProps {
     discordId?: string
     image?: string
   }
+  userId?: number // Add userId prop
 }
 
-export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditProfileDialogProps) {
+export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }: EditProfileDialogProps) {
   const [name, setName] = useState("")
   const [bio, setBio] = useState("")
   const [rank, setRank] = useState("")
@@ -43,6 +48,11 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
   const [discordId, setDiscordId] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Add states for department sync
+  const [isSyncingDepartment, setIsSyncingDepartment] = useState(false)
+  const [showDepartmentDialog, setShowDepartmentDialog] = useState(false)
+  const [departments, setDepartments] = useState<string[]>([])
 
   const router = useRouter()
   const { data: session, update } = useSession()
@@ -115,90 +125,195 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
     setIsSubmitting(false)
   }
 
+  // Add function to handle department sync
+  const handleSyncDepartment = async () => {
+    if (!userId) {
+      toast({
+        title: "Error",
+        description: "User ID is missing",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSyncingDepartment(true)
+    try {
+      const result = await syncDepartmentIfWhitelisted(userId)
+
+      if (result.success) {
+        if (result.multipleDepartments && result.departments && result.departments.length > 1) {
+          // Show the department selection dialog if multiple departments were found
+          setDepartments(result.departments)
+          setShowDepartmentDialog(true)
+        } else {
+          toast({
+            title: "Success",
+            description: result.message,
+          })
+
+          // Update the department field if a department was found
+          if (result.department) {
+            setDepartment(result.department)
+          }
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sync department",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSyncingDepartment(false)
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
-          <DialogDescription>Update your profile information. Click save when you're done.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="flex flex-col items-center gap-2">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={defaultValues.image || ""} alt={name} />
-                <AvatarFallback>{name?.slice(0, 2).toUpperCase() || "US"}</AvatarFallback>
-              </Avatar>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Your Discord profile picture is used as your avatar
-              </p>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogDescription>Update your profile information. Click save when you're done.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="flex flex-col items-center gap-2">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={defaultValues.image || ""} alt={name} />
+                  <AvatarFallback>{name?.slice(0, 2).toUpperCase() || "US"}</AvatarFallback>
+                </Avatar>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Your Discord profile picture is used as your avatar
+                </p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">
+                  Display Name
+                </Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your display name"
+                  className={`bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 ${
+                    error && !name.trim() ? "border-red-500" : ""
+                  }`}
+                />
+                {error && !name.trim() && <p className="text-sm text-red-500">Name is required</p>}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="rank" className="text-gray-700 dark:text-gray-300">
+                  Rank
+                </Label>
+                <Input
+                  id="rank"
+                  value={rank}
+                  onChange={(e) => setRank(e.target.value)}
+                  placeholder="Your rank"
+                  maxLength={30}
+                  className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600"
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400">{rank.length}/30 characters</p>
+              </div>
+
+              <div className="grid gap-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="department" className="text-gray-700 dark:text-gray-300">
+                    Department
+                  </Label>
+                  {userId && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSyncDepartment}
+                      disabled={isSyncingDepartment}
+                      className="h-8 text-xs"
+                    >
+                      {isSyncingDepartment ? (
+                        <>
+                          <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="mr-1 h-3 w-3" />
+                          Sync from Discord
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <Input
+                  id="department"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  placeholder="Your department"
+                  className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Click "Sync from Discord" to update your department from Discord roles
+                </p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="bio" className="text-gray-700 dark:text-gray-300">
+                  Bio
+                </Label>
+                <Textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell us about yourself"
+                  rows={5}
+                  maxLength={500}
+                  className="resize-none bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-gray-100"
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400">{bio.length}/500 characters</p>
+              </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">
-                Display Name
-              </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your display name"
-                className={`bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 ${
-                  error && !name.trim() ? "border-red-500" : ""
-                }`}
-              />
-              {error && !name.trim() && <p className="text-sm text-red-500">Name is required</p>}
-            </div>
+            {error && error !== "Name is required" && <p className="text-sm text-red-500 mb-4">{error}</p>}
 
-            <div className="grid gap-2">
-              <Label htmlFor="rank" className="text-gray-700 dark:text-gray-300">
-                Rank
-              </Label>
-              <Input
-                id="rank"
-                value={rank}
-                onChange={(e) => setRank(e.target.value)}
-                placeholder="Your rank"
-                maxLength={30}
-                className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600"
-              />
-              <p className="text-sm text-gray-500 dark:text-gray-400">{rank.length}/30 characters</p>
-            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-600"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+                {isSubmitting ? "Saving..." : "Save changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-            <div className="grid gap-2">
-              <Label htmlFor="bio" className="text-gray-700 dark:text-gray-300">
-                Bio
-              </Label>
-              <Textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell us about yourself"
-                rows={5}
-                maxLength={500}
-                className="resize-none bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-gray-100"
-              />
-              <p className="text-sm text-gray-500 dark:text-gray-400">{bio.length}/500 characters</p>
-            </div>
-          </div>
-
-          {error && error !== "Name is required" && <p className="text-sm text-red-500 mb-4">{error}</p>}
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-600"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
-              {isSubmitting ? "Saving..." : "Save changes"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      {/* Add the department selection dialog */}
+      {userId && (
+        <SelectDepartmentDialog
+          open={showDepartmentDialog}
+          onOpenChange={setShowDepartmentDialog}
+          userId={userId}
+          departments={departments}
+          onSuccess={(selectedDepartment) => {
+            // Update the department field with the selected department
+            setDepartment(selectedDepartment)
+          }}
+        />
+      )}
+    </>
   )
 }

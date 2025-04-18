@@ -40,8 +40,9 @@ export async function syncDepartmentIfWhitelisted(userId: number) {
       }
     }
 
-    // If there's only one department, set it as the primary
+    // If there's only one department, set it as the primary department
     if (departments.length === 1) {
+      // Update the user's department in the database
       await prisma.user.update({
         where: { id: userId },
         data: { department: departments[0] },
@@ -49,15 +50,20 @@ export async function syncDepartmentIfWhitelisted(userId: number) {
 
       // Revalidate the user's profile page
       revalidatePath(`/profile/${userId}`)
-      return { success: true, message: `Department set to ${departments[0]}` }
+
+      return {
+        success: true,
+        message: `Department synced successfully: ${departments[0]}`,
+        department: departments[0],
+      }
     }
 
-    // If there are multiple departments, return them to the client
+    // If there are multiple departments, return them all
     return {
       success: true,
-      multipleDepartments: true,
-      departments,
       message: "Multiple departments found. Please select your primary department.",
+      multipleDepartments: true,
+      departments: departments,
     }
   } catch (error) {
     console.error("Error syncing department:", error)
@@ -65,6 +71,7 @@ export async function syncDepartmentIfWhitelisted(userId: number) {
   }
 }
 
+// New function to update the primary department
 export async function updatePrimaryDepartment(userId: number, department: string) {
   try {
     // Get the current user's session
@@ -73,12 +80,7 @@ export async function updatePrimaryDepartment(userId: number, department: string
       return { success: false, message: "Not authenticated" }
     }
 
-    // Only allow users to update their own department
-    if (Number(session.user.id) !== userId) {
-      return { success: false, message: "You can only update your own department" }
-    }
-
-    // Update the user's department
+    // Update the user's department in the database
     await prisma.user.update({
       where: { id: userId },
       data: { department },
@@ -86,9 +88,13 @@ export async function updatePrimaryDepartment(userId: number, department: string
 
     // Revalidate the user's profile page
     revalidatePath(`/profile/${userId}`)
-    return { success: true, message: `Primary department set to ${department}` }
+
+    return {
+      success: true,
+      message: `Primary department updated to ${department}`,
+    }
   } catch (error) {
     console.error("Error updating primary department:", error)
-    return { success: false, message: "An error occurred while updating department" }
+    return { success: false, message: "An error occurred while updating primary department" }
   }
 }

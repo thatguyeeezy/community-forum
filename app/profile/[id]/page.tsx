@@ -582,7 +582,9 @@ export default function UserProfilePage() {
               rank: profile.rank || "",
               department: profile.department || "",
               discordId: profile.discordId || "",
+              image: profile.image || "",
             }}
+            userId={profile.id} // Pass the userId prop
           />
         )}
       </div>
