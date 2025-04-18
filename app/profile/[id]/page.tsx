@@ -7,12 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Users, Mail, Edit } from "lucide-react"
+import { Users, Mail, Edit, LogIn } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EditProfileDialog } from "@/components/edit-profile-dialog"
 import { cn } from "@/lib/utils"
 import type { Role } from "@prisma/client"
 import { ProfileNotifications } from "@/components/profile-notifications"
+import Link from "next/link"
 
 // Format the last active time as a relative time
 function formatLastActive(lastActiveDate: string | null): string {
@@ -96,7 +97,7 @@ const roleConfig = {
 interface UserProfile {
   id: number
   name: string
-  email: string
+  email?: string
   image: string
   bio: string
   role: Role
@@ -132,7 +133,8 @@ export default function UserProfilePage() {
   const [editProfileOpen, setEditProfileOpen] = useState(false)
   const [error, setError] = useState("")
 
-  const isOwnProfile = session?.user?.id === Number(id)
+  const isAuthenticated = status === "authenticated"
+  const isOwnProfile = isAuthenticated && session?.user?.id === Number(id)
 
   useEffect(() => {
     async function fetchProfile() {
@@ -185,7 +187,7 @@ export default function UserProfilePage() {
       }
     }
 
-    if (id && status !== "loading") {
+    if (id) {
       fetchProfile()
     }
   }, [id, status])
@@ -310,9 +312,11 @@ export default function UserProfilePage() {
                   <Badge variant="outline" className="bg-gray-700 text-gray-300 border-gray-600">
                     Joined {formatJoinDateForBadge(joinDate)}
                   </Badge>
-                  <Badge variant="outline" className="bg-gray-700 text-gray-300 border-gray-600">
-                    Last active {formatLastActive(profile.lastActive)}
-                  </Badge>
+                  {profile.lastActive && (
+                    <Badge variant="outline" className="bg-gray-700 text-gray-300 border-gray-600">
+                      Last active {formatLastActive(profile.lastActive)}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-gray-400">{profile.bio}</p>
               </div>
@@ -322,7 +326,7 @@ export default function UserProfilePage() {
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Profile
                   </Button>
-                ) : (
+                ) : isAuthenticated ? (
                   <>
                     <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                       <Users className="mr-2 h-4 w-4" />
@@ -333,6 +337,13 @@ export default function UserProfilePage() {
                       Message
                     </Button>
                   </>
+                ) : (
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Link href="/auth/signin">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign in to interact
+                    </Link>
+                  </Button>
                 )}
               </div>
             </div>
@@ -547,10 +558,12 @@ export default function UserProfilePage() {
                         })}
                       </p>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-gray-200">Last Active</h3>
-                      <p className="text-gray-400">{formatLastActive(profile.lastActive)}</p>
-                    </div>
+                    {profile.lastActive && (
+                      <div>
+                        <h3 className="font-medium text-gray-200">Last Active</h3>
+                        <p className="text-gray-400">{formatLastActive(profile.lastActive)}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>

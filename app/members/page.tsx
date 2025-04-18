@@ -47,16 +47,17 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [discordInfo, setDiscordInfo] = useState<Record<string, DiscordMemberInfo>>({})
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchMembers = async () => {
       try {
         setLoading(true)
-        // Use the new members API endpoint instead of /api/users
+        // Use the members API endpoint
         const response = await fetch("/api/members")
 
         if (!response.ok) {
-          throw new Error("Failed to fetch members")
+          throw new Error(`Failed to fetch members: ${response.status} ${response.statusText}`)
         }
 
         const data = await response.json()
@@ -87,6 +88,7 @@ export default function MembersPage() {
         setDiscordInfo(discordInfoMap)
       } catch (error) {
         console.error("Error fetching members:", error)
+        setError(error instanceof Error ? error.message : "Failed to load members")
         setMembers([])
       } finally {
         setLoading(false)
@@ -159,6 +161,11 @@ export default function MembersPage() {
               <div className="text-center py-10">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
                 <p className="mt-2 text-gray-400">Loading members...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-10">
+                <p className="text-red-400 mb-2">Error loading members</p>
+                <p className="text-gray-400">{error}</p>
               </div>
             ) : filteredMembers.length === 0 ? (
               <div className="text-center py-10">

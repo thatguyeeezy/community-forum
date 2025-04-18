@@ -17,16 +17,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     console.log(`GET user: Received request for user ID: ${userId}`)
 
+    // Get session (may be null for unauthenticated users)
     const session = await auth()
-    if (!session?.user) {
-      console.error("GET user: No authenticated session")
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    console.log("Session user data:", {
-      id: session.user.id,
-      role: session.user.role,
-    })
 
     // Parse the ID - handle both numeric and string IDs
     let id: number
@@ -43,13 +35,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     console.log(`GET user: Fetching user with ID: ${id} (type: ${typeof id})`)
 
-    // Convert both to strings for comparison
-    const sessionUserId = session?.user?.id !== undefined ? String(session.user.id) : null
-    const isOwnProfile = sessionUserId === String(id)
-    const isAdmin = hasAdminPermission(session.user.role as string)
-
-    // All authenticated users can view profiles
-    // We'll still use isAdmin and isOwnProfile to determine what data to return
+    // Determine access level
+    const isAuthenticated = !!session?.user
+    const isOwnProfile = isAuthenticated && String(session.user.id) === String(id)
+    const isAdmin = isAuthenticated && hasAdminPermission(session?.user?.role as string)
 
     try {
       // Check if the user exists first with a simple query
@@ -65,13 +54,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
       console.log(`GET user: User exists with ID: ${id}, fetching details`)
 
-      // Now fetch the full user details
+      // Now fetch the user details with appropriate field selection based on access level
       const user = await prisma.user.findUnique({
         where: { id },
         select: {
           id: true,
           name: true,
-          email: isAdmin || isOwnProfile ? true : false, // Only return email for admins or own profile
+          // Only return email for admins or own profile
+          email: isAdmin || isOwnProfile ? true : false,
           image: true,
           bio: true,
           rank: true,
@@ -79,11 +69,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
           discordId: true,
           role: true,
           createdAt: true,
-          rnrStatus: true,
-          lastActive: true,
-          status: true,
-          isBanned: isAdmin ? true : false, // Only return ban status for admins
-          // Get counts for stats
+          // More sensitive or detailed info only for authenticated users
+          rnrStatus: isAuthenticated ? true : false,
+          lastActive: isAuthenticated ? true : false,
+          status: isAuthenticated ? true : false,
+          // Ban status only for admins
+          isBanned: isAdmin ? true : false,
+          // Get counts for stats - available to all
           _count: {
             select: {
               threads: true,
