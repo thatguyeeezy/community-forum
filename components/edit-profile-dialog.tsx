@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { updateProfile } from "@/app/actions/profile"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { RefreshCw } from "lucide-react"
+import { RefreshCw, Lock } from "lucide-react"
 import { syncDepartmentIfWhitelisted } from "@/app/actions/sync-department"
 import { SelectDepartmentDialog } from "@/components/select-department-dialog"
 
@@ -66,8 +66,6 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
       setRank(defaultValues.rank || "")
       setDepartment(defaultValues.department || "N_A")
       setDiscordId(defaultValues.discordId || "")
-
-      console.log("Default values in dialog:", defaultValues) // Debug log
     }
   }, [open, defaultValues])
 
@@ -88,14 +86,6 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
     formData.append("rank", rank)
     formData.append("department", department)
     formData.append("discordId", discordId)
-
-    console.log("Submitting form data:", {
-      name,
-      bio,
-      rank,
-      department,
-      discordId,
-    }) // Debug log
 
     const result = await updateProfile(formData)
 
@@ -233,11 +223,9 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
                   {userId && (
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
                       onClick={handleSyncDepartment}
                       disabled={isSyncingDepartment}
-                      className="h-8 text-xs"
+                      className="h-8 px-3 bg-gray-800 hover:bg-gray-700 text-gray-100"
                     >
                       {isSyncingDepartment ? (
                         <>
@@ -253,15 +241,16 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
                     </Button>
                   )}
                 </div>
-                <Input
-                  id="department"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="Your department"
-                  className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600"
-                />
+                <div className="flex items-center">
+                  <div className="flex-1 px-3 py-2 bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md text-gray-800 dark:text-gray-200">
+                    {department || "Not set"}
+                  </div>
+                  <div className="ml-2 text-gray-500 dark:text-gray-400">
+                    <Lock className="h-4 w-4" />
+                  </div>
+                </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Click "Sync from Discord" to update your department from Discord roles
+                  Department can only be updated via "Sync from Discord"
                 </p>
               </div>
 
