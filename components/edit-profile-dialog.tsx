@@ -135,6 +135,9 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
           // Show the department selection dialog if multiple departments were found
           setDepartments(result.departments)
           setShowDepartmentDialog(true)
+
+          // Close the edit profile dialog to avoid UI issues
+          onOpenChange(false)
         } else {
           toast({
             title: "Success",

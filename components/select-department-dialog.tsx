@@ -42,6 +42,7 @@ export function SelectDepartmentDialog({
     }
   }, [departments, selectedDepartment])
 
+  // Update the handleSubmit function to close both dialogs and refresh the page
   const handleSubmit = async () => {
     if (!selectedDepartment) {
       toast({
@@ -67,7 +68,11 @@ export function SelectDepartmentDialog({
           onSuccess(selectedDepartment)
         }
 
+        // Close this dialog
         onOpenChange(false)
+
+        // Refresh the page to show the updated department
+        window.location.reload()
       } else {
         toast({
           title: "Error",
