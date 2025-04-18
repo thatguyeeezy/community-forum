@@ -88,7 +88,7 @@ export function SelectDepartmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogOverlay className="bg-black/70" /> {/* Increased opacity for better visibility */}
+      <DialogOverlay className="bg-black/80" />
       <DialogContent className="sm:max-w-[425px] bg-gray-900 border-gray-700">
         <DialogHeader>
           <DialogTitle className="text-gray-100">Select Primary Department</DialogTitle>
@@ -97,10 +97,10 @@ export function SelectDepartmentDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <RadioGroup value={selectedDepartment} onValueChange={setSelectedDepartment}>
+          <RadioGroup value={selectedDepartment} onValueChange={setSelectedDepartment} className="space-y-3">
             {departments.map((dept) => (
               <div key={dept} className="flex items-center space-x-2 mb-2">
-                <RadioGroupItem value={dept} id={`dept-${dept}`} />
+                <RadioGroupItem value={dept} id={`dept-${dept}`} className="border-gray-500 text-blue-400" />
                 <Label htmlFor={`dept-${dept}`} className="cursor-pointer text-gray-200">
                   {dept}
                 </Label>

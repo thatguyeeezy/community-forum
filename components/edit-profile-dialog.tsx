@@ -287,7 +287,7 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues, userId }:
         </DialogContent>
       </Dialog>
 
-      {/* Add the department selection dialog with improved visibility */}
+      {/* Add the department selection dialog */}
       {userId && (
         <SelectDepartmentDialog
           open={showDepartmentDialog}
