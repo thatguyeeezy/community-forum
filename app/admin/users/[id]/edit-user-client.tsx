@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { hasAdminPermission, isWebmaster } from "@/lib/roles"
+import { hasAdminPermission, isWebmaster, getAssignableRoles } from "@/lib/roles"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -579,14 +579,21 @@ export default function EditUserClient({ userId }: { userId: string }) {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
-                  {roles.map((role) => (
-                    <SelectItem key={role.id} value={role.id} className="text-slate-700 dark:text-slate-300">
-                      <div className="flex items-center">
-                        <Shield className="mr-2 h-4 w-4" />
-                        {role.name}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {/* Only show the current role and roles the user can assign */}
+                  {roles
+                    .filter(
+                      (role) =>
+                        role.id === user.role || // Always include current role
+                        getAssignableRoles(session?.user?.role as string).includes(role.id),
+                    )
+                    .map((role) => (
+                      <SelectItem key={role.id} value={role.id} className="text-slate-700 dark:text-slate-300">
+                        <div className="flex items-center">
+                          <Shield className="mr-2 h-4 w-4" />
+                          {role.name}
+                        </div>
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               {user.isBanned && (
