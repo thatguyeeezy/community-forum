@@ -37,10 +37,10 @@ export function SelectDepartmentDialog({
 
   // Set the first department as default when the dialog opens or departments change
   useEffect(() => {
-    if (departments.length > 0) {
+    if (departments.length > 0 && (!selectedDepartment || !departments.includes(selectedDepartment))) {
       setSelectedDepartment(departments[0])
     }
-  }, [departments])
+  }, [departments, selectedDepartment])
 
   const handleSubmit = async () => {
     if (!selectedDepartment) {
