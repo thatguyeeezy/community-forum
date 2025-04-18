@@ -39,14 +39,14 @@ export async function isUserInMainDiscord(discordId: string): Promise<boolean> {
   // Map of Discord role IDs to department names
   const MAIN_DISCORD_DEPARTMENT_ROLES: Record<string, string> = {
     // Replace these with your actual role IDs
-    "123456789012345678": "BSFR",
-    "234567890123456789": "BSO",
-    "345678901234567890": "MPD",
-    "456789012345678901": "FHP",
-    "567890123456789012": "COMMS",
-    "678901234567890123": "FWC",
-    "789012345678901234": "CIV",
-    "890123456789012345": "DEV",
+    "1254493228368138300": "BSFR",
+    "1254480335782154390": "BSO",
+    "1254491794012508251": "MPD",
+    "1254475337669017600": "FHP",
+    "1254497904249536622": "COMMS",
+    "1254480328710684794": "FWC",
+    "1254497942564241458": "CIV",
+    "1144075648885870654": "DEV",
   }
   
   /**
