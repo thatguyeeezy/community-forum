@@ -48,11 +48,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const isOwnProfile = sessionUserId === String(id)
     const isAdmin = hasAdminPermission(session.user.role as string)
 
-    // If not admin and not own profile, restrict access
-    if (!isAdmin && !isOwnProfile) {
-      console.error(`GET user: Permission denied for user ${sessionUserId} to access user ${id}`)
-      return NextResponse.json({ error: "Permission denied" }, { status: 403 })
-    }
+    // All authenticated users can view profiles
+    // We'll still use isAdmin and isOwnProfile to determine what data to return
 
     try {
       // Check if the user exists first with a simple query
@@ -74,7 +71,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         select: {
           id: true,
           name: true,
-          email: true,
+          email: isAdmin || isOwnProfile ? true : false, // Only return email for admins or own profile
           image: true,
           bio: true,
           rank: true,
@@ -85,7 +82,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
           rnrStatus: true,
           lastActive: true,
           status: true,
-          isBanned: true,
+          isBanned: isAdmin ? true : false, // Only return ban status for admins
           // Get counts for stats
           _count: {
             select: {
