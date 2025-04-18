@@ -304,13 +304,12 @@ export function EditProfileDialog({ open, onOpenChange, defaultValues }: EditPro
               <Input
                 id="discordId"
                 value={discordId}
-                onChange={(e) => setDiscordId(e.target.value)}
-                placeholder="Your Discord ID"
                 readOnly
-                className="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200"
+                disabled
+                className="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 cursor-not-allowed"
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Discord ID is automatically set when you sign in with Discord
+                Discord ID is automatically set when you sign in with Discord and cannot be changed
               </p>
             </div>
 

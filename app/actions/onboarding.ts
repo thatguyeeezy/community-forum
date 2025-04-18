@@ -9,6 +9,7 @@ interface OnboardingData {
   name: string
   bio: string
   department: string
+  // Explicitly NOT including discordId here
 }
 
 export async function completeOnboarding(data: OnboardingData) {
@@ -22,6 +23,8 @@ export async function completeOnboarding(data: OnboardingData) {
     const userId = session.user.id
     const { name, bio, department } = data
 
+    // No discordId in data, so it can't be changed
+
     // Update the user in the database
     await prisma.user.update({
       where: { id: userId },
@@ -32,6 +35,7 @@ export async function completeOnboarding(data: OnboardingData) {
         needsOnboarding: false,
         // If the user is from the Main Discord, they should get a MEMBER role
         role: "MEMBER",
+        // Explicitly NOT including discordId in the update
       },
     })
 

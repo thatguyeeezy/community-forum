@@ -282,6 +282,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (body.department !== undefined) updateData.department = body.department
     if (body.isBanned !== undefined) updateData.isBanned = body.isBanned
 
+    // Explicitly ensure discordId is NOT included in updateData
+    // Even if it was provided in the request body
+    delete updateData.discordId
+
     console.log(`PATCH user: Final update data for user ${id}:`, updateData)
 
     try {

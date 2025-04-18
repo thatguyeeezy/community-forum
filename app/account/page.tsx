@@ -326,9 +326,15 @@ export default function AccountPage() {
               <Label htmlFor="discordId" className="dark:text-gray-300">
                 Discord ID
               </Label>
-              <Input id="discordId" value={discordId} readOnly className="dark:bg-gray-700 dark:text-gray-200" />
+              <Input
+                id="discordId"
+                value={discordId}
+                readOnly
+                disabled
+                className="dark:bg-gray-600 dark:text-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed"
+              />
               <p className="text-xs dark:text-gray-400">
-                Discord ID is automatically set when you sign in with Discord
+                Discord ID is automatically set when you sign in with Discord and cannot be changed
               </p>
             </div>
 

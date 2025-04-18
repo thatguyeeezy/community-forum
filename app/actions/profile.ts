@@ -1,9 +1,9 @@
-// app/actions/profile.ts
 "use server"
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
+import { put } from "@vercel/blob" // If using Vercel Blob
 
 export async function updateProfile(formData: FormData) {
   const session = await auth()
@@ -16,8 +16,10 @@ export async function updateProfile(formData: FormData) {
   const bio = formData.get("bio") as string
   const rank = formData.get("rank") as string
   const department = formData.get("department") as string
-  const discordId = formData.get("discordId") as string
   const imageFile = formData.get("profileImage") as File | null
+
+  // Explicitly remove any discordId from formData to ensure it can't be changed
+  // Even if someone tries to send it in the request
 
   if (!name) {
     return { error: "Name is required" }
@@ -31,29 +33,28 @@ export async function updateProfile(formData: FormData) {
       name,
       bio: bio || "",
       rank: rank || null,
-      department: department ? (department as any) : "N_A", // Cast to any to handle enum
-      // Don't update discordId here as it should only be set via OAuth
+      department: department ? (department as any) : "N_A",
     }
+
+    // Explicitly ensure discordId is NOT included in updateData
+    // This prevents any attempts to change it
 
     // Handle image upload if provided
     if (imageFile && imageFile.size > 0) {
-      // In a real-world scenario, you would upload the image to a service like S3 or Cloudinary
-      // For now, we'll just use a placeholder or the existing image
-      // This is where you would add your image upload logic
+      // Upload to Vercel Blob
+      const blob = await put(`profile-${userId}-${Date.now()}`, imageFile, {
+        access: "public",
+      })
 
-      // Example placeholder - replace with actual image upload logic
-      updateData.image = session.user.image || "/placeholder.svg"
-
-      // Note: In a real implementation, you would:
-      // 1. Upload the image to a storage service
-      // 2. Get the URL of the uploaded image
-      // 3. Set updateData.image to that URL
+      // Store the URL in the database
+      updateData.image = blob.url
+      updateData.useCustomImage = true // Flag to indicate custom image
     }
 
     console.log("Updating profile for user:", userId, {
       ...updateData,
       imageUpdated: imageFile ? true : false,
-    }) // Debug log
+    })
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -87,26 +88,19 @@ export async function resetProfileImage() {
     // Get the user to check if they have a Discord ID
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { discordId: true },
+      select: { discordId: true, discordAvatar: true },
     })
 
     if (!user?.discordId) {
       return { error: "No Discord account linked to your profile" }
     }
 
-    // Construct the Discord avatar URL
-    // Format: https://cdn.discordapp.com/avatars/{user_id}/{avatar_hash}.png
-    // Since we don't have the avatar hash stored, we'll use the Discord OAuth flow
-    // to get the user's profile image
-
-    // For now, we'll use a placeholder Discord URL based on the user's Discord ID
-    const discordImage = `https://cdn.discordapp.com/avatars/${user.discordId}/avatar.png`
-
-    // Update the user's profile image to the Discord image
+    // Update the user to use Discord avatar instead of custom image
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        image: discordImage,
+        image: null, // Clear custom image URL
+        useCustomImage: false, // Flag to use Discord avatar
       },
     })
 
@@ -115,72 +109,9 @@ export async function resetProfileImage() {
     return {
       success: true,
       message: "Profile image reset to Discord avatar",
-      discordImage: updatedUser.image,
     }
   } catch (error) {
     console.error("Profile image reset error:", error)
     return { error: "Failed to reset profile image" }
-  }
-}
-
-export async function followUser(userId: string) {
-  const session = await auth()
-
-  if (!session?.user) {
-    return { error: "You must be logged in to follow users" }
-  }
-
-  if (session.user.id === userId) {
-    return { error: "You cannot follow yourself" }
-  }
-
-  try {
-    // Convert the user IDs to numbers
-    const followerId = typeof session.user.id === "string" ? Number.parseInt(session.user.id, 10) : session.user.id
-
-    const followingId = Number.parseInt(userId, 10)
-
-    // Check if already following
-    const existingFollow = await prisma.follow.findFirst({
-      where: {
-        followerId,
-        followingId,
-      },
-    })
-
-    if (existingFollow) {
-      // Unfollow
-      await prisma.follow.delete({
-        where: { id: existingFollow.id },
-      })
-
-      revalidatePath(`/members/${userId}`)
-      return { success: true, followed: false, message: "User unfollowed" }
-    } else {
-      // Follow
-      await prisma.follow.create({
-        data: {
-          followerId,
-          followingId,
-        },
-      })
-
-      // Create notification
-      await prisma.notification.create({
-        data: {
-          type: "follow",
-          message: `${session.user.name} started following you`,
-          recipientId: followingId,
-          link: `/profile/${followerId}`,
-          read: false,
-        },
-      })
-
-      revalidatePath(`/members/${userId}`)
-      return { success: true, followed: true, message: "User followed" }
-    }
-  } catch (error) {
-    console.error("Follow error:", error)
-    return { error: "Failed to follow/unfollow user" }
   }
 }

@@ -49,6 +49,8 @@ export default function OnboardingPage() {
           setDepartment(session.user.mainDiscordDepartments[0])
         }
       }
+
+      // We're not setting discordId here, ensuring it can't be changed
     }
   }, [session])
 
@@ -64,6 +66,7 @@ export default function OnboardingPage() {
     }
 
     try {
+      // Note: We're only sending name, bio, and department - NOT discordId
       const result = await completeOnboarding({
         name,
         bio,

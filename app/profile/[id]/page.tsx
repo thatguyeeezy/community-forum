@@ -13,7 +13,7 @@ import { EditProfileDialog } from "@/components/edit-profile-dialog"
 import { cn } from "@/lib/utils"
 import type { Role } from "@prisma/client"
 import { ProfileNotifications } from "@/components/profile-notifications"
-import { SyncRoleButton } from "@/components/sync-role-button"
+import { SyncDepartmentButton } from "@/components/sync-department-button"
 
 // Format the last active time as a relative time
 function formatLastActive(lastActiveDate: string | null): string {
@@ -327,6 +327,7 @@ export default function UserProfilePage() {
                       <Edit className="mr-2 h-4 w-4" />
                       Edit Profile
                     </Button>
+                    <SyncDepartmentButton userId={Number(id)} />
                   </>
                 ) : (
                   <>

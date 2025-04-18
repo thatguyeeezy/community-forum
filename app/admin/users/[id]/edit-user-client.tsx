@@ -503,7 +503,10 @@ export default function EditUserClient({ userId }: { userId: string }) {
               <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
 
               {user.discordId && (
-                <p className="text-sm text-blue-500 dark:text-blue-400 mt-1">Discord ID: {user.discordId}</p>
+                <div className="text-sm text-blue-500 dark:text-blue-400 mt-1">
+                  Discord ID: {user.discordId}{" "}
+                  <span className="text-xs text-slate-500 dark:text-slate-400">(cannot be changed)</span>
+                </div>
               )}
 
               <div className="mt-4 space-y-2 text-sm">
