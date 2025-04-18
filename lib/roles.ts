@@ -69,11 +69,30 @@ export function getAssignableRoles(userRole?: string): string[] {
     return ROLE_HIERARCHY.filter((role) => role !== "WEBMASTER")
   }
 
-  const userRoleIndex = ROLE_HIERARCHY.indexOf(userRole as any)
-  if (userRoleIndex === -1) return []
+  // HEAD_ADMIN can assign any role except WEBMASTER
+  if (userRole === "HEAD_ADMIN") {
+    return ROLE_HIERARCHY.filter((role) => role !== "WEBMASTER")
+  }
 
-  // Return all roles that have a higher index (lower rank) than the user's role
-  return ROLE_HIERARCHY.filter((_, index) => index > userRoleIndex)
+  // SENIOR_ADMIN can assign roles up to ADMIN
+  if (userRole === "SENIOR_ADMIN") {
+    return ROLE_HIERARCHY.filter((role) => !["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN"].includes(role))
+  }
+
+  // SPECIAL_ADVISOR and ADMIN can assign roles up to JUNIOR_ADMIN
+  if (userRole === "SPECIAL_ADVISOR" || userRole === "ADMIN") {
+    return ROLE_HIERARCHY.filter(
+      (role) => !["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR", "ADMIN"].includes(role),
+    )
+  }
+
+  // JUNIOR_ADMIN can assign basic roles
+  if (userRole === "JUNIOR_ADMIN") {
+    return BASIC_ROLES
+  }
+
+  // Other roles can't assign roles
+  return []
 }
 
 // Format role for display
