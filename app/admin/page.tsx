@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { Users, MessageSquare, FileText, Activity } from "lucide-react"
+import { Users, BellRing, Activity } from "lucide-react"
 
 import { authOptions } from "@/lib/auth"
 import { hasStaffPermission } from "@/lib/roles"
@@ -25,8 +25,15 @@ export default async function AdminPage() {
 
   // Fetch real stats from the database
   const userCount = await prisma.user.count()
-  const threadCount = await prisma.thread.count()
-  const postCount = await prisma.post.count()
+
+  // Count announcements (threads in announcement categories)
+  const announcementCount = await prisma.thread.count({
+    where: {
+      category: {
+        isAnnouncement: true,
+      },
+    },
+  })
 
   // Get active users in the last 24 hours
   const oneDayAgo = new Date()
@@ -57,9 +64,14 @@ export default async function AdminPage() {
     },
   })
 
-  // Fetch recent threads
-  const recentThreads = await prisma.thread.findMany({
+  // Fetch recent announcements
+  const recentAnnouncements = await prisma.thread.findMany({
     take: 5,
+    where: {
+      category: {
+        isAnnouncement: true,
+      },
+    },
     orderBy: {
       createdAt: "desc",
     },
@@ -104,7 +116,7 @@ export default async function AdminPage() {
         <h1 className="text-3xl font-bold mb-6">Staff Dashboard</h1>
         <p className="text-muted-foreground mb-8">Manage your community forum</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-card rounded-lg p-4 shadow">
             <div className="flex justify-between items-center">
               <div>
@@ -120,23 +132,11 @@ export default async function AdminPage() {
           <div className="bg-card rounded-lg p-4 shadow">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted-foreground">Total Threads</p>
-                <h2 className="text-3xl font-bold">{threadCount}</h2>
+                <p className="text-sm text-muted-foreground">Total Announcements</p>
+                <h2 className="text-3xl font-bold">{announcementCount}</h2>
               </div>
               <div className="bg-primary/10 p-2 rounded-full">
-                <MessageSquare className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg p-4 shadow">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Posts</p>
-                <h2 className="text-3xl font-bold">{postCount}</h2>
-              </div>
-              <div className="bg-primary/10 p-2 rounded-full">
-                <FileText className="h-6 w-6 text-primary" />
+                <BellRing className="h-6 w-6 text-primary" />
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@ export default async function AdminPage() {
           <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
           <p className="text-sm text-muted-foreground mb-4">Recent activity across the forum</p>
 
-          <RecentActivityList recentUsers={recentUsers} recentThreads={recentThreads} recentPosts={recentPosts} />
+          <RecentActivityList recentUsers={recentUsers} recentThreads={recentAnnouncements} recentPosts={recentPosts} />
         </div>
       </div>
     </div>
