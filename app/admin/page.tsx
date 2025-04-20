@@ -41,11 +41,7 @@ export default async function AdminPage() {
 
   const activeUsers = await prisma.user.count({
     where: {
-      OR: [
-        { threads: { some: { createdAt: { gte: oneDayAgo } } } },
-        { posts: { some: { createdAt: { gte: oneDayAgo } } } },
-        { lastActive: { gte: oneDayAgo } },
-      ],
+      OR: [{ threads: { some: { createdAt: { gte: oneDayAgo } } } }, { lastActive: { gte: oneDayAgo } }],
     },
   })
 
@@ -84,26 +80,6 @@ export default async function AdminPage() {
       category: {
         select: {
           name: true,
-        },
-      },
-    },
-  })
-
-  // Fetch recent posts
-  const recentPosts = await prisma.post.findMany({
-    take: 5,
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      author: {
-        select: {
-          name: true,
-        },
-      },
-      thread: {
-        select: {
-          title: true,
         },
       },
     },
@@ -158,7 +134,7 @@ export default async function AdminPage() {
           <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
           <p className="text-sm text-muted-foreground mb-4">Recent activity across the forum</p>
 
-          <RecentActivityList recentUsers={recentUsers} recentThreads={recentAnnouncements} recentPosts={recentPosts} />
+          <RecentActivityList recentUsers={recentUsers} recentAnnouncements={recentAnnouncements} />
         </div>
       </div>
     </div>
