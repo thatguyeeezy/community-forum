@@ -3,8 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronLeft, LayoutDashboard, Users } from "lucide-react"
-
-import { cn } from "@/lib/utils"
+import { ModeToggle } from "@/components/mode-toggle"
 
 export function AdminSidebar() {
   const pathname = usePathname()
@@ -17,37 +16,50 @@ export function AdminSidebar() {
   }
 
   return (
-    <div className="w-64 bg-card border-r h-screen">
-      <div className="p-6 border-b">
-        <h2 className="text-lg font-semibold">Staff Panel</h2>
+    <div className="w-64 bg-gray-800 border-r border-gray-700 h-screen sticky top-0 flex flex-col">
+      <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-white">Staff Panel</h2>
+        <ModeToggle />
       </div>
+
       <div className="p-4">
-        <Link href="/" className="flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Site
+        <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors">
+          <ChevronLeft size={18} />
+          <span>Back to Site</span>
         </Link>
-        <nav className="space-y-1">
-          <Link
-            href="/admin"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-              isActive("/admin") ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-            )}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
-          </Link>
-          <Link
-            href="/admin/users"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-              isActive("/admin/users") ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-            )}
-          >
-            <Users className="h-4 w-4" />
-            Users
-          </Link>
-        </nav>
+      </div>
+
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          <li>
+            <Link
+              href="/admin"
+              className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+                isActive("/admin") && !isActive("/admin/users")
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              } transition-colors`}
+            >
+              <LayoutDashboard size={18} />
+              <span>Dashboard</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/admin/users"
+              className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+                isActive("/admin/users") ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              } transition-colors`}
+            >
+              <Users size={18} />
+              <span>Users</span>
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      <div className="p-4 border-t border-gray-700">
+        <div className="text-xs text-gray-500">Florida Coast RP Staff</div>
       </div>
     </div>
   )

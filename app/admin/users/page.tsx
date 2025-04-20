@@ -9,12 +9,12 @@ export const metadata: Metadata = {
 
 export default function UsersPage() {
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white">
+    <div className="flex min-h-screen bg-gray-900 text-gray-100">
       <AdminSidebar />
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">User Management</h1>
-          <p className="text-slate-400">View and manage all users in the system</p>
+          <h1 className="text-3xl font-bold text-gray-100">User Management</h1>
+          <p className="text-gray-400">View and manage all users in the system</p>
         </div>
 
         <UserTable />
