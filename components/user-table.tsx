@@ -275,13 +275,10 @@ export function UserTable() {
                     <td className="px-4 py-3">
                       <Link href={`/profile/${user.id}`} className="flex items-center gap-3 hover:underline">
                         <Avatar className="h-10 w-10 border border-gray-700">
-                          {user.image ? (
-                            <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
-                          ) : (
-                            <AvatarFallback className="bg-gray-700 text-gray-200">
-                              {getInitials(user.name)}
-                            </AvatarFallback>
-                          )}
+                          <AvatarImage src={user.image || ""} alt={user.name} />
+                          <AvatarFallback className="bg-gray-700 text-gray-200">
+                            {getInitials(user.name)}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium text-gray-100">
