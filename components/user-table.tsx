@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { formatDistanceToNow } from "date-fns"
-import { MoreHorizontal, Edit, ExternalLink, Search, RefreshCw, AlertCircle } from "lucide-react"
+import { MoreHorizontal, Edit, ExternalLink, Search, RefreshCw, AlertCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -146,27 +146,27 @@ export function UserTable() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "WEBMASTER":
-        return "bg-gray-500 text-white"
+        return "bg-gray-500 text-white hover:bg-gray-600"
       case "HEAD_ADMIN":
-        return "bg-blue-600 text-white"
+        return "bg-cyan-500 text-white hover:bg-cyan-600"
       case "SENIOR_ADMIN":
-        return "bg-blue-700 text-white"
+        return "bg-blue-800 text-white hover:bg-blue-900"
       case "SPECIAL_ADVISOR":
-        return "bg-purple-600 text-white"
+        return "bg-purple-700 text-white hover:bg-purple-800"
       case "ADMIN":
-        return "bg-red-600 text-white"
+        return "bg-red-800 text-white hover:bg-red-900"
       case "JUNIOR_ADMIN":
-        return "bg-blue-500 text-white"
+        return "bg-blue-600 text-white hover:bg-blue-900"
       case "SENIOR_STAFF":
-        return "bg-green-600 text-white"
+        return "bg-green-800 text-white hover:bg-green-900"
       case "STAFF":
-        return "bg-yellow-500 text-black"
+        return "bg-yellow-500 text-black hover:bg-yellow-600"
       case "STAFF_IN_TRAINING":
-        return "bg-orange-500 text-white"
+        return "bg-red-400 text-white hover:bg-red-500"
       case "MEMBER":
-        return "bg-gray-400 text-gray-900"
+        return "bg-blue-400 text-white hover:bg-blue-500"
       default:
-        return "bg-gray-600 text-white"
+        return "bg-slate-500 text-white dark:bg-slate-600"
     }
   }
 
