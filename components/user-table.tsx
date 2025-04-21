@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { formatDistanceToNow } from "date-fns"
-import { MoreHorizontal, Edit, ExternalLink, Search, RefreshCw, AlertCircle } from 'lucide-react'
+import { MoreHorizontal, Edit, ExternalLink, Search, RefreshCw, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
