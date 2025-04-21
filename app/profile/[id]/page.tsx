@@ -128,6 +128,9 @@ function formatDepartmentName(department?: string): string {
   if (department === "RNR") {
     return "R&R"
   }
+  if (department === "N_A") {
+    return "NONE"
+  }
   return department || "N/A"
 }
 
