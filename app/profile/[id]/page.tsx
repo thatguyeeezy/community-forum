@@ -1,19 +1,19 @@
-import { cn } from "@/lib/utils"
+"use client"
+
 import { useSession } from "next-auth/react"
-import { formatDistanceToNow } from "date-fns"
-import { Bell, Edit, LogIn, Mail, Users } from 'lucide-react'
-import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-
-import { EditProfileDialog } from "@/components/edit-profile-dialog"
-import { ProfileNotifications } from "@/components/profile-notifications"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Users, Mail, Edit, LogIn } from 'lucide-react'
+import { Skeleton } from "@/components/ui/skeleton"
+import { EditProfileDialog } from "@/components/edit-profile-dialog"
+import { cn } from "@/lib/utils"
 import type { Role } from "@prisma/client"
+import { ProfileNotifications } from "@/components/profile-notifications"
+import Link from "next/link"
 
 // Format the last active time as a relative time
 function formatLastActive(lastActiveDate: string | null): string {
@@ -128,9 +128,6 @@ function formatDepartmentName(department?: string): string {
   if (department === "RNR") {
     return "R&R"
   }
-  if (department === "N_A") {
-    return "None"
-  }
   return department || "N/A"
 }
 
@@ -142,7 +139,7 @@ export default function UserProfilePage() {
   const [discordInfo, setDiscordInfo] = useState<DiscordMemberInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [editProfileOpen, setEditProfileOpen] = useState(false)
-  const [error, setError] = ""
+  const [error, setError] = useState("")
 
   const isAuthenticated = status === "authenticated"
   const isOwnProfile = isAuthenticated && session?.user?.id === Number(id)
@@ -387,7 +384,7 @@ export default function UserProfilePage() {
                       {profile.rnrStatus.replace("RNR_", "").replace("_", " ")}
                     </span>
                   </div>
-                )}
+                  )}
                 <div className="flex justify-between items-start">
                   <span className="text-gray-400">Discord Join</span>
                   <span className="font-medium text-right break-words max-w-[60%] text-gray-200">
@@ -542,7 +539,7 @@ export default function UserProfilePage() {
                 <div className="bg-gray-800 shadow-md rounded-md overflow-hidden">
                   <div className="p-4 border-b border-gray-700">
                     <h3 className="font-bold text-gray-100">Recent Activity</h3>
-                    <p className="text-sm text-gray-400">{profile.name}&apos;s recent activity</p>
+                    <p className="text-sm text-gray-400">{profile.name}'s recent activity</p>
                   </div>
                   <div className="p-6">
                     <p className="text-gray-400">Recent activity will be displayed here</p>
