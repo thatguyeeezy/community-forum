@@ -25,6 +25,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { syncDepartmentIfWhitelisted } from "@/app/actions/sync-department"
+import { SelectDepartmentDialog } from "@/components/select-department-dialog"
 
 // Update the User interface to make discordJoinedAt optional
 interface User {
@@ -77,6 +79,11 @@ export default function EditUserClient({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null)
   const { data: session } = useSession()
   const router = useRouter()
+
+  // Add states for department sync
+  const [isSyncingDepartment, setIsSyncingDepartment] = useState(false)
+  const [showDepartmentDialog, setShowDepartmentDialog] = useState(false)
+  const [departments, setDepartments] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
     name: "",
@@ -365,6 +372,55 @@ export default function EditUserClient({ userId }: { userId: string }) {
     }
   }
 
+  // Add function to handle department sync
+  const handleSyncDepartment = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "User ID is missing",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSyncingDepartment(true)
+    try {
+      const result = await syncDepartmentIfWhitelisted(Number.parseInt(user.id))
+
+      if (result.success) {
+        if (result.multipleDepartments && result.departments && result.departments.length > 1) {
+          // Show the department selection dialog if multiple departments were found
+          setDepartments(result.departments)
+          setShowDepartmentDialog(true)
+        } else {
+          toast({
+            title: "Success",
+            description: result.message,
+          })
+
+          // Update the department field if a department was found
+          if (result.department) {
+            setFormData((prev) => ({ ...prev, department: result.department }))
+          }
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sync department",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSyncingDepartment(false)
+    }
+  }
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -602,33 +658,44 @@ export default function EditUserClient({ userId }: { userId: string }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="department" className="text-slate-700 dark:text-slate-300">
-                Department
-                {!canEditDepartment() && (
-                  <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
-                    (You don't have permission to change this)
-                  </span>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="department" className="text-slate-700 dark:text-slate-300">
+                  Department
+                  {!canEditDepartment() && (
+                    <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
+                      (You don't have permission to change this)
+                    </span>
+                  )}
+                </Label>
+                {user.discordId && (
+                  <Button
+                    type="button"
+                    onClick={handleSyncDepartment}
+                    disabled={isSyncingDepartment || user.isBanned}
+                    className="h-8 px-3 bg-slate-700 hover:bg-slate-600 text-slate-100"
+                  >
+                    {isSyncingDepartment ? (
+                      <>
+                        <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
+                        Syncing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="mr-1 h-3 w-3" />
+                        Sync from Discord
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Label>
-              <Select
-                disabled={!canEditDepartment() || user.isBanned}
-                value={formData.department}
-                onValueChange={(value) => handleSelectChange("department", value)}
-              >
-                <SelectTrigger className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                  <SelectValue placeholder="Select a department" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
-                  {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id} className="text-slate-700 dark:text-slate-300">
-                      {dept.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {user.isBanned && (
-                <p className="text-xs text-amber-600 mt-1">Department cannot be changed while account is disabled</p>
-              )}
+              </div>
+              <div className="flex items-center">
+                <div className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-800 dark:text-slate-200">
+                  {getDepartmentName(formData.department) || "Not set"}
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Department can only be updated via 'Sync from Discord'
+              </p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
@@ -691,6 +758,26 @@ export default function EditUserClient({ userId }: { userId: string }) {
           </CardFooter>
         </Card>
       </div>
+
+      {/* Add the department selection dialog */}
+      {user && (
+        <SelectDepartmentDialog
+          open={showDepartmentDialog}
+          onOpenChange={setShowDepartmentDialog}
+          userId={Number.parseInt(user.id)}
+          departments={departments}
+          onSuccess={(selectedDepartment) => {
+            // Update the department field with the selected department
+            setFormData((prev) => ({ ...prev, department: selectedDepartment }))
+          }}
+        />
+      )}
     </div>
   )
+}
+
+// Helper function to get department name from ID
+function getDepartmentName(departmentId: string): string {
+  const department = departments.find((d) => d.id === departmentId)
+  return department ? department.name : departmentId
 }
