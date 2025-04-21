@@ -76,7 +76,7 @@ enum Department {
   CIV
   FDLE
   DEV
-  RNR
+  R&R
   LEADERSHIP
   N_A
 }
