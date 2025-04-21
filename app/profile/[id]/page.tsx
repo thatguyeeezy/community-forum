@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Users, Mail, Edit, LogIn } from "lucide-react"
+import { Users, Mail, Edit, LogIn } from 'lucide-react'
 import { Skeleton } from "@/components/ui/skeleton"
 import { EditProfileDialog } from "@/components/edit-profile-dialog"
 import { cn } from "@/lib/utils"
@@ -121,6 +121,14 @@ interface DiscordMemberInfo {
   avatar?: string
   communicationDisabledUntil?: string
   isPending?: boolean
+}
+
+// Helper function to format department name
+function formatDepartmentName(department?: string): string {
+  if (department === "RNR") {
+    return "R&R"
+  }
+  return department || "N/A"
 }
 
 export default function UserProfilePage() {
@@ -366,7 +374,7 @@ export default function UserProfilePage() {
                 <div className="flex justify-between items-start">
                   <span className="text-gray-400">Department</span>
                   <span className="font-medium text-right break-words max-w-[60%] text-gray-200">
-                    {profile.department === "N_A" ? "N/A" : profile.department}
+                    {formatDepartmentName(profile.department)}
                   </span>
                 </div>
                 {profile.rnrStatus && profile.rnrStatus !== "NONE" && (
@@ -376,7 +384,7 @@ export default function UserProfilePage() {
                       {profile.rnrStatus.replace("RNR_", "").replace("_", " ")}
                     </span>
                   </div>
-                )}
+                  )}
                 <div className="flex justify-between items-start">
                   <span className="text-gray-400">Discord Join</span>
                   <span className="font-medium text-right break-words max-w-[60%] text-gray-200">
@@ -597,3 +605,4 @@ export default function UserProfilePage() {
     </div>
   )
 }
+
