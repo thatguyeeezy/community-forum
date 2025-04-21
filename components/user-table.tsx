@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { formatDistanceToNow } from "date-fns"
-import { MoreHorizontal, Edit, ExternalLink, Search, RefreshCw, AlertCircle, UserX, UserCheck } from "lucide-react"
+import { MoreHorizontal, Edit, ExternalLink, Search, RefreshCw, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -56,7 +56,6 @@ export function UserTable() {
         users.filter(
           (user) =>
             user.name?.toLowerCase().includes(query) ||
-            user.email?.toLowerCase().includes(query) ||
             user.discordId?.toLowerCase().includes(query) ||
             user.role.toLowerCase().includes(query) ||
             (user.department && user.department.toLowerCase().includes(query)),
@@ -147,27 +146,27 @@ export function UserTable() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "WEBMASTER":
-        return "bg-gray-500 text-white hover:bg-gray-600"
+        return "bg-gray-500 text-white"
       case "HEAD_ADMIN":
-        return "bg-cyan-500 text-white hover:bg-cyan-600"
+        return "bg-blue-600 text-white"
       case "SENIOR_ADMIN":
-        return "bg-blue-800 text-white hover:bg-blue-900"
+        return "bg-blue-700 text-white"
       case "SPECIAL_ADVISOR":
-        return "bg-purple-700 text-white hover:bg-purple-800"
+        return "bg-purple-600 text-white"
       case "ADMIN":
-        return "bg-red-800 text-white hover:bg-red-900"
+        return "bg-red-600 text-white"
       case "JUNIOR_ADMIN":
-        return "bg-blue-600 text-white hover:bg-blue-900"
+        return "bg-blue-500 text-white"
       case "SENIOR_STAFF":
-        return "bg-green-800 text-white hover:bg-green-900"
+        return "bg-green-600 text-white"
       case "STAFF":
-        return "bg-yellow-500 text-black hover:bg-yellow-600"
+        return "bg-yellow-500 text-black"
       case "STAFF_IN_TRAINING":
-        return "bg-red-400 text-white hover:bg-red-500"
+        return "bg-orange-500 text-white"
       case "MEMBER":
-        return "bg-blue-400 text-white hover:bg-blue-500"
+        return "bg-gray-400 text-gray-900"
       default:
-        return "bg-slate-500 text-white dark:bg-slate-600"
+        return "bg-gray-600 text-white"
     }
   }
 
@@ -183,11 +182,11 @@ export function UserTable() {
 
   if (error) {
     return (
-      <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 flex flex-col items-center justify-center">
-        <AlertCircle className="h-10 w-10 text-red-500 mb-2" />
-        <h3 className="text-lg font-medium text-red-400">Failed to load users</h3>
-        <p className="text-red-300 mb-4">{error}</p>
-        <Button onClick={fetchUsers} disabled={loading} variant="outline">
+      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col items-center justify-center">
+        <AlertCircle className="h-10 w-10 text-red-400 mb-2" />
+        <h3 className="text-lg font-medium text-red-300">Failed to load users</h3>
+        <p className="text-red-200 mb-4">{error}</p>
+        <Button onClick={fetchUsers} disabled={loading} variant="outline" className="border-gray-600 text-gray-200">
           {loading ? (
             <>
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -208,12 +207,12 @@ export function UserTable() {
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder="Search users..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-slate-900 border-slate-700 text-white placeholder:text-slate-400"
+            className="pl-9 bg-gray-800 border-gray-700 text-gray-100 placeholder:text-gray-400"
           />
         </div>
         <Button
@@ -235,26 +234,26 @@ export function UserTable() {
         </Button>
       </div>
 
-      <div className="text-sm text-slate-400 mb-2">{filteredUsers.length} users found</div>
+      <div className="text-sm text-gray-400 mb-2">{filteredUsers.length} users found</div>
 
-      <div className="rounded-lg border border-slate-800 overflow-hidden">
+      <div className="rounded-lg border border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-900">
+            <thead className="bg-gray-800">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-slate-400">User</th>
-                <th className="px-4 py-3 text-left font-medium text-slate-400">Role</th>
-                <th className="px-4 py-3 text-left font-medium text-slate-400">Department</th>
-                <th className="px-4 py-3 text-left font-medium text-slate-400">Created</th>
-                <th className="px-4 py-3 text-left font-medium text-slate-400">Discord Joined</th>
-                <th className="px-4 py-3 text-left font-medium text-slate-400">Last Active</th>
-                <th className="px-4 py-3 text-right font-medium text-slate-400">Actions</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-300">User</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-300">Role</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-300">Department</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-300">Created</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-300">Discord Joined</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-300">Last Active</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-300">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
                     <div className="flex items-center justify-center">
                       <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
                       Loading users...
@@ -263,7 +262,7 @@ export function UserTable() {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
                     No users found
                   </td>
                 </tr>
@@ -271,30 +270,29 @@ export function UserTable() {
                 filteredUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className={`${user.isBanned ? "bg-red-900/20" : "bg-slate-950"} hover:bg-slate-900/50`}
+                    className={`${user.isBanned ? "bg-red-900/20" : "bg-gray-900"} hover:bg-gray-800/50`}
                   >
                     <td className="px-4 py-3">
                       <Link href={`/profile/${user.id}`} className="flex items-center gap-3 hover:underline">
-                        <Avatar className="h-10 w-10 border border-slate-700">
+                        <Avatar className="h-10 w-10 border border-gray-700">
                           {user.image ? (
                             <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
                           ) : (
-                            <AvatarFallback className="bg-slate-800 text-slate-200">
+                            <AvatarFallback className="bg-gray-700 text-gray-200">
                               {getInitials(user.name)}
                             </AvatarFallback>
                           )}
                         </Avatar>
                         <div>
-                          <div className="font-medium text-white">
+                          <div className="font-medium text-gray-100">
                             {user.name}
                             {user.isBanned && (
                               <span className="ml-2 text-xs bg-red-500 text-white px-1.5 py-0.5 rounded">DISABLED</span>
                             )}
                           </div>
-                          <div className="text-xs text-slate-400 truncate max-w-[180px]">{user.email}</div>
                           {user.discordId && (
-                            <div className="text-xs text-slate-500 truncate max-w-[180px]">
-                              Discord: {user.discordId}
+                            <div className="text-xs text-gray-400 truncate max-w-[180px]">
+                              Discord ID: {user.discordId}
                             </div>
                           )}
                         </div>
@@ -305,49 +303,38 @@ export function UserTable() {
                         {user.role.replace(/_/g, " ")}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-300">{formatDepartment(user.department)}</td>
-                    <td className="px-4 py-3 text-slate-300">{formatDate(user.createdAt)}</td>
-                    <td className="px-4 py-3 text-slate-300">{formatDate(user.discordJoinedAt)}</td>
-                    <td className="px-4 py-3 text-slate-300">{formatDate(user.lastActive)}</td>
+                    <td className="px-4 py-3 text-gray-300">{formatDepartment(user.department)}</td>
+                    <td className="px-4 py-3 text-gray-300">{formatDate(user.createdAt)}</td>
+                    <td className="px-4 py-3 text-gray-300">{formatDate(user.discordJoinedAt)}</td>
+                    <td className="px-4 py-3 text-gray-300">{formatDate(user.lastActive)}</td>
                     <td className="px-4 py-3 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
-                            className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-800"
+                            className="h-8 w-8 p-0 text-gray-400 hover:text-gray-100 hover:bg-gray-700"
                           >
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                          <DropdownMenuLabel className="text-slate-300">Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator className="bg-slate-800" />
+                        <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                          <DropdownMenuLabel className="text-gray-300">Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator className="bg-gray-700" />
                           <DropdownMenuItem
                             onClick={() => handleEditUser(user.id)}
-                            className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer"
+                            className="text-gray-300 focus:bg-gray-700 focus:text-gray-100 cursor-pointer"
                           >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit User
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleViewProfile(user.id)}
-                            className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer"
+                            className="text-gray-300 focus:bg-gray-700 focus:text-gray-100 cursor-pointer"
                           >
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Visit Profile
                           </DropdownMenuItem>
-                          {user.isBanned ? (
-                            <DropdownMenuItem className="text-green-400 focus:bg-slate-800 focus:text-green-300 cursor-pointer">
-                              <UserCheck className="mr-2 h-4 w-4" />
-                              Enable Account
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem className="text-red-400 focus:bg-slate-800 focus:text-red-300 cursor-pointer">
-                              <UserX className="mr-2 h-4 w-4" />
-                              Disable Account
-                            </DropdownMenuItem>
-                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
