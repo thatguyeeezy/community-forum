@@ -2,8 +2,11 @@ import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { PrismaClient } from "@prisma/client"; // Import PrismaClient
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
+
+// Initialize Prisma Client outside the function to avoid multiple instances
+const prisma = new PrismaClient();
 
 export default async function RnRDashboard() {
   const session = await getServerSession(authOptions)
@@ -15,19 +18,19 @@ export default async function RnRDashboard() {
   // Get application statistics
   const pendingCount = await prisma.application.count({
     where: { status: "PENDING" },
-  })
+  });
 
   const acceptedCount = await prisma.application.count({
     where: { status: "ACCEPTED", interviewStatus: "AWAITING_INTERVIEW" },
-  })
+  });
 
   const completedCount = await prisma.application.count({
     where: { status: "COMPLETED" },
-  })
+  });
 
   const deniedCount = await prisma.application.count({
     where: { status: "DENIED" },
-  })
+  });
 
   // Get recent applications
   const recentApplications = await prisma.application.findMany({
@@ -37,7 +40,7 @@ export default async function RnRDashboard() {
       user: true,
       template: true,
     },
-  })
+  });
 
   return (
     <div className="space-y-6">
