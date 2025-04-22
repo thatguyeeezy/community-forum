@@ -1,12 +1,15 @@
+import { Button } from "@/components/ui/button"
 import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import Link from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { PrismaClient } from "@prisma/client" // Import PrismaClient
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
 import { PlusCircle } from "lucide-react"
+
+// Initialize Prisma Client outside the function to avoid multiple instances
+const prisma = new PrismaClient()
 
 export default async function ApplicationsPage({
   searchParams,
@@ -75,7 +78,7 @@ export default async function ApplicationsPage({
         <Link href="/rnr/applications/templates">
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Manage Templates
+            New Template
           </Button>
         </Link>
       </div>
