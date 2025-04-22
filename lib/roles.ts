@@ -261,3 +261,27 @@ export function shouldPreserveRole(role: string): boolean {
   // Admin roles should never be downgraded by automatic sync
   return ADMIN_ROLES.includes(role)
 }
+
+// Add this function to check if user has RNR permissions
+export function hasRnRPermission(role: string): boolean {
+  return (
+    ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) ||
+    role === "RNR_ADMINISTRATION" ||
+    role === "RNR_STAFF" ||
+    role === "RNR_MEMBER"
+  )
+}
+
+// Add this function to check if user can override RNR decisions
+export function canOverrideRnRDecisions(role: string): boolean {
+  return (
+    ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) ||
+    role === "RNR_ADMINISTRATION" ||
+    role === "RNR_STAFF"
+  )
+}
+
+// Add this function to check if user can approve underage applicants
+export function canApproveUnderage(role: string): boolean {
+  return ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) || role === "RNR_ADMINISTRATION"
+}

@@ -110,6 +110,9 @@ model User {
   receivedMessages Message[] @relation("recipient")
   notifications Notification[] @relation("recipient")
   isBanned Boolean @default(false)
+  submittedApplications Application[]
+  reviewedApplications  Application[]    @relation("reviewer")
+  applicationNotes      ApplicationNote[]
 }
 
 model VerificationToken {
@@ -234,4 +237,90 @@ enum Role {
   STAFF_IN_TRAINING // Light Red
   MEMBER            // Light Blue
   APPLICANT         // Grey (default)
+}
+
+// Application Templates
+model ApplicationTemplate {
+  id            Int                  @id @default(autoincrement())
+  departmentId  String               // Maps to Department enum
+  name          String
+  description   String?              @db.Text
+  active        Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  questions     ApplicationQuestion[]
+  applications  Application[]
+}
+
+// Questions for templates
+model ApplicationQuestion {
+  id                  Int                @id @default(autoincrement())
+  templateId          Int
+  template            ApplicationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  questionText        String             @db.Text
+  questionType        String             // text, textarea, select, radio, checkbox
+  required            Boolean            @default(true)
+  order               Int
+  options             Json?              // For select, radio, checkbox types
+  responses           ApplicationResponse[]
+}
+
+// Submitted applications
+model Application {
+  id                  Int                @id @default(autoincrement())
+  userId              Int
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId          Int
+  template            ApplicationTemplate @relation(fields: [templateId], references: [id])
+  status              ApplicationStatus  @default(PENDING)
+  reviewerId          Int?               // R&R member reviewing this application
+  reviewer            User?              @relation("reviewer", fields: [reviewerId], references: [id])
+  denialCount         Int                @default(0)
+  lastDeniedAt        DateTime?
+  cooldownUntil       DateTime?
+  interviewStatus     InterviewStatus?
+  interviewCompletedAt DateTime?
+  interviewFailedAt   DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  responses           ApplicationResponse[]
+  notes               ApplicationNote[]
+}
+
+// Individual question responses
+model ApplicationResponse {
+  id                  Int                @id @default(autoincrement())
+  applicationId       Int
+  application         Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  questionId          Int
+  question            ApplicationQuestion @relation(fields: [questionId], references: [id])
+  response            String             @db.Text
+  flaggedAsAI         Boolean            @default(false)
+}
+
+// Notes added by reviewers
+model ApplicationNote {
+  id                  Int                @id @default(autoincrement())
+  applicationId       Int
+  application         Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  authorId            Int
+  author              User               @relation(fields: [authorId], references: [id])
+  content             String             @db.Text
+  createdAt           DateTime           @default(now())
+}
+
+// Application status enum
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  DENIED
+  COMPLETED
+  CANCELLED
+}
+
+// Interview status enum
+enum InterviewStatus {
+  AWAITING_INTERVIEW
+  INTERVIEW_COMPLETED
+  INTERVIEW_FAILED
 }

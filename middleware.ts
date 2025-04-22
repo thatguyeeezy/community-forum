@@ -9,6 +9,14 @@ function getIP(request: NextRequest): string {
   return xff ? xff.split(",")[0] : "127.0.0.1"
 }
 
+// Add this function to check if user has RNR permissions
+function hasRnRPermission(role: string): boolean {
+  return (
+    ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) ||
+    role.startsWith("RNR_")
+  )
+}
+
 export async function middleware(request: NextRequest) {
   // Get the pathname of the request
   const pathname = request.nextUrl.pathname
@@ -77,6 +85,23 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Add this section for RNR route protection
+  if (path.startsWith("/rnr")) {
+    // Redirect to login if not authenticated
+    if (!session) {
+      return NextResponse.redirect(new URL("/auth/signin", request.url))
+    }
+
+    // Check if user has RNR role
+    const userRole = session?.role as string
+
+    // Use the helper function to check RNR permission
+    if (!hasRnRPermission(userRole)) {
+      console.log(`RNR access denied in middleware for role: ${userRole}`)
+      return NextResponse.redirect(new URL("/auth/error?error=AccessDenied", request.url))
+    }
+  }
+
   // Handle first-time users from Main Discord
   // Check if user is logged in and needs onboarding
   if (session && session.needsOnboarding === true) {
@@ -118,5 +143,8 @@ export const config = {
 
     // Add onboarding path for first-time users
     "/onboarding",
+
+    // Add RNR routes
+    "/rnr/:path*",
   ],
 }
