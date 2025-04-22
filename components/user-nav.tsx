@@ -68,6 +68,14 @@ export function UserNav() {
               </Link>
             </DropdownMenuItem>
           )}
+          {isStaff && (
+            <DropdownMenuItem asChild>
+              <Link href="/rnr">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>R&R Panel</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })} className="cursor-pointer">

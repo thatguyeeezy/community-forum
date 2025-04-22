@@ -154,6 +154,17 @@ export function SiteHeader() {
                   Members
                 </Link>
               </li>
+              <Link
+                href="/applications"
+                className={cn(
+                  "inline-block px-2 py-1 font-medium dark:text-gray-300 text-gray-600 hover:dark:text-gray-100 hover:text-gray-900 border-b-2 border-transparent hover:dark:border-gray-600 hover:border-gray-300",
+                  pathname?.startsWith("/applications")
+                    ? "dark:text-gray-100 text-gray-900 border-blue-500"
+                    : "border-transparent",
+                )}
+              >
+                Applications
+              </Link>
               {!isLoading && !session && (
                 <li>
                   <Link
