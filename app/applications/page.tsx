@@ -1,4 +1,3 @@
-"use client"
 import { CardFooter } from "@/components/ui/card"
 import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
@@ -21,35 +20,29 @@ export default async function ApplicationsPage() {
   const userId = Number.parseInt(session.user.id)
 
   // Get user's applications
-  let userApplications
-  try {
-    userApplications = await prisma.application.findMany({
-      where: {
-        userId,
-      },
-      include: {
-        template: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching user applications:", error)
-    userApplications = [] // Provide a default empty array in case of error
-  }
+  const userApplications = await prisma.application.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      template: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  })
 
   // Get available templates
   const availableTemplates = await getAvailableTemplates()
 
   return (
-    <div className="container max-w-4xl py-8 space-y-8">
+    <div className="container max-w-6xl py-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Department Applications</h1>
         <p className="text-muted-foreground mt-2">Apply to join departments or check your application status</p>
       </div>
 
-      {userApplications && userApplications.length > 0 && (
+      {userApplications.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Your Applications</h2>
           <div className="grid gap-4 md:grid-cols-2">
@@ -85,20 +78,18 @@ export default async function ApplicationsPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {availableTemplates.map((template) => {
               // Check if user already has a pending application for this template
-              const existingApplication =
-                userApplications &&
-                userApplications.find((app) => app.templateId === template.id && app.status === "PENDING")
+              const existingApplication = userApplications.find(
+                (app) => app.templateId === template.id && app.status === "PENDING",
+              )
 
               // Check if user is in cooldown for this template's department
-              const inCooldown =
-                userApplications &&
-                userApplications.some(
-                  (app) =>
-                    app.template.departmentId === template.departmentId &&
-                    app.status === "DENIED" &&
-                    app.cooldownUntil &&
-                    new Date(app.cooldownUntil) > new Date(),
-                )
+              const inCooldown = userApplications.some(
+                (app) =>
+                  app.template.departmentId === template.departmentId &&
+                  app.status === "DENIED" &&
+                  app.cooldownUntil &&
+                  new Date(app.cooldownUntil) > new Date(),
+              )
 
               return (
                 <Card key={template.id}>
