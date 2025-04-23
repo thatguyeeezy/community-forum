@@ -292,72 +292,82 @@ export async function updateInterviewStatus(
   applicationId: number,
   interviewStatus: "SCHEDULED" | "COMPLETED" | "FAILED",
 ) {
-  const session = await getServerSession(authOptions)
+  try {
+    const session = await getServerSession(authOptions)
 
-  if (!session?.user || !["ADMIN", "RNR"].includes(session.user.role)) {
-    throw new Error("You don't have permission to update interview status")
+    if (!session?.user || !["ADMIN", "RNR"].includes(session.user.role)) {
+      throw new Error("You don't have permission to update interview status")
+    }
+
+    // Update the application
+    const application = await prisma.application.update({
+      where: {
+        id: applicationId,
+      },
+      data: {
+        interviewStatus,
+      },
+    })
+
+    revalidatePath(`/rnr/applications/${applicationId}`)
+    revalidatePath("/rnr/applications")
+    return application
+  } catch (error) {
+    console.error("Error updating interview status:", error)
+    throw error
   }
-
-  // Update the application
-  const application = await prisma.applicationSubmission.update({
-    where: {
-      id: applicationId,
-    },
-    data: {
-      interviewStatus,
-    },
-  })
-
-  revalidatePath(`/rnr/applications/${applicationId}`)
-  revalidatePath("/rnr/applications")
-  return application
 }
 
 // Get application by ID
 export async function getApplication(id: number) {
-  const session = await getServerSession(authOptions)
+  try {
+    const session = await getServerSession(authOptions)
 
-  if (!session?.user) {
-    throw new Error("You must be logged in to view applications")
-  }
-
-  const userId = Number.parseInt(session.user.id)
-  const isStaff = ["ADMIN", "RNR"].includes(session.user.role)
-
-  // If user is not staff, they can only view their own applications
-  if (!isStaff) {
-    const application = await prisma.applicationSubmission.findFirst({
-      where: {
-        id,
-        userId,
-      },
-      include: {
-        template: true,
-        reviewer: {
-          select: {
-            name: true,
-            image: true,
-          },
-        },
-      },
-    })
-
-    if (!application) {
-      throw new Error("Application not found or you don't have permission to view it")
+    if (!session?.user) {
+      throw new Error("You must be logged in to view applications")
     }
 
-    return application
-  }
+    const userId = Number.parseInt(session.user.id)
+    const isStaff = ["ADMIN", "RNR"].includes(session.user.role)
 
-  // Staff can view any application
-  return await prisma.applicationSubmission.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      user: true,
-      template: true,
-      reviewer: true,
-    },
-  })
+    // If user is not staff, they can only view their own applications
+    if (!isStaff) {
+      const application = await prisma.application.findFirst({
+        where: {
+          id,
+          userId,
+        },
+        include: {
+          template: true,
+          reviewer: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+        },
+      })
+
+      if (!application) {
+        throw new Error("Application not found or you don't have permission to view it")
+      }
+
+      return application
+    }
+
+    // Staff can view any application
+    return await prisma.application.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        user: true,
+        template: true,
+        reviewer: true,
+      },
+    })
+  } catch (error) {
+    console.error("Error retrieving application:", error)
+    throw error
+  }
 }
