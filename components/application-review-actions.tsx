@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { reviewApplication, recordInterview } from "@/app/actions/application"
 import { CheckCircle, XCircle, Clock, CheckCheck, AlertTriangle, Calendar } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-import { format } from "date-fns"
+import { format, formatInTimeZone } from "date-fns-tz"
 
 interface ApplicationReviewActionsProps {
   application: {
@@ -22,6 +22,12 @@ interface ApplicationReviewActionsProps {
 export function ApplicationReviewActions({ application }: ApplicationReviewActionsProps) {
   const [note, setNote] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  // Set isClient to true when component mounts on client
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const { id: applicationId, status, interviewStatus, cooldownUntil, interviewFailedAt } = application
 
@@ -67,9 +73,24 @@ export function ApplicationReviewActions({ application }: ApplicationReviewActio
     }
   }
 
-  // Check if cooldown has passed
+  // Format date for display - only on client to avoid hydration mismatch
+  const formatDateWithTimezone = (date: Date | null | undefined) => {
+    if (!date || !isClient) return "Loading..."
+
+    const localTime = format(date, "PPP 'at' p")
+    const estTime = formatInTimeZone(date, "America/New_York", "p z")
+
+    return (
+      <div>
+        <div>{localTime}</div>
+        <div className="text-xs text-gray-400">{estTime}</div>
+      </div>
+    )
+  }
+
+  // Check if cooldown has passed - only on client
   const now = new Date()
-  const cooldownPassed = cooldownUntil ? cooldownUntil < now : true
+  const cooldownPassed = isClient && cooldownUntil ? cooldownUntil < now : false
 
   // Count interview failures (simple check based on interviewFailedAt)
   const hasFailedInterview = !!interviewFailedAt
@@ -219,8 +240,8 @@ export function ApplicationReviewActions({ application }: ApplicationReviewActio
             </div>
             <div className="flex items-center text-gray-300">
               <Calendar className="mr-2 h-4 w-4 text-amber-400" />
-              <span>
-                Next interview available on: <strong>{format(cooldownUntil, "PPP 'at' p")}</strong>
+              <span className="flex flex-col">
+                Next interview available on: <strong>{formatDateWithTimezone(cooldownUntil)}</strong>
               </span>
             </div>
           </CardContent>

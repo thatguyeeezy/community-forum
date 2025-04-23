@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth/next"
 import Link from "next/link"
-import { format } from "date-fns"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { hasRnRPermission } from "@/lib/roles"
@@ -79,7 +78,8 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
               <CardHeader>
                 <CardTitle className="text-gray-100">Application Responses</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Submitted on {format(new Date(application.createdAt), "PPP 'at' p")}
+                  {/* Use a client component for date formatting or simple string */}
+                  Submitted on {application.createdAt.toISOString()}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -116,7 +116,10 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                           <User className="h-4 w-4 text-gray-400" />
                           <span className="font-medium text-gray-200">{note.author.name}</span>
                         </div>
-                        <div className="text-sm text-gray-400">{format(new Date(note.createdAt), "PPP 'at' p")}</div>
+                        <div className="text-sm text-gray-400">
+                          {/* Use ISO string for consistent rendering */}
+                          {note.createdAt.toISOString()}
+                        </div>
                       </div>
                       <p className="rounded-md bg-gray-700 p-3 whitespace-pre-wrap text-gray-300">{note.content}</p>
                     </div>
@@ -150,7 +153,8 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                       <Calendar className="h-4 w-4 text-gray-400" />
                       <span className="text-gray-300">Submitted</span>
                     </div>
-                    <span className="text-gray-200">{format(new Date(application.createdAt), "PPP")}</span>
+                    {/* Use ISO string for consistent rendering */}
+                    <span className="text-gray-200">{application.createdAt.toISOString().split("T")[0]}</span>
                   </div>
                   {application.cooldownUntil && (
                     <div className="flex items-center justify-between">
@@ -158,7 +162,8 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                         <Clock className="h-4 w-4 text-gray-400" />
                         <span className="text-gray-300">Cooldown Until</span>
                       </div>
-                      <span className="text-gray-200">{format(new Date(application.cooldownUntil), "PPP")}</span>
+                      {/* Use ISO string for consistent rendering */}
+                      <span className="text-gray-200">{application.cooldownUntil.toISOString().split("T")[0]}</span>
                     </div>
                   )}
                   {application.interviewFailedAt && (
@@ -167,7 +172,8 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                         <AlertTriangle className="h-4 w-4 text-amber-400" />
                         <span className="text-gray-300">Failed Interview</span>
                       </div>
-                      <span className="text-gray-200">{format(new Date(application.interviewFailedAt), "PPP")}</span>
+                      {/* Use ISO string for consistent rendering */}
+                      <span className="text-gray-200">{application.interviewFailedAt.toISOString().split("T")[0]}</span>
                     </div>
                   )}
                 </div>
