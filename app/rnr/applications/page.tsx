@@ -37,17 +37,23 @@ export default async function ApplicationsPage({
   }
 
   // Get applications with pagination
-  const applications = await prisma.application.findMany({
-    skip,
-    take: pageSize,
-    where: filter,
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: true,
-      template: true,
-      reviewer: true,
-    },
-  })
+  let applications
+  try {
+    applications = await prisma.application.findMany({
+      skip,
+      take: pageSize,
+      where: filter,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: true,
+        template: true,
+        reviewer: true,
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching applications:", error)
+    applications = [] // Provide a default empty array in case of error
+  }
 
   // Get total count for pagination
   const totalCount = await prisma.application.count({
@@ -72,12 +78,12 @@ export default async function ApplicationsPage({
           <h1 className="text-3xl font-bold tracking-tight">Applications</h1>
           <p className="text-muted-foreground">Review and manage department applications</p>
         </div>
-        <Button asChild>
-          <Link href="/rnr/applications/templates">
+        <Link href="/rnr/applications/templates/new">
+          <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
             New Template
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
 
       <Card>
@@ -133,7 +139,7 @@ export default async function ApplicationsPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {applications.length > 0 ? (
+          {applications && applications.length > 0 ? (
             <>
               <div className="rounded-md border">
                 <div className="grid grid-cols-6 p-4 font-medium">
