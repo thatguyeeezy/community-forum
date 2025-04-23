@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { reviewApplication, recordInterview } from "@/app/actions/application"
 import { CheckCircle, XCircle, Clock, CheckCheck, AlertTriangle, Calendar } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-import { format, formatInTimeZone } from "date-fns-tz"
+import { format } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
 
 interface ApplicationReviewActionsProps {
   application: {
@@ -77,13 +78,23 @@ export function ApplicationReviewActions({ application }: ApplicationReviewActio
   const formatDateWithTimezone = (date: Date | null | undefined) => {
     if (!date || !isClient) return "Loading..."
 
-    const localTime = format(date, "PPP 'at' p")
-    const estTime = formatInTimeZone(date, "America/New_York", "p z")
+    // Get user's timezone abbreviation
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const userTimezoneAbbr =
+      new Intl.DateTimeFormat("en", { timeZoneName: "short" })
+        .formatToParts(date)
+        .find((part) => part.type === "timeZoneName")?.value || userTimezone
+
+    // Format local time: MM/DD/YYYY h:mm A (Timezone)
+    const localTime = `${format(date, "MM/dd/yyyy h:mm a")} (${userTimezoneAbbr})`
+
+    // Format EST time: MM/DD/YYYY h:mm A (EST)
+    const estTime = `${formatInTimeZone(date, "America/New_York", "MM/dd/yyyy h:mm a")} (EST)`
 
     return (
       <div>
         <div>{localTime}</div>
-        <div className="text-xs text-gray-400">{estTime}</div>
+        <div className="text-xs text-gray-400 mt-1">{estTime}</div>
       </div>
     )
   }
@@ -240,7 +251,7 @@ export function ApplicationReviewActions({ application }: ApplicationReviewActio
             </div>
             <div className="flex items-center text-gray-300">
               <Calendar className="mr-2 h-4 w-4 text-amber-400" />
-              <span className="flex flex-col">
+              <span>
                 Next interview available on: <strong>{formatDateWithTimezone(cooldownUntil)}</strong>
               </span>
             </div>
