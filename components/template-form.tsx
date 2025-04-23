@@ -17,7 +17,7 @@ import { Loader2, Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from "lucide-
 import { createTemplate, updateTemplate } from "@/app/actions/template"
 
 // Define department options
-const DEPARTMENTS = ["BSFR", "BSO", "MPD", "FHP", "COMMS", "FWC", "CIV", "RNR"]
+const DEPARTMENTS = ["BSFR", "BSO", "MPD", "FHP", "COMMS", "FWC", "CIV", "FDLE", "DEV", "RNR", "LEADERSHIP"]
 
 // Define question types
 const QUESTION_TYPES = [

@@ -186,4 +186,9 @@ export async function deleteTemplate(id: number) {
   return true
 }
 
+// Replace empty object with async function
+export async function _templateActionsDummy() {
+  return null
+}
+
 export default {}
