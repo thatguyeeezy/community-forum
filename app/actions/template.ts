@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import { canOverrideRnRDecisions } from "@/lib/roles"
 
 interface QuestionData {
