@@ -9,11 +9,11 @@ import { getAvailableTemplates } from "@/app/actions/application"
 import { FileText, ArrowRight } from "lucide-react"
 import dynamic from "next/dynamic"
 import { authOptions } from "@/lib/auth"
-
-const getPrisma = dynamic(
+import { prisma } from "@/lib/db"
+const DynamicPrisma = dynamic(
   async () => {
-    const { prisma } = await import("@/lib/prisma")
-    return prisma
+    const { getAvailableTemplates } = await import("@/app/actions/application")
+    return { getAvailableTemplates }
   },
   { ssr: false },
 )
@@ -30,7 +30,6 @@ export default async function ApplicationsPage() {
   // Get user's applications
   let userApplications
   try {
-    const prisma = await getPrisma()
     userApplications = await prisma.application.findMany({
       where: {
         userId,
