@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
 import { ApplicationReviewActions } from "@/components/application-review-actions"
-import { ArrowLeft, Clock, User, Calendar, FileText } from "lucide-react"
+import { ArrowLeft, Clock, User, Calendar, FileText, AlertTriangle } from "lucide-react"
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
   try {
@@ -161,15 +161,20 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                       <span className="text-gray-200">{format(new Date(application.cooldownUntil), "PPP")}</span>
                     </div>
                   )}
+                  {application.interviewFailedAt && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-400" />
+                        <span className="text-gray-300">Failed Interview</span>
+                      </div>
+                      <span className="text-gray-200">{format(new Date(application.interviewFailedAt), "PPP")}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
-            <ApplicationReviewActions
-              applicationId={application.id}
-              status={application.status}
-              interviewStatus={application.interviewStatus}
-            />
+            <ApplicationReviewActions application={application} />
           </div>
         </div>
       </div>

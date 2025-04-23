@@ -315,27 +315,53 @@ export async function recordInterview(applicationId: number, result: "completed"
       throw new Error("Application not found")
     }
 
-    if (application.status !== "ACCEPTED" || application.interviewStatus !== "AWAITING_INTERVIEW") {
-      throw new Error("This application is not awaiting an interview")
+    // Check if this is a valid state for recording an interview
+    const validState =
+      application.status === "ACCEPTED" &&
+      (application.interviewStatus === "AWAITING_INTERVIEW" ||
+        (application.interviewStatus === "INTERVIEW_FAILED" &&
+          application.cooldownUntil &&
+          application.cooldownUntil < new Date()))
+
+    if (!validState) {
+      throw new Error("This application is not ready for an interview")
     }
+
+    // Count previous interview failures
+    const interviewFailCount = application.interviewFailedAt ? 1 : 0
 
     // Update the application status
     const updatedApplication = await prisma.application.update({
       where: { id: applicationId },
       data: {
-        status: result === "completed" ? "COMPLETED" : "ACCEPTED",
-        interviewStatus: result === "completed" ? "INTERVIEW_COMPLETED" : "INTERVIEW_FAILED",
-        interviewCompletedAt: result === "completed" ? new Date() : undefined,
-        interviewFailedAt: result === "failed" ? new Date() : undefined,
+        // If completed, mark as COMPLETED
+        // If failed for the second time, mark as DENIED
+        // Otherwise, keep as ACCEPTED
+        status: result === "completed" ? "COMPLETED" : interviewFailCount >= 1 ? "DENIED" : "ACCEPTED",
+
+        // Update interview status
+        interviewStatus:
+          result === "completed" ? "INTERVIEW_COMPLETED" : interviewFailCount >= 1 ? null : "INTERVIEW_FAILED",
+
+        // Update timestamps
+        interviewCompletedAt: result === "completed" ? new Date() : application.interviewCompletedAt,
+        interviewFailedAt: result === "failed" ? new Date() : application.interviewFailedAt,
+
+        // Set cooldown - 7 days for first failure, no cooldown for second failure (application is denied)
         cooldownUntil:
-          result === "failed"
-            ? new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+          result === "failed" && interviewFailCount === 0
+            ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
             : undefined,
+
+        // Add note
         notes: note
           ? {
               create: {
                 authorId: userId,
-                content: note,
+                content:
+                  interviewFailCount >= 1 && result === "failed"
+                    ? `Interview failed for the second time. Application denied. ${note}`
+                    : note,
               },
             }
           : undefined,

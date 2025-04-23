@@ -5,18 +5,25 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { reviewApplication, recordInterview } from "@/app/actions/application"
-import { CheckCircle, XCircle, Clock, CheckCheck, AlertTriangle } from "lucide-react"
+import { CheckCircle, XCircle, Clock, CheckCheck, AlertTriangle, Calendar } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
+import { format } from "date-fns"
 
 interface ApplicationReviewActionsProps {
-  applicationId: number
-  status: string
-  interviewStatus?: string | null
+  application: {
+    id: number
+    status: string
+    interviewStatus?: string | null
+    cooldownUntil?: Date | null
+    interviewFailedAt?: Date | null
+  }
 }
 
-export function ApplicationReviewActions({ applicationId, status, interviewStatus }: ApplicationReviewActionsProps) {
+export function ApplicationReviewActions({ application }: ApplicationReviewActionsProps) {
   const [note, setNote] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { id: applicationId, status, interviewStatus, cooldownUntil, interviewFailedAt } = application
 
   const handleReview = async (action: "accept" | "deny") => {
     try {
@@ -60,7 +67,14 @@ export function ApplicationReviewActions({ applicationId, status, interviewStatu
     }
   }
 
-  // Render different actions based on application status
+  // Check if cooldown has passed
+  const now = new Date()
+  const cooldownPassed = cooldownUntil ? cooldownUntil < now : true
+
+  // Count interview failures (simple check based on interviewFailedAt)
+  const hasFailedInterview = !!interviewFailedAt
+
+  // Render different actions based on application status and cooldown
   if (status === "PENDING") {
     return (
       <Card className="border-l-4 border-amber-500 bg-gray-800 shadow">
@@ -135,7 +149,86 @@ export function ApplicationReviewActions({ applicationId, status, interviewStatu
         </CardFooter>
       </Card>
     )
+  } else if (status === "ACCEPTED" && interviewStatus === "INTERVIEW_FAILED" && cooldownUntil) {
+    // Interview failed and in cooldown
+    if (cooldownPassed) {
+      // Cooldown has passed, show interview actions again
+      return (
+        <Card className="border-l-4 border-amber-500 bg-gray-800 shadow">
+          <CardHeader>
+            <CardTitle className="text-gray-100">Record Second Interview</CardTitle>
+            <CardDescription className="text-gray-400">
+              {hasFailedInterview
+                ? "This is the applicant's second interview attempt. If they fail again, the application will be denied."
+                : "Record the result of the interview"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 p-3 bg-amber-900/30 border border-amber-700/50 rounded-md text-amber-200 text-sm">
+              <div className="flex items-center">
+                <AlertTriangle className="mr-2 h-4 w-4 text-amber-400" />
+                <span>The applicant previously failed an interview. This is their second chance.</span>
+              </div>
+            </div>
+            <Textarea
+              placeholder="Add interview notes (optional)"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="mb-4 bg-gray-700 border-gray-600 text-gray-200 placeholder:text-gray-400"
+            />
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button
+              variant="destructive"
+              onClick={() => handleInterview("failed")}
+              disabled={isSubmitting}
+              className="flex items-center"
+            >
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Failed (Final)
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => handleInterview("completed")}
+              disabled={isSubmitting}
+              className="flex items-center bg-blue-600 hover:bg-blue-700"
+            >
+              <CheckCheck className="mr-2 h-4 w-4" />
+              Completed
+            </Button>
+          </CardFooter>
+        </Card>
+      )
+    } else {
+      // Still in cooldown
+      return (
+        <Card className="border-l-4 border-amber-500 bg-gray-800 shadow">
+          <CardHeader>
+            <CardTitle className="text-gray-100">Interview Cooldown</CardTitle>
+            <CardDescription className="text-gray-400">
+              The applicant must wait before their next interview
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center text-gray-300 mb-4">
+              <Clock className="mr-2 h-4 w-4 text-amber-400" />
+              <span>
+                The applicant failed their interview and must wait until the cooldown period ends before attempting
+                another interview.
+              </span>
+            </div>
+            <div className="flex items-center text-gray-300">
+              <Calendar className="mr-2 h-4 w-4 text-amber-400" />
+              <span>
+                Next interview available on: <strong>{format(cooldownUntil, "PPP 'at' p")}</strong>
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
   } else {
+    // Application is completed, denied, or in another final state
     return (
       <Card className="border-l-4 border-gray-500 bg-gray-800 shadow">
         <CardHeader>
