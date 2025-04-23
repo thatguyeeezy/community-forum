@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { prisma } from "@/lib/prisma" // Fixed import
 import { PlusCircle, Edit, ToggleLeft, ToggleRight } from "lucide-react"
 import { canOverrideRnRDecisions } from "@/lib/roles"
 
