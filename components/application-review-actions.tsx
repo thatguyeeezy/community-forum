@@ -3,36 +3,35 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { reviewApplication, recordInterview } from "@/app/actions/application"
-import { CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import { CheckCircle, XCircle, Clock, CheckCheck, AlertTriangle } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
 
 interface ApplicationReviewActionsProps {
-  application: {
-    id: number
-    status: string
-    interviewStatus: string | null
-  }
+  applicationId: number
+  status: string
+  interviewStatus?: string | null
 }
 
-export function ApplicationReviewActions({ application }: ApplicationReviewActionsProps) {
+export function ApplicationReviewActions({ applicationId, status, interviewStatus }: ApplicationReviewActionsProps) {
   const [note, setNote] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
 
   const handleReview = async (action: "accept" | "deny") => {
-    setIsSubmitting(true)
     try {
-      await reviewApplication(application.id, action, note)
+      setIsSubmitting(true)
+      await reviewApplication(applicationId, action, note)
       toast({
         title: action === "accept" ? "Application accepted" : "Application denied",
         description: "The application has been updated successfully.",
       })
-      setNote("")
+      // Refresh the page to show updated status
+      window.location.reload()
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description: error instanceof Error ? error.message : "An error occurred while reviewing the application",
         variant: "destructive",
       })
     } finally {
@@ -41,18 +40,19 @@ export function ApplicationReviewActions({ application }: ApplicationReviewActio
   }
 
   const handleInterview = async (result: "completed" | "failed") => {
-    setIsSubmitting(true)
     try {
-      await recordInterview(application.id, result, note)
+      setIsSubmitting(true)
+      await recordInterview(applicationId, result, note)
       toast({
         title: result === "completed" ? "Interview completed" : "Interview failed",
-        description: "The interview status has been updated successfully.",
+        description: "The interview result has been recorded.",
       })
-      setNote("")
+      // Refresh the page to show updated status
+      window.location.reload()
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description: error instanceof Error ? error.message : "An error occurred while recording the interview result",
         variant: "destructive",
       })
     } finally {
@@ -61,62 +61,94 @@ export function ApplicationReviewActions({ application }: ApplicationReviewActio
   }
 
   // Render different actions based on application status
-  if (application.status === "PENDING") {
+  if (status === "PENDING") {
     return (
-      <div className="space-y-4">
-        <Textarea
-          placeholder="Add a note (optional)"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          className="min-h-[100px]"
-        />
-        <div className="flex space-x-2">
-          <Button onClick={() => handleReview("accept")} disabled={isSubmitting} className="flex-1">
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Accept
-          </Button>
-          <Button onClick={() => handleReview("deny")} variant="destructive" disabled={isSubmitting} className="flex-1">
+      <Card>
+        <CardHeader>
+          <CardTitle>Review Application</CardTitle>
+          <CardDescription>Accept or deny this application</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="Add a note (optional)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="mb-4"
+          />
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button
+            variant="destructive"
+            onClick={() => handleReview("deny")}
+            disabled={isSubmitting}
+            className="flex items-center"
+          >
             <XCircle className="mr-2 h-4 w-4" />
             Deny
           </Button>
-        </div>
-      </div>
-    )
-  }
-
-  if (application.status === "ACCEPTED" && application.interviewStatus === "AWAITING_INTERVIEW") {
-    return (
-      <div className="space-y-4">
-        <Textarea
-          placeholder="Add a note about the interview (optional)"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          className="min-h-[100px]"
-        />
-        <div className="flex space-x-2">
-          <Button onClick={() => handleInterview("completed")} disabled={isSubmitting} className="flex-1">
+          <Button
+            variant="default"
+            onClick={() => handleReview("accept")}
+            disabled={isSubmitting}
+            className="flex items-center"
+          >
             <CheckCircle className="mr-2 h-4 w-4" />
-            Interview Completed
+            Accept
+          </Button>
+        </CardFooter>
+      </Card>
+    )
+  } else if (status === "ACCEPTED" && interviewStatus === "AWAITING_INTERVIEW") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Record Interview</CardTitle>
+          <CardDescription>Record the result of the interview</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="Add interview notes (optional)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="mb-4"
+          />
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button
+            variant="destructive"
+            onClick={() => handleInterview("failed")}
+            disabled={isSubmitting}
+            className="flex items-center"
+          >
+            <AlertTriangle className="mr-2 h-4 w-4" />
+            Failed
           </Button>
           <Button
-            onClick={() => handleInterview("failed")}
-            variant="destructive"
+            variant="default"
+            onClick={() => handleInterview("completed")}
             disabled={isSubmitting}
-            className="flex-1"
+            className="flex items-center"
           >
-            <XCircle className="mr-2 h-4 w-4" />
-            Interview Failed
+            <CheckCheck className="mr-2 h-4 w-4" />
+            Completed
           </Button>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
+    )
+  } else {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Application Status</CardTitle>
+          <CardDescription>This application has been processed</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center text-muted-foreground">
+            <Clock className="mr-2 h-4 w-4" />
+            <span>No further actions required</span>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
-
-  // For completed or denied applications
-  return (
-    <div className="p-4 bg-muted rounded-md text-center">
-      <AlertCircle className="mx-auto h-6 w-6 text-muted-foreground mb-2" />
-      <p className="text-muted-foreground">No actions available for this application status.</p>
-    </div>
-  )
 }

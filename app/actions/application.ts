@@ -131,6 +131,52 @@ export async function submitApplication(templateId: number, responses: { questio
   return application
 }
 
+// Get available application templates
+export async function getAvailableTemplates() {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to view application templates")
+  }
+
+  const userId = Number.parseInt(session.user.id)
+
+  // Get user role
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  })
+
+  if (!user) {
+    throw new Error("User not found")
+  }
+
+  // If user is an applicant, they can only apply to CIV and BSFR
+  const departmentFilter = user.role === "APPLICANT" ? { departmentId: { in: ["CIV", "BSFR"] } } : {}
+
+  // Get active templates
+  const templates = await prisma.applicationTemplate.findMany({
+    where: {
+      active: true,
+      ...departmentFilter,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  })
+
+  return templates
+}
+
+// Get application template by ID
+export async function getApplicationTemplate(id: number) {
+  return await prisma.applicationTemplate.findUnique({
+    where: {
+      id,
+    },
+  })
+}
+
 // Review an application (accept or deny)
 export async function reviewApplication(applicationId: number, action: "accept" | "deny", note?: string) {
   const session = await getServerSession(authOptions)
@@ -241,39 +287,77 @@ export async function recordInterview(applicationId: number, result: "completed"
   return updatedApplication
 }
 
-// Get available application templates for a user
-export async function getAvailableTemplates() {
+// Update interview status
+export async function updateInterviewStatus(
+  applicationId: number,
+  interviewStatus: "SCHEDULED" | "COMPLETED" | "FAILED",
+) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user?.id) {
-    throw new Error("You must be logged in to view application templates")
+  if (!session?.user || !["ADMIN", "RNR"].includes(session.user.role)) {
+    throw new Error("You don't have permission to update interview status")
+  }
+
+  // Update the application
+  const application = await prisma.applicationSubmission.update({
+    where: {
+      id: applicationId,
+    },
+    data: {
+      interviewStatus,
+    },
+  })
+
+  revalidatePath(`/rnr/applications/${applicationId}`)
+  revalidatePath("/rnr/applications")
+  return application
+}
+
+// Get application by ID
+export async function getApplication(id: number) {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user) {
+    throw new Error("You must be logged in to view applications")
   }
 
   const userId = Number.parseInt(session.user.id)
+  const isStaff = ["ADMIN", "RNR"].includes(session.user.role)
 
-  // Get user role
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  })
+  // If user is not staff, they can only view their own applications
+  if (!isStaff) {
+    const application = await prisma.applicationSubmission.findFirst({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        template: true,
+        reviewer: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    })
 
-  if (!user) {
-    throw new Error("User not found")
+    if (!application) {
+      throw new Error("Application not found or you don't have permission to view it")
+    }
+
+    return application
   }
 
-  // If user is an applicant, they can only apply to CIV and BSFR
-  const departmentFilter = user.role === "APPLICANT" ? { departmentId: { in: ["CIV", "BSFR"] } } : {}
-
-  // Get active templates
-  const templates = await prisma.applicationTemplate.findMany({
+  // Staff can view any application
+  return await prisma.applicationSubmission.findUnique({
     where: {
-      active: true,
-      ...departmentFilter,
+      id,
     },
-    orderBy: {
-      name: "asc",
+    include: {
+      user: true,
+      template: true,
+      reviewer: true,
     },
   })
-
-  return templates
 }

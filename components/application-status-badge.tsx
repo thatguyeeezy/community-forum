@@ -1,34 +1,49 @@
 import { Badge } from "@/components/ui/badge"
-import type { ApplicationStatus, InterviewStatus } from "@prisma/client"
+
+type ApplicationStatus = "PENDING" | "ACCEPTED" | "DENIED" | "COMPLETED" | "CANCELLED"
+type InterviewStatus = "AWAITING_INTERVIEW" | "INTERVIEW_COMPLETED" | "INTERVIEW_FAILED" | null
 
 interface ApplicationStatusBadgeProps {
   status: ApplicationStatus
-  interviewStatus?: InterviewStatus | null
+  interviewStatus?: InterviewStatus
 }
 
 export function ApplicationStatusBadge({ status, interviewStatus }: ApplicationStatusBadgeProps) {
-  if (status === "PENDING") {
-    return <Badge className="bg-amber-500 hover:bg-amber-600">Pending</Badge>
+  // Determine badge variant and text based on status and interviewStatus
+  let variant: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "success" | "warning" | null =
+    null
+  let text = status
+
+  switch (status) {
+    case "PENDING":
+      variant = "secondary"
+      text = "Pending Review"
+      break
+    case "ACCEPTED":
+      if (interviewStatus === "AWAITING_INTERVIEW") {
+        variant = "warning"
+        text = "Awaiting Interview"
+      } else if (interviewStatus === "INTERVIEW_FAILED") {
+        variant = "destructive"
+        text = "Interview Failed"
+      } else {
+        variant = "warning"
+        text = "Accepted"
+      }
+      break
+    case "DENIED":
+      variant = "destructive"
+      text = "Denied"
+      break
+    case "COMPLETED":
+      variant = "success"
+      text = "Completed"
+      break
+    case "CANCELLED":
+      variant = "outline"
+      text = "Cancelled"
+      break
   }
 
-  if (status === "ACCEPTED") {
-    if (interviewStatus === "AWAITING_INTERVIEW") {
-      return <Badge className="bg-blue-500 hover:bg-blue-600">Awaiting Interview</Badge>
-    }
-    return <Badge className="bg-blue-500 hover:bg-blue-600">Accepted</Badge>
-  }
-
-  if (status === "COMPLETED") {
-    return <Badge className="bg-green-500 hover:bg-green-600">Completed</Badge>
-  }
-
-  if (status === "DENIED") {
-    return <Badge className="bg-red-500 hover:bg-red-600">Denied</Badge>
-  }
-
-  if (status === "CANCELLED") {
-    return <Badge className="bg-gray-500 hover:bg-gray-600">Cancelled</Badge>
-  }
-
-  return <Badge>Unknown</Badge>
+  return <Badge variant={variant}>{text}</Badge>
 }
