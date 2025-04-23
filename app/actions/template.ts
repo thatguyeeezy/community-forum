@@ -186,9 +186,7 @@ export async function deleteTemplate(id: number) {
   return true
 }
 
-// Replace empty object with async function
-export async function _templateActionsDummy() {
+// Default export as an async function to satisfy "use server" requirements
+export default async function templateActionsDefault() {
   return null
 }
-
-export default {}
