@@ -3,26 +3,31 @@
 import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import { hasRnRPermission } from "@/lib/roles"
 
 // Helper function to check if user can submit application
 async function canSubmitApplication(userId: number, departmentId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  })
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    })
 
-  // If user is not found, they can't submit
-  if (!user) return false
+    // If user is not found, they can't submit
+    if (!user) return false
 
-  // If department is CIV or BSFR, applicants can apply
-  if (departmentId === "CIV" || departmentId === "BSFR") {
-    return true
+    // If department is CIV or BSFR, applicants can apply
+    if (departmentId === "CIV" || departmentId === "BSFR") {
+      return true
+    }
+
+    // For other departments, user must be at least a MEMBER
+    return user.role !== "APPLICANT"
+  } catch (error) {
+    console.error("Error checking if user can submit application:", error)
+    return false
   }
-
-  // For other departments, user must be at least a MEMBER
-  return user.role !== "APPLICANT"
 }
 
 // Helper function to calculate cooldown period
@@ -51,240 +56,301 @@ function calculateCooldownPeriod(denialCount: number): Date | null {
 
 // Submit a new application
 export async function submitApplication(templateId: number, responses: { questionId: number; response: string }[]) {
-  const session = await getServerSession(authOptions)
+  try {
+    const session = await getServerSession(authOptions)
 
-  if (!session?.user?.id) {
-    throw new Error("You must be logged in to submit an application")
-  }
+    if (!session?.user?.id) {
+      throw new Error("You must be logged in to submit an application")
+    }
 
-  const userId = Number.parseInt(session.user.id)
+    // Validate userId
+    if (isNaN(Number(session.user.id))) {
+      throw new Error("Invalid user ID")
+    }
 
-  // Get the template to check department
-  const template = await prisma.applicationTemplate.findUnique({
-    where: { id: templateId },
-  })
+    const userId = Number.parseInt(session.user.id)
 
-  if (!template) {
-    throw new Error("Application template not found")
-  }
+    // Get the template to check department
+    const template = await prisma.applicationTemplate.findUnique({
+      where: { id: templateId },
+    })
 
-  // Check if user can apply to this department
-  const canApply = await canSubmitApplication(userId, template.departmentId)
+    if (!template) {
+      throw new Error("Application template not found")
+    }
 
-  if (!canApply) {
-    throw new Error("You are not eligible to apply for this department")
-  }
+    // Check if user can apply to this department
+    const canApply = await canSubmitApplication(userId, template.departmentId)
 
-  // Check if user has any pending applications for this department
-  const pendingApplication = await prisma.application.findFirst({
-    where: {
-      userId,
-      template: {
-        departmentId: template.departmentId,
+    if (!canApply) {
+      throw new Error("You are not eligible to apply for this department")
+    }
+
+    // Check if user has any pending applications for this department
+    const pendingApplication = await prisma.application.findFirst({
+      where: {
+        userId,
+        template: {
+          departmentId: template.departmentId,
+        },
+        status: "PENDING",
       },
-      status: "PENDING",
-    },
-  })
+    })
 
-  if (pendingApplication) {
-    throw new Error("You already have a pending application for this department")
+    if (pendingApplication) {
+      throw new Error("You already have a pending application for this department")
+    }
+
+    // Check if user is in cooldown period
+    const latestDeniedApplication = await prisma.application.findFirst({
+      where: {
+        userId,
+        template: {
+          departmentId: template.departmentId,
+        },
+        status: "DENIED",
+        cooldownUntil: {
+          gt: new Date(),
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    })
+
+    if (latestDeniedApplication) {
+      throw new Error(`You cannot apply again until ${latestDeniedApplication.cooldownUntil?.toLocaleDateString()}`)
+    }
+
+    // Create the application
+    const application = await prisma.application.create({
+      data: {
+        userId,
+        templateId,
+        status: "PENDING",
+        responses: {
+          create: responses.map((response) => ({
+            questionId: response.questionId,
+            response: response.response,
+            flaggedAsAI: false, // TODO: Implement AI detection
+          })),
+        },
+      },
+    })
+
+    revalidatePath("/applications")
+    return application
+  } catch (error) {
+    console.error("Error submitting application:", error)
+    throw error
   }
-
-  // Check if user is in cooldown period
-  const latestDeniedApplication = await prisma.application.findFirst({
-    where: {
-      userId,
-      template: {
-        departmentId: template.departmentId,
-      },
-      status: "DENIED",
-      cooldownUntil: {
-        gt: new Date(),
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  })
-
-  if (latestDeniedApplication) {
-    throw new Error(`You cannot apply again until ${latestDeniedApplication.cooldownUntil?.toLocaleDateString()}`)
-  }
-
-  // Create the application
-  const application = await prisma.application.create({
-    data: {
-      userId,
-      templateId,
-      status: "PENDING",
-      responses: {
-        create: responses.map((response) => ({
-          questionId: response.questionId,
-          response: response.response,
-          flaggedAsAI: false, // TODO: Implement AI detection
-        })),
-      },
-    },
-  })
-
-  revalidatePath("/applications")
-  return application
 }
 
 // Get available application templates
 export async function getAvailableTemplates() {
-  const session = await getServerSession(authOptions)
+  try {
+    const session = await getServerSession(authOptions)
 
-  if (!session?.user?.id) {
-    throw new Error("You must be logged in to view application templates")
+    if (!session?.user?.id) {
+      throw new Error("You must be logged in to view application templates")
+    }
+
+    // Validate userId
+    if (isNaN(Number(session.user.id))) {
+      throw new Error("Invalid user ID")
+    }
+
+    const userId = Number.parseInt(session.user.id)
+
+    // Get user role
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    })
+
+    if (!user) {
+      throw new Error("User not found")
+    }
+
+    // If user is an applicant, they can only apply to CIV and BSFR
+    const departmentFilter = user.role === "APPLICANT" ? { departmentId: { in: ["CIV", "BSFR"] } } : {}
+
+    // Get active templates
+    const templates = await prisma.applicationTemplate.findMany({
+      where: {
+        active: true,
+        ...departmentFilter,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    })
+
+    return templates
+  } catch (error) {
+    console.error("Error getting available templates:", error)
+    throw error
   }
-
-  const userId = Number.parseInt(session.user.id)
-
-  // Get user role
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  })
-
-  if (!user) {
-    throw new Error("User not found")
-  }
-
-  // If user is an applicant, they can only apply to CIV and BSFR
-  const departmentFilter = user.role === "APPLICANT" ? { departmentId: { in: ["CIV", "BSFR"] } } : {}
-
-  // Get active templates
-  const templates = await prisma.applicationTemplate.findMany({
-    where: {
-      active: true,
-      ...departmentFilter,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  })
-
-  return templates
 }
 
 // Get application template by ID
 export async function getApplicationTemplate(id: number) {
-  return await prisma.applicationTemplate.findUnique({
-    where: {
-      id,
-    },
-  })
+  try {
+    const template = await prisma.applicationTemplate.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!template) {
+      throw new Error("Application template not found")
+    }
+
+    return template
+  } catch (error) {
+    console.error("Error getting application template:", error)
+    throw error
+  }
 }
 
 // Review an application (accept or deny)
 export async function reviewApplication(applicationId: number, action: "accept" | "deny", note?: string) {
-  const session = await getServerSession(authOptions)
+  try {
+    const session = await getServerSession(authOptions)
 
-  if (!session?.user?.id) {
-    throw new Error("You must be logged in to review applications")
+    if (!session?.user?.id) {
+      throw new Error("You must be logged in to review applications")
+    }
+
+    // Validate userId
+    if (isNaN(Number(session.user.id))) {
+      throw new Error("Invalid user ID")
+    }
+
+    const userId = Number.parseInt(session.user.id)
+
+    // Validate user role
+    if (!session.user.role) {
+      throw new Error("User role not found")
+    }
+
+    // Check if user has RNR permissions
+    if (!hasRnRPermission(session.user.role)) {
+      throw new Error("You do not have permission to review applications")
+    }
+
+    // Get the application
+    const application = await prisma.application.findUnique({
+      where: { id: applicationId },
+    })
+
+    if (!application) {
+      throw new Error("Application not found")
+    }
+
+    // Update the application status
+    const updatedApplication = await prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: action === "accept" ? "ACCEPTED" : "DENIED",
+        reviewerId: userId,
+        interviewStatus: action === "accept" ? "AWAITING_INTERVIEW" : null,
+        denialCount: action === "deny" ? { increment: 1 } : undefined,
+        lastDeniedAt: action === "deny" ? new Date() : undefined,
+        cooldownUntil: action === "deny" ? calculateCooldownPeriod(application.denialCount + 1) : undefined,
+        notes: note
+          ? {
+              create: {
+                authorId: userId,
+                content: note,
+              },
+            }
+          : undefined,
+      },
+    })
+
+    // TODO: Update Discord roles if accepted
+
+    revalidatePath(`/rnr/applications/${applicationId}`)
+    revalidatePath("/rnr/applications")
+    return updatedApplication
+  } catch (error) {
+    console.error("Error reviewing application:", error)
+    throw error
   }
-
-  const userId = Number.parseInt(session.user.id)
-
-  // Check if user has RNR permissions
-  if (!hasRnRPermission(session.user.role as string)) {
-    throw new Error("You do not have permission to review applications")
-  }
-
-  // Get the application
-  const application = await prisma.application.findUnique({
-    where: { id: applicationId },
-  })
-
-  if (!application) {
-    throw new Error("Application not found")
-  }
-
-  // Update the application status
-  const updatedApplication = await prisma.application.update({
-    where: { id: applicationId },
-    data: {
-      status: action === "accept" ? "ACCEPTED" : "DENIED",
-      reviewerId: userId,
-      interviewStatus: action === "accept" ? "AWAITING_INTERVIEW" : null,
-      denialCount: action === "deny" ? { increment: 1 } : undefined,
-      lastDeniedAt: action === "deny" ? new Date() : undefined,
-      cooldownUntil: action === "deny" ? calculateCooldownPeriod(application.denialCount + 1) : undefined,
-      notes: note
-        ? {
-            create: {
-              authorId: userId,
-              content: note,
-            },
-          }
-        : undefined,
-    },
-  })
-
-  // TODO: Update Discord roles if accepted
-
-  revalidatePath(`/rnr/applications/${applicationId}`)
-  revalidatePath("/rnr/applications")
-  return updatedApplication
 }
 
 // Record interview result
 export async function recordInterview(applicationId: number, result: "completed" | "failed", note?: string) {
-  const session = await getServerSession(authOptions)
+  try {
+    const session = await getServerSession(authOptions)
 
-  if (!session?.user?.id) {
-    throw new Error("You must be logged in to record interview results")
-  }
+    if (!session?.user?.id) {
+      throw new Error("You must be logged in to record interview results")
+    }
 
-  const userId = Number.parseInt(session.user.id)
+    // Validate userId
+    if (isNaN(Number(session.user.id))) {
+      throw new Error("Invalid user ID")
+    }
 
-  // Check if user has RNR permissions
-  if (!hasRnRPermission(session.user.role as string)) {
-    throw new Error("You do not have permission to record interview results")
-  }
+    const userId = Number.parseInt(session.user.id)
 
-  // Get the application
-  const application = await prisma.application.findUnique({
-    where: { id: applicationId },
-  })
+    // Validate user role
+    if (!session.user.role) {
+      throw new Error("User role not found")
+    }
 
-  if (!application) {
-    throw new Error("Application not found")
-  }
+    // Check if user has RNR permissions
+    if (!hasRnRPermission(session.user.role)) {
+      throw new Error("You do not have permission to record interview results")
+    }
 
-  if (application.status !== "ACCEPTED" || application.interviewStatus !== "AWAITING_INTERVIEW") {
-    throw new Error("This application is not awaiting an interview")
-  }
+    // Get the application
+    const application = await prisma.application.findUnique({
+      where: { id: applicationId },
+    })
 
-  // Update the application status
-  const updatedApplication = await prisma.application.update({
-    where: { id: applicationId },
-    data: {
-      status: result === "completed" ? "COMPLETED" : "ACCEPTED",
-      interviewStatus: result === "completed" ? "INTERVIEW_COMPLETED" : "INTERVIEW_FAILED",
-      interviewCompletedAt: result === "completed" ? new Date() : undefined,
-      interviewFailedAt: result === "failed" ? new Date() : undefined,
-      cooldownUntil:
-        result === "failed"
-          ? new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    if (!application) {
+      throw new Error("Application not found")
+    }
+
+    if (application.status !== "ACCEPTED" || application.interviewStatus !== "AWAITING_INTERVIEW") {
+      throw new Error("This application is not awaiting an interview")
+    }
+
+    // Update the application status
+    const updatedApplication = await prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: result === "completed" ? "COMPLETED" : "ACCEPTED",
+        interviewStatus: result === "completed" ? "INTERVIEW_COMPLETED" : "INTERVIEW_FAILED",
+        interviewCompletedAt: result === "completed" ? new Date() : undefined,
+        interviewFailedAt: result === "failed" ? new Date() : undefined,
+        cooldownUntil:
+          result === "failed"
+            ? new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+            : undefined,
+        notes: note
+          ? {
+              create: {
+                authorId: userId,
+                content: note,
+              },
+            }
           : undefined,
-      notes: note
-        ? {
-            create: {
-              authorId: userId,
-              content: note,
-            },
-          }
-        : undefined,
-    },
-  })
+      },
+    })
 
-  // TODO: Update Discord roles if completed
+    // TODO: Update Discord roles if completed
 
-  revalidatePath(`/rnr/applications/${applicationId}`)
-  revalidatePath("/rnr/applications")
-  return updatedApplication
+    revalidatePath(`/rnr/applications/${applicationId}`)
+    revalidatePath("/rnr/applications")
+    return updatedApplication
+  } catch (error) {
+    console.error("Error recording interview:", error)
+    throw error
+  }
 }
 
 // Update interview status
@@ -295,7 +361,16 @@ export async function updateInterviewStatus(
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user || !["ADMIN", "RNR"].includes(session.user.role)) {
+    if (!session?.user) {
+      throw new Error("You must be logged in to update interview status")
+    }
+
+    // Validate user role
+    if (!session.user.role) {
+      throw new Error("User role not found")
+    }
+
+    if (!["ADMIN", "RNR"].includes(session.user.role)) {
       throw new Error("You don't have permission to update interview status")
     }
 
@@ -309,6 +384,10 @@ export async function updateInterviewStatus(
       },
     })
 
+    if (!application) {
+      throw new Error("Failed to update application")
+    }
+
     revalidatePath(`/rnr/applications/${applicationId}`)
     revalidatePath("/rnr/applications")
     return application
@@ -321,17 +400,35 @@ export async function updateInterviewStatus(
 // Get application by ID
 export async function getApplication(id: number) {
   try {
+    console.log(`Getting application with ID: ${id}`)
+
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {
       throw new Error("You must be logged in to view applications")
     }
 
+    // Validate userId
+    if (!session.user.id || isNaN(Number(session.user.id))) {
+      throw new Error("Invalid user ID")
+    }
+
     const userId = Number.parseInt(session.user.id)
-    const isStaff = ["ADMIN", "RNR"].includes(session.user.role)
+
+    // Validate role
+    const userRole = session.user.role
+    if (!userRole) {
+      throw new Error("User role not found")
+    }
+
+    console.log(`User ID: ${userId}, Role: ${userRole}`)
+
+    const isStaff = ["ADMIN", "RNR"].includes(userRole)
 
     // If user is not staff, they can only view their own applications
     if (!isStaff) {
+      console.log("User is not staff, checking for own application")
+
       const application = await prisma.application.findFirst({
         where: {
           id,
@@ -352,11 +449,14 @@ export async function getApplication(id: number) {
         throw new Error("Application not found or you don't have permission to view it")
       }
 
+      console.log("Found application for non-staff user")
       return application
     }
 
     // Staff can view any application
-    return await prisma.application.findUnique({
+    console.log("User is staff, fetching any application")
+
+    const application = await prisma.application.findUnique({
       where: {
         id,
       },
@@ -366,6 +466,13 @@ export async function getApplication(id: number) {
         reviewer: true,
       },
     })
+
+    if (!application) {
+      throw new Error("Application not found")
+    }
+
+    console.log("Found application for staff user")
+    return application
   } catch (error) {
     console.error("Error retrieving application:", error)
     throw error
