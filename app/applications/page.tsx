@@ -1,15 +1,22 @@
-"use client"
 import { CardFooter } from "@/components/ui/card"
+import Link from "next/link"
 import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
-import Link from "next/link"
-import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
 import { getAvailableTemplates } from "@/app/actions/application"
 import { FileText, ArrowRight } from "lucide-react"
+import dynamic from "next/dynamic"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/db"
+const DynamicPrisma = dynamic(
+  async () => {
+    const { getAvailableTemplates } = await import("@/app/actions/application")
+    return { getAvailableTemplates }
+  },
+  { ssr: false },
+)
 
 export default async function ApplicationsPage() {
   const session = await getServerSession(authOptions)
