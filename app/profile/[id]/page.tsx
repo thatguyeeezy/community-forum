@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -11,10 +13,10 @@ import { Users, Mail, Edit, LogIn, FileText, Clock, CheckCircle, XCircle, ArrowR
 import { Skeleton } from "@/components/ui/skeleton"
 import { EditProfileDialog } from "@/components/edit-profile-dialog"
 import { cn } from "@/lib/utils"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { ApplicationStatusBadge } from "@/components/application-status-badge"
+import type { Role } from "@prisma/client"
 import { ProfileNotifications } from "@/components/profile-notifications"
 import Link from "next/link"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Format the last active time as a relative time
 function formatLastActive(lastActiveDate: string | null): string {
@@ -101,7 +103,7 @@ interface UserProfile {
   email?: string
   image: string
   bio: string
-  role: string
+  role: Role
   rank?: string
   department?: string
   rnrStatus?: string
@@ -134,6 +136,44 @@ function formatDepartmentName(department?: string): string {
     return "NONE"
   }
   return department || "N/A"
+}
+
+interface ApplicationStatusBadgeProps {
+  status: string
+  interviewStatus?: string
+}
+
+const ApplicationStatusBadge: React.FC<ApplicationStatusBadgeProps> = ({ status, interviewStatus }) => {
+  let text = ""
+  let colorClass = ""
+
+  if (status === "PENDING") {
+    text = "Pending"
+    colorClass = "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
+  } else if (status === "ACCEPTED") {
+    if (interviewStatus === "AWAITING_INTERVIEW") {
+      text = "Awaiting Interview"
+      colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+    } else if (interviewStatus === "INTERVIEW_FAILED") {
+      text = "Interview Failed"
+      colorClass = "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+    } else {
+      text = "Accepted"
+      colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+    }
+  } else if (status === "COMPLETED") {
+    text = "Completed"
+    colorClass = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+  } else if (status === "DENIED") {
+    text = "Denied"
+    colorClass = "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+  }
+
+  return (
+    <Badge variant="outline" className={cn("rounded-full text-xs font-medium", colorClass)}>
+      {text}
+    </Badge>
+  )
 }
 
 export default function UserProfilePage() {
@@ -194,19 +234,6 @@ export default function UserProfilePage() {
           }
         }
 
-        // Fetch user's applications if it's the user's own profile
-        if (isOwnProfile || userData.role === "ADMIN" || userData.role === "HEAD_ADMIN" || userData.role === "RNR") {
-          try {
-            const applicationsResponse = await fetch(`/api/users/${id}/applications`)
-            if (applicationsResponse.ok) {
-              const applicationsData = await applicationsResponse.json()
-              setUserApplications(applicationsData)
-            }
-          } catch (appErr) {
-            console.error("Failed to fetch applications:", appErr)
-          }
-        }
-
         setLoading(false)
       } catch (err) {
         setError("Failed to load profile")
@@ -214,8 +241,23 @@ export default function UserProfilePage() {
       }
     }
 
+    async function fetchApplications() {
+      if (isOwnProfile) {
+        try {
+          const applicationsResponse = await fetch(`/api/users/${id}/applications`)
+          if (applicationsResponse.ok) {
+            const applicationsData = await applicationsResponse.json()
+            setUserApplications(applicationsData)
+          }
+        } catch (appErr) {
+          console.error("Failed to fetch applications:", appErr)
+        }
+      }
+    }
+
     if (id) {
       fetchProfile()
+      fetchApplications()
     }
   }, [id, status, isOwnProfile])
 
@@ -403,7 +445,7 @@ export default function UserProfilePage() {
                       {profile.rnrStatus.replace("RNR_", "").replace("_", " ")}
                     </span>
                   </div>
-                )}
+                </div>
                 <div className="flex justify-between items-start">
                   <span className="text-gray-400">Discord Join</span>
                   <span className="font-medium text-right break-words max-w-[60%] text-gray-200">
@@ -427,10 +469,6 @@ export default function UserProfilePage() {
                 <div className="flex justify-between">
                   <span className="text-gray-400">Posts</span>
                   <span className="font-medium text-gray-200">{profile.postCount || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Applications</span>
-                  <span className="font-medium text-gray-200">{userApplications?.length || 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Followers</span>
@@ -546,70 +584,74 @@ export default function UserProfilePage() {
                     </p>
                   </div>
                   <div className="p-6">
-                    {userApplications && userApplications.length > 0 ? (
-                      <div className="space-y-4">
-                        {userApplications.map((application: any) => (
-                          <Card key={application.id} className="bg-gray-750 border-gray-700">
-                            <CardHeader className="pb-2">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <CardTitle>{application.template?.name || "Department Application"}</CardTitle>
-                                  <CardDescription>
-                                    Submitted on {new Date(application.createdAt).toLocaleDateString()}
-                                  </CardDescription>
+                    {isOwnProfile ? (
+                      userApplications && userApplications.length > 0 ? (
+                        <div className="space-y-4">
+                          {userApplications.map((application: any) => (
+                            <Card key={application.id} className="bg-gray-700 border-gray-700">
+                              <CardHeader className="pb-2">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <CardTitle>{application.template?.name || "Department Application"}</CardTitle>
+                                    <CardDescription>
+                                      Submitted on {new Date(application.createdAt).toLocaleDateString()}
+                                    </CardDescription>
+                                  </div>
+                                  <ApplicationStatusBadge
+                                    status={application.status}
+                                    interviewStatus={application.interviewStatus}
+                                  />
                                 </div>
-                                <ApplicationStatusBadge
-                                  status={application.status}
-                                  interviewStatus={application.interviewStatus}
-                                />
-                              </div>
-                            </CardHeader>
-                            <CardContent className="pb-2">
-                              <div className="flex items-center gap-2 text-sm text-gray-400">
-                                {application.status === "PENDING" && <Clock className="h-4 w-4 text-amber-500" />}
-                                {application.status === "ACCEPTED" && <CheckCircle className="h-4 w-4 text-blue-500" />}
-                                {application.status === "COMPLETED" && (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                )}
-                                {application.status === "DENIED" && <XCircle className="h-4 w-4 text-red-500" />}
+                              </CardHeader>
+                              <CardContent className="pb-2">
+                                <div className="flex items-center gap-2 text-sm text-gray-400">
+                                  {application.status === "PENDING" && <Clock className="h-4 w-4 text-amber-500" />}
+                                  {application.status === "ACCEPTED" && <CheckCircle className="h-4 w-4 text-blue-500" />}
+                                  {application.status === "COMPLETED" && (
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  )}
+                                  {application.status === "DENIED" && <XCircle className="h-4 w-4 text-red-500" />}
 
-                                {application.status === "PENDING" && "Awaiting review"}
-                                {application.status === "ACCEPTED" &&
-                                  application.interviewStatus === "AWAITING_INTERVIEW" &&
-                                  "Awaiting interview"}
-                                {application.status === "ACCEPTED" &&
-                                  application.interviewStatus === "INTERVIEW_FAILED" &&
-                                  "Interview failed"}
-                                {application.status === "COMPLETED" && "Application completed"}
-                                {application.status === "DENIED" && "Application denied"}
+                                  {application.status === "PENDING" && "Awaiting review"}
+                                  {application.status === "ACCEPTED" &&
+                                    application.interviewStatus === "AWAITING_INTERVIEW" &&
+                                    "Awaiting interview"}
+                                  {application.status === "ACCEPTED" &&
+                                    application.interviewStatus === "INTERVIEW_FAILED" &&
+                                    "Interview failed"}
+                                  {application.status === "COMPLETED" && "Application completed"}
+                                  {application.status === "DENIED" && "Application denied"}
 
-                                {application.cooldownUntil && (
-                                  <span className="ml-2 text-xs bg-gray-700 px-2 py-0.5 rounded-full">
-                                    Cooldown until {new Date(application.cooldownUntil).toLocaleDateString()}
-                                  </span>
-                                )}
-                              </div>
-                            </CardContent>
-                            <CardFooter>
-                              <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="sm">
-                                <Link href={`/applications/status/${application.id}`}>
-                                  View Details
-                                  <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                              </Button>
-                            </CardFooter>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-500" />
-                        <p className="text-gray-400">No applications found</p>
-                        {isOwnProfile && (
+                                  {application.cooldownUntil && (
+                                    <span className="ml-2 text-xs bg-gray-700 px-2 py-0.5 rounded-full">
+                                      Cooldown until {new Date(application.cooldownUntil).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+                              </CardContent>
+                              <CardFooter>
+                                <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+                                  <Link href={`/applications/status/${application.id}`}>
+                                    View Details
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              </CardFooter>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <FileText className="h-12 w-12 mx-auto mb-4 text-gray-500" />
+                          <p className="text-gray-400">No applications found</p>
                           <Button asChild className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
                             <Link href="/applications">Browse Available Applications</Link>
                           </Button>
-                        )}
+                        </div>
+                      )
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-400">You can only view your own applications.</p>
                       </div>
                     )}
                   </div>
@@ -671,6 +713,6 @@ export default function UserProfilePage() {
           />
         )}
       </div>
-    </div>
+  </div>
   )
 }
