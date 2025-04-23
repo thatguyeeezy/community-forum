@@ -7,11 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Users, Mail, Edit, LogIn } from 'lucide-react'
+import { Users, Mail, Edit, LogIn, FileText, Clock, CheckCircle, XCircle, ArrowRight } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EditProfileDialog } from "@/components/edit-profile-dialog"
 import { cn } from "@/lib/utils"
-import type { Role } from "@prisma/client"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { ApplicationStatusBadge } from "@/components/application-status-badge"
 import { ProfileNotifications } from "@/components/profile-notifications"
 import Link from "next/link"
 
@@ -100,7 +101,7 @@ interface UserProfile {
   email?: string
   image: string
   bio: string
-  role: Role
+  role: string
   rank?: string
   department?: string
   rnrStatus?: string
@@ -112,6 +113,7 @@ interface UserProfile {
   following?: number
   lastActive?: string
   status?: string
+  applications?: any[]
 }
 
 interface DiscordMemberInfo {
@@ -140,6 +142,7 @@ export default function UserProfilePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [discordInfo, setDiscordInfo] = useState<DiscordMemberInfo | null>(null)
+  const [userApplications, setUserApplications] = useState([])
   const [loading, setLoading] = useState(true)
   const [editProfileOpen, setEditProfileOpen] = useState(false)
   const [error, setError] = useState("")
@@ -191,6 +194,19 @@ export default function UserProfilePage() {
           }
         }
 
+        // Fetch user's applications if it's the user's own profile
+        if (isOwnProfile || userData.role === "ADMIN" || userData.role === "HEAD_ADMIN" || userData.role === "RNR") {
+          try {
+            const applicationsResponse = await fetch(`/api/users/${id}/applications`)
+            if (applicationsResponse.ok) {
+              const applicationsData = await applicationsResponse.json()
+              setUserApplications(applicationsData)
+            }
+          } catch (appErr) {
+            console.error("Failed to fetch applications:", appErr)
+          }
+        }
+
         setLoading(false)
       } catch (err) {
         setError("Failed to load profile")
@@ -201,7 +217,7 @@ export default function UserProfilePage() {
     if (id) {
       fetchProfile()
     }
-  }, [id, status])
+  }, [id, status, isOwnProfile])
 
   if (loading) {
     return (
@@ -387,7 +403,7 @@ export default function UserProfilePage() {
                       {profile.rnrStatus.replace("RNR_", "").replace("_", " ")}
                     </span>
                   </div>
-                  )}
+                )}
                 <div className="flex justify-between items-start">
                   <span className="text-gray-400">Discord Join</span>
                   <span className="font-medium text-right break-words max-w-[60%] text-gray-200">
@@ -409,12 +425,12 @@ export default function UserProfilePage() {
               </div>
               <div className="p-4 space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Threads</span>
-                  <span className="font-medium text-gray-200">{profile.threadCount || 0}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-gray-400">Posts</span>
                   <span className="font-medium text-gray-200">{profile.postCount || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Applications</span>
+                  <span className="font-medium text-gray-200">{userApplications?.length || 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Followers</span>
@@ -480,14 +496,8 @@ export default function UserProfilePage() {
           </div>
 
           <div className="md:col-span-3">
-            <Tabs defaultValue="threads" className="space-y-4">
+            <Tabs defaultValue="posts" className="space-y-4">
               <TabsList className="bg-gray-800 border-gray-700">
-                <TabsTrigger
-                  value="threads"
-                  className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-gray-100"
-                >
-                  Threads
-                </TabsTrigger>
                 <TabsTrigger
                   value="posts"
                   className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-gray-100"
@@ -495,10 +505,10 @@ export default function UserProfilePage() {
                   Posts
                 </TabsTrigger>
                 <TabsTrigger
-                  value="activity"
+                  value="applications"
                   className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-gray-100"
                 >
-                  Activity
+                  Applications
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
@@ -516,17 +526,6 @@ export default function UserProfilePage() {
                   </TabsTrigger>
                 )}
               </TabsList>
-              <TabsContent value="threads">
-                <div className="bg-gray-800 shadow-md rounded-md overflow-hidden">
-                  <div className="p-4 border-b border-gray-700">
-                    <h3 className="font-bold text-gray-100">Recent Threads</h3>
-                    <p className="text-sm text-gray-400">Threads started by {profile.name}</p>
-                  </div>
-                  <div className="p-6">
-                    <p className="text-gray-400">Recent threads will be displayed here</p>
-                  </div>
-                </div>
-              </TabsContent>
               <TabsContent value="posts">
                 <div className="bg-gray-800 shadow-md rounded-md overflow-hidden">
                   <div className="p-4 border-b border-gray-700">
@@ -538,14 +537,81 @@ export default function UserProfilePage() {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="activity">
+              <TabsContent value="applications">
                 <div className="bg-gray-800 shadow-md rounded-md overflow-hidden">
                   <div className="p-4 border-b border-gray-700">
-                    <h3 className="font-bold text-gray-100">Recent Activity</h3>
-                    <p className="text-sm text-gray-400">{profile.name}'s recent activity</p>
+                    <h3 className="font-bold text-gray-100">Department Applications</h3>
+                    <p className="text-sm text-gray-400">
+                      {isOwnProfile ? "Your application history" : `${profile.name}'s application history`}
+                    </p>
                   </div>
                   <div className="p-6">
-                    <p className="text-gray-400">Recent activity will be displayed here</p>
+                    {userApplications && userApplications.length > 0 ? (
+                      <div className="space-y-4">
+                        {userApplications.map((application: any) => (
+                          <Card key={application.id} className="bg-gray-750 border-gray-700">
+                            <CardHeader className="pb-2">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <CardTitle>{application.template?.name || "Department Application"}</CardTitle>
+                                  <CardDescription>
+                                    Submitted on {new Date(application.createdAt).toLocaleDateString()}
+                                  </CardDescription>
+                                </div>
+                                <ApplicationStatusBadge
+                                  status={application.status}
+                                  interviewStatus={application.interviewStatus}
+                                />
+                              </div>
+                            </CardHeader>
+                            <CardContent className="pb-2">
+                              <div className="flex items-center gap-2 text-sm text-gray-400">
+                                {application.status === "PENDING" && <Clock className="h-4 w-4 text-amber-500" />}
+                                {application.status === "ACCEPTED" && <CheckCircle className="h-4 w-4 text-blue-500" />}
+                                {application.status === "COMPLETED" && (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                )}
+                                {application.status === "DENIED" && <XCircle className="h-4 w-4 text-red-500" />}
+
+                                {application.status === "PENDING" && "Awaiting review"}
+                                {application.status === "ACCEPTED" &&
+                                  application.interviewStatus === "AWAITING_INTERVIEW" &&
+                                  "Awaiting interview"}
+                                {application.status === "ACCEPTED" &&
+                                  application.interviewStatus === "INTERVIEW_FAILED" &&
+                                  "Interview failed"}
+                                {application.status === "COMPLETED" && "Application completed"}
+                                {application.status === "DENIED" && "Application denied"}
+
+                                {application.cooldownUntil && (
+                                  <span className="ml-2 text-xs bg-gray-700 px-2 py-0.5 rounded-full">
+                                    Cooldown until {new Date(application.cooldownUntil).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </CardContent>
+                            <CardFooter>
+                              <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+                                <Link href={`/applications/status/${application.id}`}>
+                                  View Details
+                                  <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-500" />
+                        <p className="text-gray-400">No applications found</p>
+                        {isOwnProfile && (
+                          <Button asChild className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
+                            <Link href="/applications">Browse Available Applications</Link>
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>
@@ -608,4 +674,3 @@ export default function UserProfilePage() {
     </div>
   )
 }
-
