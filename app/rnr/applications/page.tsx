@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma" // Fixed import statement
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
-import { PlusCircle } from "lucide-react"
 
 export default async function ApplicationsPage({
   searchParams,
@@ -73,12 +72,7 @@ export default async function ApplicationsPage({
             <h1 className="text-3xl font-bold tracking-tight">Applications</h1>
             <p className="text-muted-foreground">Review and manage department applications</p>
           </div>
-          <Button asChild>
-            <Link href="/rnr/applications/templates">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New Template
-            </Link>
-          </Button>
+          {/* Removed "New Template" button */}
         </div>
 
         <Card>
@@ -89,19 +83,39 @@ export default async function ApplicationsPage({
           <CardContent>
             <div className="flex flex-wrap gap-2">
               <Button variant={!searchParams.status ? "default" : "outline"} size="sm" asChild>
-                <Link href="/rnr/applications">All</Link>
+                <Link
+                  href={`/rnr/applications${searchParams.department ? `?department=${searchParams.department}` : ""}`}
+                >
+                  All
+                </Link>
               </Button>
               <Button variant={searchParams.status === "PENDING" ? "default" : "outline"} size="sm" asChild>
-                <Link href="/rnr/applications?status=PENDING">Pending</Link>
+                <Link
+                  href={`/rnr/applications?status=PENDING${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                >
+                  Pending
+                </Link>
               </Button>
               <Button variant={searchParams.status === "ACCEPTED" ? "default" : "outline"} size="sm" asChild>
-                <Link href="/rnr/applications?status=ACCEPTED">Awaiting Interview</Link>
+                <Link
+                  href={`/rnr/applications?status=ACCEPTED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                >
+                  Awaiting Interview
+                </Link>
               </Button>
               <Button variant={searchParams.status === "COMPLETED" ? "default" : "outline"} size="sm" asChild>
-                <Link href="/rnr/applications?status=COMPLETED">Completed</Link>
+                <Link
+                  href={`/rnr/applications?status=COMPLETED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                >
+                  Completed
+                </Link>
               </Button>
               <Button variant={searchParams.status === "DENIED" ? "default" : "outline"} size="sm" asChild>
-                <Link href="/rnr/applications?status=DENIED">Denied</Link>
+                <Link
+                  href={`/rnr/applications?status=DENIED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                >
+                  Denied
+                </Link>
               </Button>
             </div>
 
@@ -109,7 +123,9 @@ export default async function ApplicationsPage({
               <h3 className="text-sm font-medium mb-2">Department</h3>
               <div className="flex flex-wrap gap-2">
                 <Button variant={!searchParams.department ? "default" : "outline"} size="sm" asChild>
-                  <Link href="/rnr/applications">All</Link>
+                  <Link href={`/rnr/applications${searchParams.status ? `?status=${searchParams.status}` : ""}`}>
+                    All
+                  </Link>
                 </Button>
                 {departments.map((dept) => (
                   <Button
@@ -118,7 +134,11 @@ export default async function ApplicationsPage({
                     size="sm"
                     asChild
                   >
-                    <Link href={`/rnr/applications?department=${dept.departmentId}`}>{dept.name}</Link>
+                    <Link
+                      href={`/rnr/applications?department=${dept.departmentId}${searchParams.status ? `&status=${searchParams.status}` : ""}`}
+                    >
+                      {dept.name}
+                    </Link>
                   </Button>
                 ))}
               </div>
