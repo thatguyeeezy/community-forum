@@ -66,7 +66,7 @@ export function RnRSidebar() {
           {isAdmin && (
             <li>
               <Link
-                href="/rnr/templates"
+                href="/rnr/applications/templates"
                 className={`flex items-center gap-3 px-3 py-2 rounded-md ${
                   pathname.includes("/templates")
                     ? "bg-blue-600 text-white"
