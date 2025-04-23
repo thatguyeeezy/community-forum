@@ -165,21 +165,11 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-green-500 bg-gray-800 shadow">
-              <CardHeader>
-                <CardTitle className="text-gray-100">Review Actions</CardTitle>
-                <CardDescription className="text-gray-400">
-                  {application.status === "PENDING"
-                    ? "Accept or deny this application"
-                    : application.status === "ACCEPTED" && application.interviewStatus === "AWAITING_INTERVIEW"
-                      ? "Record interview results"
-                      : "No actions available"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ApplicationReviewActions application={application} />
-              </CardContent>
-            </Card>
+            <ApplicationReviewActions
+              applicationId={application.id}
+              status={application.status}
+              interviewStatus={application.interviewStatus}
+            />
           </div>
         </div>
       </div>

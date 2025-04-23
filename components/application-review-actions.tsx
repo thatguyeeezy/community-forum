@@ -63,17 +63,17 @@ export function ApplicationReviewActions({ applicationId, status, interviewStatu
   // Render different actions based on application status
   if (status === "PENDING") {
     return (
-      <Card>
+      <Card className="border-l-4 border-amber-500 bg-gray-800 shadow">
         <CardHeader>
-          <CardTitle>Review Application</CardTitle>
-          <CardDescription>Accept or deny this application</CardDescription>
+          <CardTitle className="text-gray-100">Review Application</CardTitle>
+          <CardDescription className="text-gray-400">Accept or deny this application</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
             placeholder="Add a note (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="mb-4"
+            className="mb-4 bg-gray-700 border-gray-600 text-gray-200 placeholder:text-gray-400"
           />
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -90,7 +90,7 @@ export function ApplicationReviewActions({ applicationId, status, interviewStatu
             variant="default"
             onClick={() => handleReview("accept")}
             disabled={isSubmitting}
-            className="flex items-center"
+            className="flex items-center bg-blue-600 hover:bg-blue-700"
           >
             <CheckCircle className="mr-2 h-4 w-4" />
             Accept
@@ -100,17 +100,17 @@ export function ApplicationReviewActions({ applicationId, status, interviewStatu
     )
   } else if (status === "ACCEPTED" && interviewStatus === "AWAITING_INTERVIEW") {
     return (
-      <Card>
+      <Card className="border-l-4 border-blue-500 bg-gray-800 shadow">
         <CardHeader>
-          <CardTitle>Record Interview</CardTitle>
-          <CardDescription>Record the result of the interview</CardDescription>
+          <CardTitle className="text-gray-100">Record Interview</CardTitle>
+          <CardDescription className="text-gray-400">Record the result of the interview</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
             placeholder="Add interview notes (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="mb-4"
+            className="mb-4 bg-gray-700 border-gray-600 text-gray-200 placeholder:text-gray-400"
           />
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -127,7 +127,7 @@ export function ApplicationReviewActions({ applicationId, status, interviewStatu
             variant="default"
             onClick={() => handleInterview("completed")}
             disabled={isSubmitting}
-            className="flex items-center"
+            className="flex items-center bg-blue-600 hover:bg-blue-700"
           >
             <CheckCheck className="mr-2 h-4 w-4" />
             Completed
@@ -137,13 +137,19 @@ export function ApplicationReviewActions({ applicationId, status, interviewStatu
     )
   } else {
     return (
-      <Card>
+      <Card className="border-l-4 border-gray-500 bg-gray-800 shadow">
         <CardHeader>
-          <CardTitle>Application Status</CardTitle>
-          <CardDescription>This application has been processed</CardDescription>
+          <CardTitle className="text-gray-100">Application Status</CardTitle>
+          <CardDescription className="text-gray-400">
+            {status === "DENIED"
+              ? "This application has been denied"
+              : status === "COMPLETED"
+                ? "This application has been completed"
+                : "This application has been processed"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center text-muted-foreground">
+          <div className="flex items-center text-gray-400">
             <Clock className="mr-2 h-4 w-4" />
             <span>No further actions required</span>
           </div>
