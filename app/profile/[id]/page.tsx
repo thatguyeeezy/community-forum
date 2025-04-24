@@ -145,29 +145,40 @@ interface ApplicationStatusBadgeProps {
 }
 
 const ApplicationStatusBadge: React.FC<ApplicationStatusBadgeProps> = ({ status, interviewStatus }) => {
-  let text = ""
+  let text = status
   let colorClass = ""
 
-  if (status === "PENDING") {
-    text = "Pending"
-    colorClass = "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
-  } else if (status === "ACCEPTED") {
-    if (interviewStatus === "AWAITING_INTERVIEW") {
-      text = "Awaiting Interview"
-      colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-    } else if (interviewStatus === "INTERVIEW_FAILED") {
-      text = "Interview Failed"
+  switch (status) {
+    case "PENDING":
+      text = "Pending"
+      colorClass = "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
+      break
+    case "ACCEPTED":
+      if (interviewStatus === "AWAITING_INTERVIEW") {
+        text = "Awaiting Interview"
+        colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+      } else if (interviewStatus === "INTERVIEW_FAILED") {
+        text = "Interview Failed"
+        colorClass = "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+      } else {
+        text = "Accepted"
+        colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+      }
+      break
+    case "COMPLETED":
+      text = "Completed"
+      colorClass = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+      break
+    case "DENIED":
+      text = "Denied"
       colorClass = "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-    } else {
-      text = "Accepted"
-      colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-    }
-  } else if (status === "COMPLETED") {
-    text = "Completed"
-    colorClass = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-  } else if (status === "DENIED") {
-    text = "Denied"
-    colorClass = "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+      break
+    case "CANCELLED":
+      text = "Cancelled"
+      colorClass = "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+      break
+    default:
+      colorClass = "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
   }
 
   return (
@@ -249,6 +260,8 @@ export default function UserProfilePage() {
           if (applicationsResponse.ok) {
             const applicationsData = await applicationsResponse.json()
             setUserApplications(applicationsData)
+          } else {
+            console.error("Failed to fetch applications:", await applicationsResponse.text())
           }
         } catch (appErr) {
           console.error("Failed to fetch applications:", appErr)
@@ -607,7 +620,9 @@ export default function UserProfilePage() {
                               <CardContent className="pb-2">
                                 <div className="flex items-center gap-2 text-sm text-gray-400">
                                   {application.status === "PENDING" && <Clock className="h-4 w-4 text-amber-500" />}
-                                  {application.status === "ACCEPTED" && <CheckCircle className="h-4 w-4 text-blue-500" />}
+                                  {application.status === "ACCEPTED" && (
+                                    <CheckCircle className="h-4 w-4 text-blue-500" />
+                                  )}
                                   {application.status === "COMPLETED" && (
                                     <CheckCircle className="h-4 w-4 text-green-500" />
                                   )}
@@ -714,6 +729,6 @@ export default function UserProfilePage() {
           />
         )}
       </div>
-  </div>
+    </div>
   )
 }
