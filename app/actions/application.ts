@@ -146,8 +146,8 @@ export async function submitApplication(templateId: number, responses: { questio
   }
 }
 
-// Get available application templates
-export async function getAvailableTemplates() {
+// Update the getAvailableTemplates function to support department filtering
+export async function getAvailableTemplates(departmentFilter?: string) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -173,13 +173,23 @@ export async function getAvailableTemplates() {
     }
 
     // If user is an applicant, they can only apply to CIV and BSFR
-    const departmentFilter = user.role === "APPLICANT" ? { departmentId: { in: ["CIV", "BSFR"] } } : {}
+    let roleBasedFilter = {}
+    if (user.role === "APPLICANT") {
+      roleBasedFilter = { departmentId: { in: ["CIV", "BSFR"] } }
+    }
 
-    // Get active templates
+    // Add department filter if provided
+    let deptFilter = {}
+    if (departmentFilter && departmentFilter !== "all") {
+      deptFilter = { departmentId: departmentFilter }
+    }
+
+    // Get active templates with combined filters
     const templates = await prisma.applicationTemplate.findMany({
       where: {
         active: true,
-        ...departmentFilter,
+        ...roleBasedFilter,
+        ...deptFilter,
       },
       orderBy: {
         name: "asc",
@@ -189,6 +199,57 @@ export async function getAvailableTemplates() {
     return templates
   } catch (error) {
     console.error("Error getting available templates:", error)
+    throw error
+  }
+}
+
+// Add a new function to get all available departments for filtering
+export async function getAvailableDepartments() {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      throw new Error("You must be logged in to view departments")
+    }
+
+    // Validate userId
+    if (isNaN(Number(session.user.id))) {
+      throw new Error("Invalid user ID")
+    }
+
+    const userId = Number.parseInt(session.user.id)
+
+    // Get user role
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    })
+
+    if (!user) {
+      throw new Error("User not found")
+    }
+
+    // If user is an applicant, they can only see CIV and BSFR
+    let whereClause = {}
+    if (user.role === "APPLICANT") {
+      whereClause = { departmentId: { in: ["CIV", "BSFR"] } }
+    }
+
+    // Get distinct departments from active templates
+    const templates = await prisma.applicationTemplate.findMany({
+      where: {
+        active: true,
+        ...whereClause,
+      },
+      select: {
+        departmentId: true,
+      },
+      distinct: ["departmentId"],
+    })
+
+    return templates.map((t) => t.departmentId)
+  } catch (error) {
+    console.error("Error getting available departments:", error)
     throw error
   }
 }

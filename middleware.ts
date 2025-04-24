@@ -11,13 +11,24 @@ function getIP(request: NextRequest): string {
 
 // Add this function to check if user has RNR permissions
 function hasRnRPermission(role: string): boolean {
-  return (
-    ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) ||
-    role.startsWith("RNR_")
-  )
+  return ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) || role.startsWith("RNR_")
 }
 
+// This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
+  const session = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+
+  // Check if the request is for the applications path
+  if (request.nextUrl.pathname.startsWith("/applications")) {
+    // If not authenticated, redirect to login
+    if (!session) {
+      const url = new URL("/auth/signin", request.url)
+      url.searchParams.set("callbackUrl", request.nextUrl.pathname)
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next()
+  }
+
   // Get the pathname of the request
   const pathname = request.nextUrl.pathname
 
@@ -27,10 +38,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const path = request.nextUrl.pathname
-  const session = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  })
 
   // Debug session info
   if (session) {
@@ -127,6 +134,7 @@ export async function middleware(request: NextRequest) {
 // Update the matcher to include more routes for tracking
 export const config = {
   matcher: [
+    "/applications/:path*",
     "/departments",
     // Include admin routes for protection
     "/admin/:path*",

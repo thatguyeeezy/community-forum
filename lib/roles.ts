@@ -285,3 +285,26 @@ export function canOverrideRnRDecisions(role: string): boolean {
 export function canApproveUnderage(role: string): boolean {
   return ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) || role === "RNR_ADMINISTRATION"
 }
+
+// Add this function to check if a user can access specific application types
+export function canAccessApplicationType(role: string, departmentId: string): boolean {
+  // Applicants can only access CIV and BSFR applications
+  if (role === "APPLICANT") {
+    return ["CIV", "BSFR"].includes(departmentId)
+  }
+
+  // All other roles can access any application type
+  return true
+}
+
+// Add this function to get available departments based on user role
+export function getAvailableDepartmentsForRole(role: string): string[] {
+  // Applicants can only see CIV and BSFR
+  if (role === "APPLICANT") {
+    return ["CIV", "BSFR"]
+  }
+
+  // Return all departments for other roles
+  // This list can be expanded as new departments are added
+  return ["CIV", "BSFR", "BSO", "MPD", "FHP", "FWC"]
+}
