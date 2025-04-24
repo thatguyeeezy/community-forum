@@ -1,4 +1,6 @@
+// app/profile/[id]/page.tsx
 "use client"
+
 import type React from "react"
 
 import { useSession } from "next-auth/react"
@@ -712,6 +714,6 @@ export default function UserProfilePage() {
           />
         )}
       </div>
-    
+  </div>
   )
 }
