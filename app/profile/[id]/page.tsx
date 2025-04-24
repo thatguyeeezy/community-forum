@@ -446,7 +446,7 @@ export default function UserProfilePage() {
                       {profile.rnrStatus.replace("RNR_", "").replace("_", " ")}
                     </span>
                   </div>
-                </div>
+                )}
                 <div className="flex justify-between items-start">
                   <span className="text-gray-400">Discord Join</span>
                   <span className="font-medium text-right break-words max-w-[60%] text-gray-200">
