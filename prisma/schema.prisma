@@ -72,6 +72,7 @@ enum Department {
   MPD
   FHP
   COMMS
+  MEDIA
   FWC
   CIV
   FDLE
@@ -113,6 +114,8 @@ model User {
   submittedApplications Application[]
   reviewedApplications  Application[]    @relation("reviewer")
   applicationNotes      ApplicationNote[]
+  // New relation for review board members
+  reviewBoards         ApplicationReviewBoard[] @relation("reviewBoardMember")
 }
 
 model VerificationToken {
@@ -246,10 +249,23 @@ model ApplicationTemplate {
   name          String
   description   String?              @db.Text
   active        Boolean              @default(true)
+  requiresInterview Boolean          @default(false) // New field for interview requirement
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
   questions     ApplicationQuestion[]
   applications  Application[]
+  reviewBoard   ApplicationReviewBoard?
+}
+
+// New model for application review board
+model ApplicationReviewBoard {
+  id                Int                @id @default(autoincrement())
+  templateId        Int                @unique
+  template          ApplicationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  members           User[]             @relation("reviewBoardMember")
+  discordRoleIds    String?            @db.Text // Comma-separated list of Discord role IDs
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 // Questions for templates
@@ -263,6 +279,7 @@ model ApplicationQuestion {
   order               Int
   options             Json?              // For select, radio, checkbox types
   responses           ApplicationResponse[]
+  isDiscordIdField    Boolean            @default(false) // New field to mark Discord ID questions
 }
 
 // Submitted applications

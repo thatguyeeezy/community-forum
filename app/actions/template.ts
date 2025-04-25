@@ -13,6 +13,7 @@ interface QuestionData {
   required: boolean
   order: number
   options: string[] | null
+  isDiscordIdField?: boolean
 }
 
 interface TemplateData {
@@ -20,7 +21,12 @@ interface TemplateData {
   departmentId: string
   description: string | null
   active: boolean
+  requiresInterview: boolean
   questions: QuestionData[]
+  reviewBoard: {
+    memberIds: number[]
+    discordRoleIds: string | null
+  }
 }
 
 interface UpdateTemplateData extends TemplateData {
@@ -48,6 +54,7 @@ export async function createTemplate(data: TemplateData) {
       departmentId: data.departmentId,
       description: data.description,
       active: data.active,
+      requiresInterview: data.requiresInterview,
       questions: {
         create: data.questions.map((question) => ({
           questionText: question.questionText,
@@ -55,7 +62,16 @@ export async function createTemplate(data: TemplateData) {
           required: question.required,
           order: question.order,
           options: question.options,
+          isDiscordIdField: question.isDiscordIdField,
         })),
+      },
+      reviewBoard: {
+        create: {
+          members: {
+            connect: data.reviewBoard.memberIds.map((id) => ({ id })),
+          },
+          discordRoleIds: data.reviewBoard.discordRoleIds,
+        },
       },
     },
   })
@@ -85,6 +101,7 @@ export async function updateTemplate(data: UpdateTemplateData) {
       departmentId: data.departmentId,
       description: data.description,
       active: data.active,
+      requiresInterview: data.requiresInterview,
     },
   })
 
@@ -100,6 +117,7 @@ export async function updateTemplate(data: UpdateTemplateData) {
           required: question.required,
           order: question.order,
           options: question.options,
+          isDiscordIdField: question.isDiscordIdField,
         },
       })
     } else {
@@ -112,6 +130,7 @@ export async function updateTemplate(data: UpdateTemplateData) {
           required: question.required,
           order: question.order,
           options: question.options,
+          isDiscordIdField: question.isDiscordIdField,
         },
       })
     }
@@ -127,6 +146,17 @@ export async function updateTemplate(data: UpdateTemplateData) {
       },
     })
   }
+
+  // Update review board
+  await prisma.applicationReviewBoard.update({
+    where: { templateId: data.id },
+    data: {
+      members: {
+        set: data.reviewBoard.memberIds.map((id) => ({ id })),
+      },
+      discordRoleIds: data.reviewBoard.discordRoleIds,
+    },
+  })
 
   revalidatePath("/rnr/applications/templates")
   revalidatePath(`/rnr/applications/templates/${data.id}`)

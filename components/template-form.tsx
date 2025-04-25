@@ -1,8 +1,10 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
+
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -13,11 +15,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
-import { Loader2, Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from "lucide-react"
+import { Loader2, Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Users, Shield } from "lucide-react"
 import { createTemplate, updateTemplate } from "@/app/actions/template"
+import { fetchDiscordRoleName } from "@/app/actions/discord"
 
 // Define department options
-const DEPARTMENTS = ["BSFR", "BSO", "MPD", "FHP", "COMMS", "FWC", "CIV", "FDLE", "DEV", "RNR", "LEADERSHIP"]
+const DEPARTMENTS = ["WHITELIST", "CIV", "FIRE", "BSO", "FHP", "FWC", "MPD", "MEDIA", "COMMS"]
 
 // Define question types
 const QUESTION_TYPES = [
@@ -37,6 +40,12 @@ interface Question {
   options: string[] | null
   isNew?: boolean
   isDeleted?: boolean
+  isDiscordIdField?: boolean
+}
+
+interface ReviewBoardMember {
+  id: number
+  name: string
 }
 
 interface TemplateFormProps {
@@ -46,6 +55,7 @@ interface TemplateFormProps {
     name: string
     description: string | null
     active: boolean
+    requiresInterview: boolean
     questions: {
       id: number
       questionText: string
@@ -53,7 +63,16 @@ interface TemplateFormProps {
       required: boolean
       order: number
       options: string[] | null
+      isDiscordIdField: boolean
     }[]
+    reviewBoard?: {
+      id: number
+      members: {
+        id: number
+        name: string
+      }[]
+      discordRoleIds: string | null
+    }
   }
 }
 
@@ -62,12 +81,73 @@ export function TemplateForm({ template }: TemplateFormProps) {
   const [departmentId, setDepartmentId] = useState(template?.departmentId || "")
   const [description, setDescription] = useState(template?.description || "")
   const [active, setActive] = useState(template?.active ?? true)
+  const [requiresInterview, setRequiresInterview] = useState(template?.requiresInterview ?? false)
   const [questions, setQuestions] = useState<Question[]>(
-    template?.questions || [{ questionText: "", questionType: "text", required: true, order: 0, options: null }],
+    template?.questions || [
+      {
+        questionText: "Discord ID",
+        questionType: "text",
+        required: true,
+        order: 0,
+        options: null,
+        isDiscordIdField: true,
+      },
+    ],
   )
+  const [reviewBoardMembers, setReviewBoardMembers] = useState<ReviewBoardMember[]>(
+    template?.reviewBoard?.members || [],
+  )
+  const [discordRoleIds, setDiscordRoleIds] = useState<string[]>(
+    template?.reviewBoard?.discordRoleIds ? template?.reviewBoard?.discordRoleIds.split(",") : [],
+  )
+  const [newDiscordRoleId, setNewDiscordRoleId] = useState("")
+  const [discordRoleNames, setDiscordRoleNames] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [searchResults, setSearchResults] = useState<ReviewBoardMember[]>([])
   const { toast } = useToast()
   const router = useRouter()
+
+  // Effect to search for users when searchTerm changes
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (searchTerm.length < 3) {
+        setSearchResults([])
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/users?search=${encodeURIComponent(searchTerm)}&limit=5`)
+        if (response.ok) {
+          const data = await response.json()
+          setSearchResults(
+            data.filter((user: ReviewBoardMember) => !reviewBoardMembers.some((member) => member.id === user.id)),
+          )
+        }
+      } catch (error) {
+        console.error("Error searching users:", error)
+      }
+    }
+
+    searchUsers()
+  }, [searchTerm, reviewBoardMembers])
+
+  // Function to fetch Discord role name
+  const getDiscordRoleName = useCallback(
+    async (roleId: string) => {
+      if (discordRoleNames[roleId]) return discordRoleNames[roleId] // Check if already cached
+
+      try {
+        const roleName = await fetchDiscordRoleName(roleId)
+        setDiscordRoleNames((prev) => ({ ...prev, [roleId]: roleName })) // Cache the role name
+        return roleName
+      } catch (error) {
+        console.error("Error fetching Discord role name:", error)
+        return "Unknown Role"
+      }
+    },
+    [discordRoleNames],
+  )
 
   const addQuestion = () => {
     setQuestions([
@@ -108,10 +188,10 @@ export function TemplateForm({ template }: TemplateFormProps) {
     // Swap order values
     const currentOrder = newQuestions[index].order
     newQuestions[index].order = newQuestions[targetIndex].order
-    newQuestions[targetIndex].order = currentOrder[
-      // Swap positions in array
-      (newQuestions[index], newQuestions[targetIndex])
-    ] = [newQuestions[targetIndex], newQuestions[index]]
+    newQuestions[targetIndex].order = currentOrder
+
+    // Swap positions in array
+    ;[newQuestions[index], newQuestions[targetIndex]] = [newQuestions[targetIndex], newQuestions[index]]
 
     setQuestions(newQuestions)
   }
@@ -155,6 +235,64 @@ export function TemplateForm({ template }: TemplateFormProps) {
     }
   }
 
+  const addReviewBoardMember = (member: ReviewBoardMember) => {
+    if (!reviewBoardMembers.some((m) => m.id === member.id)) {
+      setReviewBoardMembers([...reviewBoardMembers, member])
+      setSearchResults(searchResults.filter((result) => result.id !== member.id))
+      setSearchTerm("")
+    }
+  }
+
+  const removeReviewBoardMember = (memberId: number) => {
+    setReviewBoardMembers(reviewBoardMembers.filter((member) => member.id !== memberId))
+  }
+
+  const handleAddDiscordRoleId = async () => {
+    if (newDiscordRoleId.trim() === "") return
+
+    // Validate Discord role ID format (must be numeric)
+    if (!/^\d+$/.test(newDiscordRoleId)) {
+      toast({
+        title: "Validation Error",
+        description: `Invalid Discord role ID: ${newDiscordRoleId}. Must be numeric.`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Check if the role ID is already added
+    if (discordRoleIds.includes(newDiscordRoleId)) {
+      toast({
+        title: "Validation Error",
+        description: `Discord role ID ${newDiscordRoleId} is already added.`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Fetch the role name and add the role ID to the list
+    try {
+      const roleName = await getDiscordRoleName(newDiscordRoleId)
+      setDiscordRoleNames((prev) => ({ ...prev, [newDiscordRoleId]: roleName }))
+      setDiscordRoleIds([...discordRoleIds, newDiscordRoleId])
+      setNewDiscordRoleId("")
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to fetch Discord role name for ID ${newDiscordRoleId}. Please ensure the ID is valid.`,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleRemoveDiscordRoleId = (roleId: string) => {
+    setDiscordRoleIds(discordRoleIds.filter((id) => id !== roleId))
+    setDiscordRoleNames((prev) => {
+      const { [roleId]: removed, ...rest } = prev
+      return rest
+    })
+  }
+
   const validateForm = () => {
     if (!name.trim()) {
       toast({
@@ -180,6 +318,17 @@ export function TemplateForm({ template }: TemplateFormProps) {
       toast({
         title: "Validation Error",
         description: "At least one question is required.",
+        variant: "destructive",
+      })
+      return false
+    }
+
+    // Check if Discord ID field exists
+    const hasDiscordIdField = visibleQuestions.some((q) => q.isDiscordIdField)
+    if (!hasDiscordIdField) {
+      toast({
+        title: "Validation Error",
+        description: "A Discord ID field is required.",
         variant: "destructive",
       })
       return false
@@ -252,8 +401,13 @@ export function TemplateForm({ template }: TemplateFormProps) {
           departmentId,
           description,
           active,
+          requiresInterview,
           questions: visibleQuestions,
           deletedQuestionIds: questions.filter((q) => q.id && q.isDeleted).map((q) => q.id!),
+          reviewBoard: {
+            memberIds: reviewBoardMembers.map((member) => member.id),
+            discordRoleIds: discordRoleIds.join(",").trim() ? discordRoleIds.join(",") : null,
+          },
         })
 
         toast({
@@ -267,7 +421,12 @@ export function TemplateForm({ template }: TemplateFormProps) {
           departmentId,
           description,
           active,
+          requiresInterview,
           questions: visibleQuestions,
+          reviewBoard: {
+            memberIds: reviewBoardMembers.map((member) => member.id),
+            discordRoleIds: discordRoleIds.join(",").trim() ? discordRoleIds.join(",") : null,
+          },
         })
 
         toast({
@@ -333,10 +492,138 @@ export function TemplateForm({ template }: TemplateFormProps) {
               />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch id="active" checked={active} onCheckedChange={setActive} disabled={isSubmitting} />
-              <Label htmlFor="active">Active</Label>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Switch id="active" checked={active} onCheckedChange={setActive} disabled={isSubmitting} />
+                <Label htmlFor="active">Active</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="requiresInterview"
+                  checked={requiresInterview}
+                  onCheckedChange={setRequiresInterview}
+                  disabled={isSubmitting}
+                />
+                <Label htmlFor="requiresInterview">Requires Interview</Label>
+              </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Review Board Section */}
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-medium mb-4">Review Board</h3>
+
+          <div className="space-y-4">
+            {/* Discord Role IDs Input */}
+            <div className="space-y-2">
+              <Label htmlFor="newDiscordRoleId">Discord Role IDs</Label>
+              <div className="flex items-center">
+                <Shield className="mr-2 h-4 w-4 text-gray-500" />
+                <Input
+                  id="newDiscordRoleId"
+                  type="number"
+                  value={newDiscordRoleId}
+                  onChange={(e) => setNewDiscordRoleId(e.target.value)}
+                  placeholder="Enter Discord Role ID and press Enter"
+                  disabled={isSubmitting}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleAddDiscordRoleId()
+                    }
+                  }}
+                />
+                <Button type="button" size="sm" onClick={handleAddDiscordRoleId} disabled={isSubmitting}>
+                  Add
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Enter Discord role IDs from the main Discord server that should have access to review these applications
+              </p>
+
+              {/* Display Added Discord Role IDs */}
+              {discordRoleIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {discordRoleIds.map((roleId) => (
+                    <Badge key={roleId} variant="secondary" className="flex items-center gap-1 px-2 py-1">
+                      {discordRoleNames[roleId] || roleId}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => handleRemoveDiscordRoleId(roleId)}
+                        disabled={isSubmitting}
+                      >
+                        <Trash2 className="h-3 w-3 text-gray-400" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Review Board Members Input */}
+            <div className="space-y-2">
+              <Label htmlFor="memberSearch">Add Review Board Members</Label>
+              <div className="flex items-center">
+                <Users className="mr-2 h-4 w-4 text-gray-500" />
+                <Input
+                  id="memberSearch"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search users by name..."
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="bg-gray-800 border border-gray-700 rounded-md p-2">
+                <p className="text-xs text-gray-400 mb-2">Search Results:</p>
+                <div className="space-y-1">
+                  {searchResults.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-2 hover:bg-gray-700 rounded-md cursor-pointer"
+                      onClick={() => addReviewBoardMember(user)}
+                    >
+                      <span>{user.name}</span>
+                      <Plus className="h-4 w-4 text-gray-400" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Selected Members */}
+            {reviewBoardMembers.length > 0 && (
+              <div className="space-y-2">
+                <Label>Selected Review Board Members</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {reviewBoardMembers.map((member) => (
+                    <Badge key={member.id} variant="secondary" className="flex items-center gap-1 px-2 py-1">
+                      {member.name}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => removeReviewBoardMember(member.id)}
+                        disabled={isSubmitting}
+                      >
+                        <Trash2 className="h-3 w-3 text-gray-400" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -361,7 +648,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => moveQuestion(index, "up")}
-                      disabled={index === 0 || isSubmitting}
+                      disabled={index === 0 || isSubmitting || question.isDiscordIdField}
                     >
                       <ArrowUp className="h-4 w-4" />
                     </Button>
@@ -370,7 +657,11 @@ export function TemplateForm({ template }: TemplateFormProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => moveQuestion(index, "down")}
-                      disabled={index === questions.filter((q) => !q.isDeleted).length - 1 || isSubmitting}
+                      disabled={
+                        index === questions.filter((q) => !q.isDeleted).length - 1 ||
+                        isSubmitting ||
+                        question.isDiscordIdField
+                      }
                     >
                       <ArrowDown className="h-4 w-4" />
                     </Button>
@@ -379,7 +670,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => removeQuestion(index)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || question.isDiscordIdField}
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
@@ -393,8 +684,11 @@ export function TemplateForm({ template }: TemplateFormProps) {
                         value={question.questionText}
                         onChange={(e) => updateQuestion(index, "questionText", e.target.value)}
                         placeholder="Enter question text"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || question.isDiscordIdField}
                       />
+                      {question.isDiscordIdField && (
+                        <p className="text-xs text-blue-400">This is a required Discord ID field</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -402,7 +696,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
                       <Select
                         value={question.questionType}
                         onValueChange={(value) => updateQuestion(index, "questionType", value)}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || question.isDiscordIdField}
                       >
                         <SelectTrigger id={`question-type-${index}`}>
                           <SelectValue />
@@ -423,7 +717,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
                       id={`required-${index}`}
                       checked={question.required}
                       onCheckedChange={(checked) => updateQuestion(index, "required", checked)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || question.isDiscordIdField}
                     />
                     <Label htmlFor={`required-${index}`}>Required</Label>
                   </div>

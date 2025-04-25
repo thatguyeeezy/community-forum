@@ -1,3 +1,4 @@
+// app/actions/discord.ts
 "use server"
 
 import { prisma } from "@/lib/prisma"
@@ -199,5 +200,38 @@ export async function syncAllUserRoles() {
   } catch (error) {
     console.error("Error syncing all user roles:", error)
     return { success: false, message: "Error syncing roles" }
+  }
+}
+
+// Function to fetch Discord role name
+export async function fetchDiscordRoleName(roleId: string): Promise<string> {
+  try {
+    if (!process.env.MAIN_DISCORD_BOT_TOKEN) {
+      throw new Error("Missing MAIN_DISCORD_BOT_TOKEN environment variable")
+    }
+
+    if (!process.env.MAIN_DISCORD_GUILD_ID) {
+      throw new Error("Missing MAIN_DISCORD_GUILD_ID environment variable")
+    }
+
+    const response = await fetch(
+      `https://discord.com/api/v10/guilds/${process.env.MAIN_DISCORD_GUILD_ID}/roles/${roleId}`,
+      {
+        headers: {
+          Authorization: `Bot ${process.env.MAIN_DISCORD_BOT_TOKEN}`,
+        },
+        cache: "no-store",
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error(`Discord API error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    return data.name
+  } catch (error) {
+    console.error("Error fetching Discord role name:", error)
+    throw error
   }
 }
