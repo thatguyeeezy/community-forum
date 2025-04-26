@@ -13,7 +13,7 @@ export default async function NewTemplatePage() {
 
   // Check if user has permission to manage templates
   if (!canOverrideRnRDecisions(session.user.role as string)) {
-    redirect("/rnr")
+    redirect("/reviewboard")
   }
 
   return (

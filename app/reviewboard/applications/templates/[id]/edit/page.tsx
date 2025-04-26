@@ -1,9 +1,9 @@
+import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth/next"
-import { redirect, notFound } from "next/navigation"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
-import { canOverrideRnRDecisions } from "@/lib/roles"
+import { prisma } from "@/lib/prisma"
 import { TemplateForm } from "@/components/template-form"
+import { canOverrideRnRDecisions } from "@/lib/roles"
 
 export default async function EditTemplatePage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -12,9 +12,9 @@ export default async function EditTemplatePage({ params }: { params: { id: strin
     redirect("/auth/signin")
   }
 
-  // Check if user has permission to manage templates
+  // Check if user has RNR permissions
   if (!canOverrideRnRDecisions(session.user.role as string)) {
-    redirect("/rnr/applications")
+    redirect("/reviewboard")
   }
 
   const templateId = Number.parseInt(params.id)
@@ -40,12 +40,8 @@ export default async function EditTemplatePage({ params }: { params: { id: strin
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Edit Application Template</h1>
-        <p className="text-muted-foreground">Edit the {template.name} application template</p>
-      </div>
-
+    <div className="container py-6">
+      <h1 className="text-2xl font-bold mb-6">Edit Template</h1>
       <TemplateForm template={template} />
     </div>
   )

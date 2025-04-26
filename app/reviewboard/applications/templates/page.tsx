@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma" // Fixed import
+import { prisma } from "@/lib/prisma"
 import { PlusCircle, Edit, ToggleLeft, ToggleRight, Eye } from "lucide-react"
 import { canOverrideRnRDecisions } from "@/lib/roles"
 
@@ -17,7 +17,7 @@ export default async function ApplicationTemplatesPage() {
 
   // Check if user has permission to manage templates
   if (!canOverrideRnRDecisions(session.user.role as string)) {
-    redirect("/rnr/applications")
+    redirect("/reviewboard/applications")
   }
 
   try {
@@ -36,9 +36,9 @@ export default async function ApplicationTemplatesPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-100">Application Templates</h1>
-            <p className="text-gray-400 mt-1">Manage department application templates</p>
+            <p className="text-gray-400 mt-1">Manage all department application templates</p>
           </div>
-          <Link href="/rnr/applications/templates/new">
+          <Link href="/reviewboard/applications/templates/new">
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               <PlusCircle className="mr-2 h-4 w-4" />
               New Template
@@ -81,7 +81,7 @@ export default async function ApplicationTemplatesPage() {
                         )}
                       </div>
                       <div className="flex space-x-2">
-                        <Link href={`/rnr/applications/templates/${template.id}`}>
+                        <Link href={`/reviewboard/applications/templates/${template.id}`}>
                           <Button
                             variant="outline"
                             size="sm"
@@ -90,7 +90,7 @@ export default async function ApplicationTemplatesPage() {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Link href={`/rnr/applications/templates/${template.id}/edit`}>
+                        <Link href={`/reviewboard/applications/templates/${template.id}/edit`}>
                           <Button
                             variant="outline"
                             size="sm"
@@ -118,9 +118,9 @@ export default async function ApplicationTemplatesPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-100">Application Templates</h1>
-            <p className="text-gray-400 mt-1">Manage department application templates</p>
+            <p className="text-gray-400 mt-1">Manage all department application templates</p>
           </div>
-          <Link href="/rnr/applications/templates/new">
+          <Link href="/reviewboard/applications/templates/new">
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               <PlusCircle className="mr-2 h-4 w-4" />
               New Template

@@ -17,7 +17,7 @@ export default async function TemplatePage({ params }: { params: { id: string } 
 
   // Check if user has RNR permissions
   if (!canOverrideRnRDecisions(session.user.role as string)) {
-    redirect("/rnr")
+    redirect("/reviewboard")
   }
 
   const templateId = Number.parseInt(params.id)
@@ -46,14 +46,14 @@ export default async function TemplatePage({ params }: { params: { id: string } 
     <div className="container py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link href="/rnr/applications/templates">
+          <Link href="/reviewboard/applications/templates">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <h1 className="text-2xl font-bold">Template Details</h1>
         </div>
-        <Link href={`/rnr/applications/templates/${templateId}/edit`}>
+        <Link href={`/reviewboard/applications/templates/${templateId}/edit`}>
           <Button>
             <Edit className="h-4 w-4 mr-2" />
             Edit Template

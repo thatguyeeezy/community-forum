@@ -6,6 +6,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
 
+export const dynamic = "force-dynamic"
+
 export default async function ApplicationsPage({
   searchParams,
 }: {
@@ -68,7 +70,7 @@ export default async function ApplicationsPage({
       <div className="flex-1 p-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-100">Applications</h1>
-          <p className="text-gray-400">Review and manage department applications</p>
+          <p className="text-gray-400">Review and manage all department applications</p>
         </div>
 
         <div className="bg-gray-800 rounded-lg p-6 shadow border-l-4 border-blue-500 mb-8">
@@ -85,7 +87,7 @@ export default async function ApplicationsPage({
                   asChild
                 >
                   <Link
-                    href={`/rnr/applications${searchParams.department ? `?department=${searchParams.department}` : ""}`}
+                    href={`/reviewboard/applications${searchParams.department ? `?department=${searchParams.department}` : ""}`}
                   >
                     All
                   </Link>
@@ -101,7 +103,7 @@ export default async function ApplicationsPage({
                   asChild
                 >
                   <Link
-                    href={`/rnr/applications?status=PENDING${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                    href={`/reviewboard/applications?status=PENDING${searchParams.department ? `&department=${searchParams.department}` : ""}`}
                   >
                     Pending
                   </Link>
@@ -117,7 +119,7 @@ export default async function ApplicationsPage({
                   asChild
                 >
                   <Link
-                    href={`/rnr/applications?status=ACCEPTED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                    href={`/reviewboard/applications?status=ACCEPTED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
                   >
                     Awaiting Interview
                   </Link>
@@ -133,7 +135,7 @@ export default async function ApplicationsPage({
                   asChild
                 >
                   <Link
-                    href={`/rnr/applications?status=COMPLETED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                    href={`/reviewboard/applications?status=COMPLETED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
                   >
                     Completed
                   </Link>
@@ -147,7 +149,7 @@ export default async function ApplicationsPage({
                   asChild
                 >
                   <Link
-                    href={`/rnr/applications?status=DENIED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
+                    href={`/reviewboard/applications?status=DENIED${searchParams.department ? `&department=${searchParams.department}` : ""}`}
                   >
                     Denied
                   </Link>
@@ -166,7 +168,9 @@ export default async function ApplicationsPage({
                   }
                   asChild
                 >
-                  <Link href={`/rnr/applications${searchParams.status ? `?status=${searchParams.status}` : ""}`}>
+                  <Link
+                    href={`/reviewboard/applications${searchParams.status ? `?status=${searchParams.status}` : ""}`}
+                  >
                     All
                   </Link>
                 </Button>
@@ -183,7 +187,7 @@ export default async function ApplicationsPage({
                     asChild
                   >
                     <Link
-                      href={`/rnr/applications?department=${dept.departmentId}${searchParams.status ? `&status=${searchParams.status}` : ""}`}
+                      href={`/reviewboard/applications?department=${dept.departmentId}${searchParams.status ? `&status=${searchParams.status}` : ""}`}
                     >
                       {dept.name}
                     </Link>
@@ -229,7 +233,7 @@ export default async function ApplicationsPage({
                       <div>{application.reviewer?.name || "Unassigned"}</div>
                       <div>
                         <Link
-                          href={`/rnr/applications/${application.id}`}
+                          href={`/reviewboard/applications/${application.id}`}
                           className="text-blue-400 hover:text-blue-300 hover:underline"
                         >
                           View
@@ -252,7 +256,7 @@ export default async function ApplicationsPage({
                       asChild
                     >
                       <Link
-                        href={`/rnr/applications?page=${pageNum}${
+                        href={`/reviewboard/applications?page=${pageNum}${
                           searchParams.status ? `&status=${searchParams.status}` : ""
                         }${searchParams.department ? `&department=${searchParams.department}` : ""}`}
                       >
@@ -285,7 +289,7 @@ export default async function ApplicationsPage({
           <p className="text-gray-400 mb-4">An error occurred while loading applications</p>
           <p className="text-gray-300">There was a problem loading the applications. Please try again later.</p>
           <Button className="mt-4 bg-blue-600 hover:bg-blue-700" asChild>
-            <Link href="/rnr">Back to Dashboard</Link>
+            <Link href="/reviewboard">Back to Dashboard</Link>
           </Button>
         </div>
       </div>

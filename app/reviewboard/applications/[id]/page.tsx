@@ -21,7 +21,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
 
     // Check if user has R&R permissions
     if (!hasRnRPermission(session.user.role as string)) {
-      redirect("/rnr")
+      redirect("/reviewboard")
     }
 
     const applicationId = Number.parseInt(params.id)
@@ -62,7 +62,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="icon" asChild>
-              <Link href="/rnr/applications">
+              <Link href="/reviewboard/applications">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
               </Link>
@@ -201,7 +201,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
               An error occurred while trying to load the application. Please try again later or contact support.
             </p>
             <Button variant="outline" asChild>
-              <Link href="/rnr/applications">
+              <Link href="/reviewboard/applications">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Applications
               </Link>

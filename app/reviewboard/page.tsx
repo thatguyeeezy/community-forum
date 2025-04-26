@@ -3,12 +3,14 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma" // Fixed import
+import { prisma } from "@/lib/prisma"
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
 import { Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export default async function RnRDashboard() {
+export const dynamic = "force-dynamic"
+
+export default async function ReviewBoardDashboard() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user) {
@@ -46,8 +48,8 @@ export default async function RnRDashboard() {
     return (
       <div className="p-8 bg-gray-900 min-h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-100">R&R Dashboard</h1>
-          <p className="text-gray-400 mt-1">Welcome to the R&R panel. Manage applications and member interviews.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-100">App Dashboard</h1>
+          <p className="text-gray-400 mt-1">Welcome to the App panel. Manage applications and member interviews.</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -124,7 +126,7 @@ export default async function RnRDashboard() {
                           />
                         </div>
                         <div>
-                          <Link href={`/rnr/applications/${application.id}`}>
+                          <Link href={`/reviewboard/applications/${application.id}`}>
                             <Button
                               variant="outline"
                               size="sm"
@@ -147,12 +149,12 @@ export default async function RnRDashboard() {
       </div>
     )
   } catch (error) {
-    console.error("Error in RnR Dashboard:", error)
+    console.error("Error in App Dashboard:", error)
     return (
       <div className="p-8 bg-gray-900 min-h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-100">R&R Dashboard</h1>
-          <p className="text-gray-400 mt-1">Welcome to the R&R panel. Manage applications and member interviews.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-100">App Dashboard</h1>
+          <p className="text-gray-400 mt-1">Welcome to the App panel. Manage applications and member interviews.</p>
         </div>
 
         <Card className="bg-gray-800 border-l-4 border-red-500 shadow">

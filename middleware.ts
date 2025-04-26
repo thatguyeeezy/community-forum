@@ -57,6 +57,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(newPath, request.url))
   }
 
+  // Redirect from /rnr to /reviewboard
+  if (path.startsWith("/rnr")) {
+    const newPath = path.replace("/rnr", "/reviewboard")
+    return NextResponse.redirect(new URL(newPath, request.url))
+  }
+
   // Skip tracking for API routes, static assets, etc.
   const shouldSkip = path.startsWith("/_next") || path.includes(".") || path === "/favicon.ico"
 
@@ -92,8 +98,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Add this section for RNR route protection
-  if (path.startsWith("/rnr")) {
+  // Add this section for reviewboard route protection
+  if (path.startsWith("/reviewboard")) {
     // Redirect to login if not authenticated
     if (!session) {
       return NextResponse.redirect(new URL("/auth/signin", request.url))
@@ -104,7 +110,7 @@ export async function middleware(request: NextRequest) {
 
     // Use the helper function to check RNR permission
     if (!hasRnRPermission(userRole)) {
-      console.log(`RNR access denied in middleware for role: ${userRole}`)
+      console.log(`Review Board access denied in middleware for role: ${userRole}`)
       return NextResponse.redirect(new URL("/auth/error?error=AccessDenied", request.url))
     }
   }
@@ -152,7 +158,8 @@ export const config = {
     // Add onboarding path for first-time users
     "/onboarding",
 
-    // Add RNR routes
+    // Add reviewboard routes (and keep rnr for redirection)
     "/rnr/:path*",
+    "/reviewboard/:path*",
   ],
 }
