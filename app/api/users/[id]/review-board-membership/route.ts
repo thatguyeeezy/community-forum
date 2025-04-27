@@ -12,12 +12,23 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Get the ID from params and convert to string for comparison
+    const requestedId = params.id.toString()
+
     // Check if user is requesting their own data
-    if (session.user.id !== params.id && !["SPECIAL_ADVISOR","SENIOR_ADMIN", "HEAD_ADMIN", "WEBMASTER"].includes(session.user.role as string)) {
+    if (
+      session.user.id !== requestedId &&
+      !["SPECIAL_ADVISOR", "SENIOR_ADMIN", "HEAD_ADMIN", "WEBMASTER"].includes(session.user.role as string)
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const userId = Number(params.id)
+    const userId = Number.parseInt(requestedId, 10)
+
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
+    }
+
     const isMember = await isReviewBoardMember(userId)
 
     return NextResponse.json({ isMember })
