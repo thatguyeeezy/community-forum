@@ -1,13 +1,7 @@
-// lib/prisma.ts
-import { PrismaClient } from '@prisma/client'
-import { withAccelerate } from '@prisma/extension-accelerate'
+// lib/prisma.ts - Your current setup works fine
+import { PrismaClient } from "@prisma/client"
 
 const prismaClientSingleton = () => {
-  // Use Accelerate only in production
-  if (process.env.NODE_ENV === 'production') {
-    return new PrismaClient().$extends(withAccelerate())
-  }
-  // Use direct connection in development
   return new PrismaClient()
 }
 
