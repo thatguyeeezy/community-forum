@@ -1,7 +1,9 @@
-import { PrismaClient } from "@prisma/client"
+// lib/prisma.ts
+import { PrismaClient } from '@prisma/client'
 
 const prismaClientSingleton = () => {
   return new PrismaClient()
+  // No need to specify datasources here as they're already in the .env file
 }
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>
