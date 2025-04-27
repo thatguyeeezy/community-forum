@@ -4,6 +4,7 @@ import { signOut } from "next-auth/react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { LogOut, Settings, User } from "lucide-react"
+import { useState, useEffect } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,24 @@ import { hasStaffPermission } from "@/lib/roles"
 
 export function UserNav() {
   const { data: session } = useSession()
+  const [isReviewMember, setIsReviewMember] = useState(false)
+
+  useEffect(() => {
+    async function checkReviewMembership() {
+      if (session?.user?.id) {
+        try {
+          const userId = Number(session.user.id)
+          const result = await fetch(`/api/users/${userId}/review-board-membership`)
+          const data = await result.json()
+          setIsReviewMember(data.isMember)
+        } catch (error) {
+          console.error("Error checking review board membership:", error)
+        }
+      }
+    }
+
+    checkReviewMembership()
+  }, [session?.user?.id])
 
   if (!session) {
     return null
@@ -34,6 +53,8 @@ export function UserNav() {
     : "U"
 
   const isStaff = hasStaffPermission(user?.role)
+  const hasRnRRole = user?.role === "RNR_ADMINISTRATION" || user?.role === "RNR_STAFF" || user?.role === "RNR_MEMBER"
+  const showAppPanel = isStaff || hasRnRRole || isReviewMember
 
   return (
     <DropdownMenu>
@@ -68,11 +89,11 @@ export function UserNav() {
               </Link>
             </DropdownMenuItem>
           )}
-          {isStaff && (
+          {showAppPanel && (
             <DropdownMenuItem asChild>
-              <Link href="/rnr">
+              <Link href="/reviewboard">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>R&R Panel</span>
+                <span>App Panel</span>
               </Link>
             </DropdownMenuItem>
           )}

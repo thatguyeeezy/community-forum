@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
 import { ApplicationReviewActions } from "@/components/application-review-actions"
 import { ArrowLeft, Clock, User, Calendar, FileText, AlertTriangle } from "lucide-react"
+import { getUserReviewBoardTemplateIds } from "@/lib/review-board"
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
   try {
@@ -30,7 +31,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
       notFound()
     }
 
-    // Get application with all related data
+    // Get the application
     const application = await prisma.application.findUnique({
       where: { id: applicationId },
       include: {
@@ -55,6 +56,20 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
 
     if (!application) {
       notFound()
+    }
+
+    // Check if user has permission to view this application
+    const userRole = session.user.role as string
+    const isAdmin = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "RNR_ADMINISTRATION"].includes(userRole)
+
+    // If not admin, check if user is a member of the review board for this template
+    if (!isAdmin) {
+      const userId = Number(session.user.id)
+      const templateIds = await getUserReviewBoardTemplateIds(userId)
+
+      if (!templateIds.includes(application.templateId)) {
+        redirect("/auth/error?error=AccessDenied")
+      }
     }
 
     return (

@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth/next"
 import { AppSidebar } from "@/components/app-sidebar"
 import { authOptions } from "@/lib/auth"
+import { isReviewBoardMember } from "@/lib/review-board"
+import { hasRnRPermission } from "@/lib/roles"
 
 export default async function ReviewBoardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
@@ -14,10 +16,14 @@ export default async function ReviewBoardLayout({ children }: { children: React.
 
   // Check if user has RNR role
   const userRole = session.user.role as string
-  const hasRnRPermission =
-    ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(userRole) || userRole.startsWith("RNR_")
+  const hasRnRRole = hasRnRPermission(userRole)
 
-  if (!hasRnRPermission) {
+  // Check if user is a review board member
+  const userId = Number(session.user.id)
+  const isReviewMember = await isReviewBoardMember(userId)
+
+  // Allow access if user has RNR role or is a review board member
+  if (!hasRnRRole && !isReviewMember) {
     redirect("/auth/error?error=AccessDenied")
   }
 

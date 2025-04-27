@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
+import { getUserReviewBoardTemplateIds } from "@/lib/review-board"
 
 export const dynamic = "force-dynamic"
 
@@ -24,7 +25,18 @@ export default async function ApplicationsPage({
     const pageSize = 10
     const skip = (page - 1) * pageSize
 
-    // Build filter based on search params
+    // Get user's role to determine if they should see all applications
+    const userRole = session.user.role as string
+    const isAdmin = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "RNR_ADMINISTRATION"].includes(userRole)
+
+    // If user is not an admin, get their review board template IDs
+    let templateIds: number[] = []
+    if (!isAdmin) {
+      const userId = Number(session.user.id)
+      templateIds = await getUserReviewBoardTemplateIds(userId)
+    }
+
+    // Build filter based on search params and user role
     const filter: any = {}
 
     if (searchParams.status) {
@@ -35,6 +47,16 @@ export default async function ApplicationsPage({
       filter.template = {
         departmentId: searchParams.department,
       }
+    }
+
+    // If user is not an admin, restrict to their review board templates
+    if (!isAdmin && templateIds.length > 0) {
+      filter.templateId = {
+        in: templateIds,
+      }
+    } else if (!isAdmin) {
+      // If not an admin and not in any review boards, show no applications
+      filter.id = -1 // This ensures no applications are found
     }
 
     // Get applications with pagination
@@ -50,7 +72,7 @@ export default async function ApplicationsPage({
       },
     })
 
-    // Get total count for pagination
+    // Get total count for pagination with the same filter
     const totalCount = await prisma.application.count({
       where: filter,
     })
