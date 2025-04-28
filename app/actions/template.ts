@@ -187,6 +187,33 @@ export async function updateTemplate(data: UpdateTemplateData) {
   return template
 }
 
+// Get a template by ID with all related data
+export async function getTemplateById(id: number) {
+  const template = await prisma.applicationTemplate.findUnique({
+    where: { id },
+    include: {
+      questions: {
+        orderBy: {
+          order: "asc",
+        },
+      },
+      reviewBoard: {
+        include: {
+          members: {
+            select: {
+              id: true,
+              name: true,
+              discordId: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  return template
+}
+
 // Toggle template active status
 export async function toggleTemplateStatus(id: number, active: boolean) {
   const session = await getServerSession(authOptions)

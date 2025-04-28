@@ -96,12 +96,17 @@ export function TemplateForm({ template }: TemplateFormProps) {
       },
     ],
   )
+
+  // Initialize review board members from template
   const [reviewBoardMembers, setReviewBoardMembers] = useState<ReviewBoardMember[]>(
     template?.reviewBoard?.members || [],
   )
+
+  // Initialize Discord role IDs from template
   const [discordRoleIds, setDiscordRoleIds] = useState<string[]>(
-    template?.reviewBoard?.discordRoleIds ? template?.reviewBoard?.discordRoleIds.split(",") : [],
+    template?.reviewBoard?.discordRoleIds ? template.reviewBoard.discordRoleIds.split(",") : [],
   )
+
   const [newDiscordRoleId, setNewDiscordRoleId] = useState("")
   const [discordRoleNames, setDiscordRoleNames] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -110,6 +115,15 @@ export function TemplateForm({ template }: TemplateFormProps) {
   const [isSearching, setIsSearching] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+
+  // Log initial state for debugging
+  useEffect(() => {
+    console.log("Template form initialized with:", {
+      reviewBoardMembers,
+      discordRoleIds,
+      template: template?.reviewBoard,
+    })
+  }, [])
 
   // Effect to load Discord role names when component mounts
   useEffect(() => {
