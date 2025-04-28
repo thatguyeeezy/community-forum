@@ -22,18 +22,26 @@ export async function GET(request: Request) {
     // Search for users by name
     const users = await prisma.user.findMany({
       where: {
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
+        OR: [
+          {
+            name: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          {
+            email: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
         isBanned: false,
       },
       select: {
         id: true,
         name: true,
-        email: true,
-        role: true,
-        department: true,
+        image: true,
       },
       take: limit,
       orderBy: {
@@ -43,7 +51,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(users)
   } catch (error) {
-    console.error("Error searching users:", error)
+    console.error("Error in /api/users/search:", error)
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }

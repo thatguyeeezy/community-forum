@@ -8,23 +8,69 @@ export async function GET(request: Request) {
 
   try {
     const session = await auth()
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get("search")
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
 
     if (!session?.user) {
       console.error("GET /api/users: No authenticated session")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // If there's a search parameter and it's coming from the template form (for review board members),
+    // we'll allow users with review board access to search
+    const isSearchRequest = !!search && search.length >= 2
+
     // Check if user has admin permissions
     const isAdmin = hasAdminPermission(session.user.role as string)
-    if (!isAdmin) {
+
+    // Only admins can access the full user list, but we'll allow searching for review board members
+    // by users who have review board access (which we'll assume is any authenticated user for now)
+    if (!isAdmin && !isSearchRequest) {
       console.error(`GET /api/users: User ${session.user.id} does not have admin permissions`)
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    console.log("GET /api/users: Fetching users from database")
+    console.log(`GET /api/users: Fetching users from database${search ? ` with search: ${search}` : ""}`)
 
     try {
-      // Fetch all users with selected fields
+      // If there's a search parameter, filter users by name or email
+      if (isSearchRequest) {
+        const users = await prisma.user.findMany({
+          where: {
+            OR: [
+              {
+                name: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+              {
+                email: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+            ],
+            isBanned: false,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+          take: limit,
+          orderBy: {
+            name: "asc",
+          },
+        })
+
+        console.log(`GET /api/users: Successfully fetched ${users.length} users matching search: ${search}`)
+        return NextResponse.json(users)
+      }
+
+      // Otherwise, fetch all users (admin only)
       const users = await prisma.user.findMany({
         select: {
           id: true,

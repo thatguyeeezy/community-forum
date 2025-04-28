@@ -142,12 +142,16 @@ export function TemplateForm({ template }: TemplateFormProps) {
 
       setIsSearching(true)
       try {
-        const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchTerm)}&limit=5`)
+        // Using the existing users endpoint with search parameter
+        const response = await fetch(`/api/users?search=${encodeURIComponent(searchTerm)}&limit=5`)
         if (response.ok) {
           const data = await response.json()
+          // Handle both response formats: array or object with users property
+          const users = Array.isArray(data) ? data : data.users || []
+
           // Filter out users who are already in the review board
           setSearchResults(
-            data.filter((user: ReviewBoardMember) => !reviewBoardMembers.some((member) => member.id === user.id)),
+            users.filter((user: ReviewBoardMember) => !reviewBoardMembers.some((member) => member.id === user.id)),
           )
         } else {
           console.error("Error searching users:", await response.text())
@@ -473,7 +477,12 @@ export function TemplateForm({ template }: TemplateFormProps) {
         })
       }
 
-      router.push("/reviewboard/applications/templates")
+      // Check if we're in review board or rnr path and redirect accordingly
+      const path = window.location.pathname
+      const redirectBase = path.includes("/reviewboard/")
+        ? "/reviewboard/applications/templates"
+        : "/rnr/applications/templates"
+      router.push(redirectBase)
     } catch (error) {
       toast({
         title: "Error",
