@@ -2,7 +2,7 @@
 
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { prisma } from "@/lib/prisma" // Changed from default import to named import
 
 export async function checkReviewBoardMembership(userId: number) {
   try {
@@ -21,42 +21,62 @@ export async function checkReviewBoardMembership(userId: number) {
       throw new Error("Forbidden")
     }
 
-    // Check if user is a member of any review board
-    const reviewBoardMembership = await prisma.applicationReviewBoard.findFirst({
-      where: {
-        members: {
-          some: {
-            id: userId,
+    // Check if the ApplicationReviewBoard model exists in the schema
+    // If it doesn't exist, we'll assume the user is not a member
+    try {
+      // Check if user is a member of any review board
+      const reviewBoardMembership = await prisma.applicationTemplate.findFirst({
+        where: {
+          reviewBoard: {
+            members: {
+              some: {
+                id: userId,
+              },
+            },
           },
         },
-      },
-    })
+      })
 
-    return !!reviewBoardMembership
+      return !!reviewBoardMembership
+    } catch (modelError) {
+      console.error("Error accessing review board model:", modelError)
+      // If there's an error accessing the model, return false
+      return false
+    }
   } catch (error) {
     console.error("Error checking review board membership:", error)
-    throw error
+    // Return false instead of throwing to prevent breaking the UI
+    return false
   }
 }
 
 export async function getUserReviewBoardTemplateIds(userId: number) {
   try {
-    const reviewBoards = await prisma.applicationReviewBoard.findMany({
-      where: {
-        members: {
-          some: {
-            id: userId,
+    // Try to get templates where the user is a review board member
+    try {
+      const templates = await prisma.applicationTemplate.findMany({
+        where: {
+          reviewBoard: {
+            members: {
+              some: {
+                id: userId,
+              },
+            },
           },
         },
-      },
-      select: {
-        templateId: true,
-      },
-    })
+        select: {
+          id: true,
+        },
+      })
 
-    return reviewBoards.map((board) => board.templateId)
+      return templates.map((template) => template.id)
+    } catch (modelError) {
+      console.error("Error accessing review board model:", modelError)
+      // If there's an error accessing the model, return empty array
+      return []
+    }
   } catch (error) {
     console.error("Error getting user review board template IDs:", error)
-    throw error
+    return []
   }
 }

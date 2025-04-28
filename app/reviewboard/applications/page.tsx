@@ -32,8 +32,14 @@ export default async function ApplicationsPage({
     // If user is not an admin, get their review board template IDs
     let templateIds: number[] = []
     if (!isAdmin && !isRNR) {
-      const userId = Number(session.user.id)
-      templateIds = await getUserReviewBoardTemplateIds(userId)
+      try {
+        const userId = Number(session.user.id)
+        templateIds = await getUserReviewBoardTemplateIds(userId)
+      } catch (error) {
+        console.error("Error getting template IDs:", error)
+        // If there's an error, default to empty array
+        templateIds = []
+      }
     }
 
     // Build filter based on search params and user role
