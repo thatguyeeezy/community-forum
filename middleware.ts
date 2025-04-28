@@ -11,7 +11,16 @@ function getIP(request: NextRequest): string {
 
 // Add this function to check if user has RNR permissions
 function hasRnRPermission(role: string): boolean {
-  return ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(role) || role.startsWith("RNR_")
+  return [
+    "WEBMASTER",
+    "HEAD_ADMIN",
+    "SENIOR_ADMIN",
+    "SPECIAL_ADVISOR",
+    "ADMIN",
+    "RNR_ADMINISTRATION",
+    "RNR_STAFF",
+    "RNR_MEMBER",
+  ].includes(role)
 }
 
 // This function can be marked `async` if using `await` inside
@@ -105,13 +114,18 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/auth/signin", request.url))
     }
 
-    // Check if user has RNR role
+    // Check if user has appropriate role
     const userRole = session?.role as string
 
-    // Use the helper function to check RNR permission
+    // Use the updated function to check permission
+    // Note: We're not checking review board membership here since that requires a DB query
+    // We'll do that check in the layout component instead
     if (!hasRnRPermission(userRole)) {
       console.log(`Review Board access denied in middleware for role: ${userRole}`)
-      return NextResponse.redirect(new URL("/auth/error?error=AccessDenied", request.url))
+
+      // Instead of immediately redirecting, let the layout component handle the review board membership check
+      // We'll set a header to indicate that the role check failed, so the layout knows to check membership
+      response.headers.set("x-check-review-membership", "true")
     }
   }
 

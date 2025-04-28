@@ -16,26 +16,43 @@ export default async function ReviewBoardLayout({
     redirect("/auth/signin")
   }
 
-  // Check if user is staff, has RNR role, or is a review board member
+  // Get the user's role
   const userRole = session.user.role as string
-  const isStaff = ["STAFF", "HEAD_ADMIN", "WEBMASTER"].includes(userRole)
-  const isRNR = ["RNR_ADMINISTRATION", "RNR_STAFF"].includes(userRole)
 
-  // Only check review board membership if not already staff or RNR
-  let isReviewBoardMember = false
-  if (!isStaff && !isRNR) {
+  // Define roles that have direct access
+  const directAccessRoles = [
+    "WEBMASTER",
+    "HEAD_ADMIN",
+    "SENIOR_ADMIN",
+    "SPECIAL_ADVISOR",
+    "STAFF",
+    "RNR_ADMINISTRATION",
+    "RNR_STAFF",
+    "RNR_MEMBER",
+  ]
+
+  // Check if user has direct access based on role
+  const hasDirectAccess = directAccessRoles.includes(userRole)
+
+  // If user doesn't have direct access, check if they're a review board member
+  if (!hasDirectAccess) {
+    console.log(
+      `User ${session.user.id} with role ${userRole} doesn't have direct access, checking review board membership`,
+    )
+
     try {
-      isReviewBoardMember = await checkReviewBoardMembership(Number(session.user.id))
+      const isReviewBoardMember = await checkReviewBoardMembership(Number(session.user.id))
+
+      if (!isReviewBoardMember) {
+        console.log(`User ${session.user.id} is not a review board member, access denied`)
+        redirect("/auth/error?error=AccessDenied")
+      }
+
+      console.log(`User ${session.user.id} is a review board member, granting access`)
     } catch (error) {
       console.error("Error checking review board membership:", error)
-      // If there's an error, default to false
-      isReviewBoardMember = false
+      redirect("/auth/error?error=AccessDenied")
     }
-  }
-
-  // Allow access if user is staff, has RNR role, or is a review board member
-  if (!isStaff && !isRNR && !isReviewBoardMember) {
-    redirect("/")
   }
 
   return (

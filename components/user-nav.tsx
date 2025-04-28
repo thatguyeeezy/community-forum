@@ -58,14 +58,24 @@ export function UserNav() {
     : "U"
 
   const isStaff = hasStaffPermission(user?.role)
-  const hasRnRRole = user?.role === "RNR_ADMINISTRATION" || user?.role === "RNR_STAFF" || user?.role === "RNR_MEMBER"
-  const showAppPanel =
-    session?.user?.role === "STAFF" ||
-    session?.user?.role === "RNR_ADMINISTRATION" ||
-    session?.user?.role === "RNR_STAFF" ||
-    session?.user?.role === "HEAD_ADMIN" ||
-    session?.user?.role === "WEBMASTER" ||
-    isReviewBoardMember
+
+  // Define roles that have direct access to the App Panel
+  const directAccessRoles = [
+    "WEBMASTER",
+    "HEAD_ADMIN",
+    "SENIOR_ADMIN",
+    "SPECIAL_ADVISOR",
+    "ADMIN",
+    "RNR_ADMINISTRATION",
+    "RNR_STAFF",
+    "RNR_MEMBER",
+  ]
+
+  // Check if user has direct access based on role
+  const hasDirectAccess = user?.role ? directAccessRoles.includes(user.role) : false
+
+  // Show App Panel if user has direct access or is a review board member
+  const showAppPanel = hasDirectAccess || isReviewBoardMember
 
   return (
     <DropdownMenu>

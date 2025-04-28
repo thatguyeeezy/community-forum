@@ -1,39 +1,113 @@
-import { type NextRequest, NextResponse } from "next/server"
+"use server"
+
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import { isReviewBoardMember } from "@/lib/review-board"
+import { prisma } from "@/lib/prisma" // Changed from default import to named import
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
+export async function checkReviewBoardMembership(userId: number) {
   try {
-    // Destructure id from context to avoid direct property access
-    const { id } = context.params
-
     const session = await getServerSession(authOptions)
 
     // Check if user is authenticated
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      console.log("No session found when checking review board membership")
+      return false
     }
 
-    // Check if user is requesting their own data
+    // For debugging
+    console.log(`Checking review board membership for user ${userId}`)
+    console.log(`Current user is ${session.user.id} with role ${session.user.role}`)
+
+    // Admin users always have access
     if (
-      session.user.id !== id &&
-      !["SPECIAL_ADVISOR", "SENIOR_ADMIN", "HEAD_ADMIN", "WEBMASTER"].includes(session.user.role as string)
+      [
+        "WEBMASTER",
+        "HEAD_ADMIN",
+        "SENIOR_ADMIN",
+        "SPECIAL_ADVISOR",
+        "STAFF",
+        "RNR_ADMINISTRATION",
+        "RNR_STAFF",
+        "RNR_MEMBER",
+      ].includes(session.user.role as string)
     ) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      console.log(`User ${userId} has direct access through role ${session.user.role}`)
+      return true
     }
 
-    const userId = Number.parseInt(id, 10)
+    // Check if the ApplicationReviewBoard model exists in the schema
+    try {
+      // Check if user is a member of any review board
+      const reviewBoardMembership = await prisma.applicationTemplate.findFirst({
+        where: {
+          reviewBoard: {
+            members: {
+              some: {
+                id: userId,
+              },
+            },
+          },
+        },
+      })
 
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
+      const isMember = !!reviewBoardMembership
+      console.log(`User ${userId} review board membership check result: ${isMember}`)
+      return isMember
+    } catch (modelError) {
+      console.error("Error accessing review board model:", modelError)
+      // If there's an error accessing the model, return false
+      return false
     }
-
-    const isMember = await isReviewBoardMember(userId)
-
-    return NextResponse.json({ isMember })
   } catch (error) {
     console.error("Error checking review board membership:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    // Return false instead of throwing to prevent breaking the UI
+    return false
+  }
+}
+
+export async function getUserReviewBoardTemplateIds(userId: number) {
+  try {
+    // Admin users can see all templates
+    const session = await getServerSession(authOptions)
+    if (
+      session?.user?.role &&
+      ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "SPECIAL_ADVISOR"].includes(
+        session.user.role as string,
+      )
+    ) {
+      console.log(`User ${userId} has admin role ${session.user.role}, returning all templates`)
+      const allTemplates = await prisma.applicationTemplate.findMany({
+        select: { id: true },
+      })
+      return allTemplates.map((template) => template.id)
+    }
+
+    // Try to get templates where the user is a review board member
+    try {
+      const templates = await prisma.applicationTemplate.findMany({
+        where: {
+          reviewBoard: {
+            members: {
+              some: {
+                id: userId,
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      })
+
+      console.log(`Found ${templates.length} templates for user ${userId}`)
+      return templates.map((template) => template.id)
+    } catch (modelError) {
+      console.error("Error accessing review board model:", modelError)
+      // If there's an error accessing the model, return empty array
+      return []
+    }
+  } catch (error) {
+    console.error("Error getting user review board template IDs:", error)
+    return []
   }
 }
