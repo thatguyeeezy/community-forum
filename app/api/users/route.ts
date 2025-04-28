@@ -36,22 +36,13 @@ export async function GET(request: Request) {
     try {
       // If there's a search parameter, filter users by name or email
       if (isSearchRequest) {
-        const users = await prisma.user.findMany({
+        // Convert search to lowercase for case-insensitive comparison
+        const searchLower = search.toLowerCase()
+
+        // Fetch all users and filter in memory for case-insensitive matching
+        // This is a workaround for Prisma versions that don't support mode: "insensitive"
+        const allUsers = await prisma.user.findMany({
           where: {
-            OR: [
-              {
-                name: {
-                  contains: search,
-                  mode: "insensitive",
-                },
-              },
-              {
-                email: {
-                  contains: search,
-                  mode: "insensitive",
-                },
-              },
-            ],
             isBanned: false,
           },
           select: {
@@ -60,14 +51,22 @@ export async function GET(request: Request) {
             email: true,
             image: true,
           },
-          take: limit,
           orderBy: {
             name: "asc",
           },
         })
 
-        console.log(`GET /api/users: Successfully fetched ${users.length} users matching search: ${search}`)
-        return NextResponse.json(users)
+        // Filter users in memory
+        const filteredUsers = allUsers
+          .filter((user) => {
+            const nameMatch = user.name?.toLowerCase().includes(searchLower) || false
+            const emailMatch = user.email?.toLowerCase().includes(searchLower) || false
+            return nameMatch || emailMatch
+          })
+          .slice(0, limit)
+
+        console.log(`GET /api/users: Successfully fetched ${filteredUsers.length} users matching search: ${search}`)
+        return NextResponse.json(filteredUsers)
       }
 
       // Otherwise, fetch all users (admin only)
