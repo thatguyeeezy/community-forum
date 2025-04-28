@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { LogOut, Settings, User } from "lucide-react"
 import { useState, useEffect } from "react"
+import { checkReviewBoardMembership } from "@/app/actions/review-board"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -21,24 +22,28 @@ import { hasStaffPermission } from "@/lib/roles"
 
 export function UserNav() {
   const { data: session } = useSession()
-  const [isReviewMember, setIsReviewMember] = useState(false)
+  const [isReviewBoardMember, setIsReviewBoardMember] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    async function checkReviewMembership() {
+    async function checkMembership() {
       if (session?.user?.id) {
         try {
-          const userId = Number(session.user.id)
-          const result = await fetch(`/api/users/${userId}/review-board-membership`)
-          const data = await result.json()
-          setIsReviewMember(data.isMember)
+          const isMember = await checkReviewBoardMembership(Number(session.user.id))
+          setIsReviewBoardMember(isMember)
         } catch (error) {
           console.error("Error checking review board membership:", error)
+          setIsReviewBoardMember(false)
+        } finally {
+          setIsLoading(false)
         }
+      } else {
+        setIsLoading(false)
       }
     }
 
-    checkReviewMembership()
-  }, [session?.user?.id])
+    checkMembership()
+  }, [session])
 
   if (!session) {
     return null
@@ -54,7 +59,13 @@ export function UserNav() {
 
   const isStaff = hasStaffPermission(user?.role)
   const hasRnRRole = user?.role === "RNR_ADMINISTRATION" || user?.role === "RNR_STAFF" || user?.role === "RNR_MEMBER"
-  const showAppPanel = isStaff || hasRnRRole || isReviewMember
+  const showAppPanel =
+    session?.user?.role === "STAFF" ||
+    session?.user?.role === "RNR_ADMINISTRATION" ||
+    session?.user?.role === "RNR_STAFF" ||
+    session?.user?.role === "HEAD_ADMIN" ||
+    session?.user?.role === "WEBMASTER" ||
+    isReviewBoardMember
 
   return (
     <DropdownMenu>

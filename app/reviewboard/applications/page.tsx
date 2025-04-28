@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ApplicationStatusBadge } from "@/components/application-status-badge"
-import { getUserReviewBoardTemplateIds } from "@/lib/review-board"
+import { getUserReviewBoardTemplateIds } from "@/app/actions/review-board"
 
 export const dynamic = "force-dynamic"
 
@@ -21,17 +21,17 @@ export default async function ApplicationsPage({
       redirect("/auth/signin")
     }
 
+    // Check if user is admin or RNR staff
+    const isAdmin = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN"].includes(session.user.role as string)
+    const isRNR = ["RNR_ADMINISTRATION"].includes(session.user.role as string)
+
     const page = Number(searchParams.page) || 1
     const pageSize = 10
     const skip = (page - 1) * pageSize
 
-    // Get user's role to determine if they should see all applications
-    const userRole = session.user.role as string
-    const isAdmin = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "RNR_ADMINISTRATION"].includes(userRole)
-
     // If user is not an admin, get their review board template IDs
     let templateIds: number[] = []
-    if (!isAdmin) {
+    if (!isAdmin && !isRNR) {
       const userId = Number(session.user.id)
       templateIds = await getUserReviewBoardTemplateIds(userId)
     }
@@ -50,11 +50,11 @@ export default async function ApplicationsPage({
     }
 
     // If user is not an admin, restrict to their review board templates
-    if (!isAdmin && templateIds.length > 0) {
+    if (!isAdmin && !isRNR && templateIds.length > 0) {
       filter.templateId = {
         in: templateIds,
       }
-    } else if (!isAdmin) {
+    } else if (!isAdmin && !isRNR) {
       // If not an admin and not in any review boards, show no applications
       filter.id = -1 // This ensures no applications are found
     }
