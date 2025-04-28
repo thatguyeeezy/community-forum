@@ -105,31 +105,69 @@ export function TemplateForm({ template }: TemplateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [searchResults, setSearchResults] = useState<ReviewBoardMember[]>([])
+  const [isSearching, setIsSearching] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+
+  // Effect to load Discord role names when component mounts
+  useEffect(() => {
+    const loadDiscordRoleNames = async () => {
+      const roleNames: Record<string, string> = {}
+
+      for (const roleId of discordRoleIds) {
+        try {
+          const name = await fetchDiscordRoleName(roleId)
+          roleNames[roleId] = name
+        } catch (error) {
+          console.error(`Error fetching role name for ${roleId}:`, error)
+          roleNames[roleId] = "Unknown Role"
+        }
+      }
+
+      setDiscordRoleNames(roleNames)
+    }
+
+    if (discordRoleIds.length > 0) {
+      loadDiscordRoleNames()
+    }
+  }, [discordRoleIds])
 
   // Effect to search for users when searchTerm changes
   useEffect(() => {
     const searchUsers = async () => {
-      if (searchTerm.length < 3) {
+      if (searchTerm.length < 2) {
         setSearchResults([])
         return
       }
 
+      setIsSearching(true)
       try {
-        const response = await fetch(`/api/users?search=${encodeURIComponent(searchTerm)}&limit=5`)
+        const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchTerm)}&limit=5`)
         if (response.ok) {
           const data = await response.json()
+          // Filter out users who are already in the review board
           setSearchResults(
             data.filter((user: ReviewBoardMember) => !reviewBoardMembers.some((member) => member.id === user.id)),
           )
+        } else {
+          console.error("Error searching users:", await response.text())
+          setSearchResults([])
         }
       } catch (error) {
         console.error("Error searching users:", error)
+        setSearchResults([])
+      } finally {
+        setIsSearching(false)
       }
     }
 
-    searchUsers()
+    const debounceTimer = setTimeout(() => {
+      if (searchTerm.length >= 2) {
+        searchUsers()
+      }
+    }, 300)
+
+    return () => clearTimeout(debounceTimer)
   }, [searchTerm, reviewBoardMembers])
 
   // Function to fetch Discord role name
@@ -435,7 +473,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
         })
       }
 
-      router.push("/rnr/applications/templates")
+      router.push("/reviewboard/applications/templates")
     } catch (error) {
       toast({
         title: "Error",
@@ -576,14 +614,22 @@ export function TemplateForm({ template }: TemplateFormProps) {
                   id="memberSearch"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search users by name..."
+                  placeholder="Search users by name (min 2 characters)..."
                   disabled={isSubmitting}
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to search for users</p>
             </div>
 
             {/* Search Results */}
-            {searchResults.length > 0 && (
+            {isSearching && (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                <span className="ml-2 text-sm text-gray-400">Searching...</span>
+              </div>
+            )}
+
+            {!isSearching && searchResults.length > 0 && (
               <div className="bg-gray-800 border border-gray-700 rounded-md p-2">
                 <p className="text-xs text-gray-400 mb-2">Search Results:</p>
                 <div className="space-y-1">
@@ -601,10 +647,16 @@ export function TemplateForm({ template }: TemplateFormProps) {
               </div>
             )}
 
+            {!isSearching && searchTerm.length >= 2 && searchResults.length === 0 && (
+              <div className="bg-gray-800 border border-gray-700 rounded-md p-2">
+                <p className="text-xs text-gray-400">No users found matching "{searchTerm}"</p>
+              </div>
+            )}
+
             {/* Selected Members */}
-            {reviewBoardMembers.length > 0 && (
-              <div className="space-y-2">
-                <Label>Selected Review Board Members</Label>
+            <div className="space-y-2">
+              <Label>Selected Review Board Members ({reviewBoardMembers.length})</Label>
+              {reviewBoardMembers.length > 0 ? (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {reviewBoardMembers.map((member) => (
                     <Badge key={member.id} variant="secondary" className="flex items-center gap-1 px-2 py-1">
@@ -622,8 +674,10 @@ export function TemplateForm({ template }: TemplateFormProps) {
                     </Badge>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-gray-400">No members selected</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -766,7 +820,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
       )}
 
       <div className="flex justify-between">
-        <Link href="/rnr/applications/templates">
+        <Link href="/reviewboard/applications/templates">
           <Button type="button" variant="outline" disabled={isSubmitting}>
             Cancel
           </Button>

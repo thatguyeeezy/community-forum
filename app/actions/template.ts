@@ -74,9 +74,16 @@ export async function createTemplate(data: TemplateData) {
         },
       },
     },
+    include: {
+      reviewBoard: {
+        include: {
+          members: true,
+        },
+      },
+    },
   })
 
-  revalidatePath("/rnr/applications/templates")
+  revalidatePath("/reviewboard/applications/templates")
   return template
 }
 
@@ -148,18 +155,35 @@ export async function updateTemplate(data: UpdateTemplateData) {
   }
 
   // Update review board
-  await prisma.applicationReviewBoard.update({
+  const reviewBoard = await prisma.applicationReviewBoard.findUnique({
     where: { templateId: data.id },
-    data: {
-      members: {
-        set: data.reviewBoard.memberIds.map((id) => ({ id })),
-      },
-      discordRoleIds: data.reviewBoard.discordRoleIds,
-    },
   })
 
-  revalidatePath("/rnr/applications/templates")
-  revalidatePath(`/rnr/applications/templates/${data.id}`)
+  if (reviewBoard) {
+    await prisma.applicationReviewBoard.update({
+      where: { id: reviewBoard.id },
+      data: {
+        members: {
+          set: data.reviewBoard.memberIds.map((id) => ({ id })),
+        },
+        discordRoleIds: data.reviewBoard.discordRoleIds,
+      },
+    })
+  } else {
+    // Create review board if it doesn't exist
+    await prisma.applicationReviewBoard.create({
+      data: {
+        templateId: data.id,
+        members: {
+          connect: data.reviewBoard.memberIds.map((id) => ({ id })),
+        },
+        discordRoleIds: data.reviewBoard.discordRoleIds,
+      },
+    })
+  }
+
+  revalidatePath("/reviewboard/applications/templates")
+  revalidatePath(`/reviewboard/applications/templates/${data.id}`)
   return template
 }
 
@@ -181,7 +205,7 @@ export async function toggleTemplateStatus(id: number, active: boolean) {
     data: { active },
   })
 
-  revalidatePath("/rnr/applications/templates")
+  revalidatePath("/reviewboard/applications/templates")
   return template
 }
 
@@ -212,7 +236,7 @@ export async function deleteTemplate(id: number) {
     where: { id },
   })
 
-  revalidatePath("/rnr/applications/templates")
+  revalidatePath("/reviewboard/applications/templates")
   return true
 }
 
