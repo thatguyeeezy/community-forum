@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
-import { Loader2, Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Users, Shield } from "lucide-react"
+import { Loader2, Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Users, Shield, Info } from "lucide-react"
 import { createTemplate, updateTemplate } from "@/app/actions/template"
 import { fetchDiscordRoleName } from "@/app/actions/discord"
 
@@ -46,6 +46,7 @@ interface Question {
 interface ReviewBoardMember {
   id: number
   name: string
+  discordId?: string | null
 }
 
 interface TemplateFormProps {
@@ -70,6 +71,7 @@ interface TemplateFormProps {
       members: {
         id: number
         name: string
+        discordId?: string | null
       }[]
       discordRoleIds: string | null
     }
@@ -567,7 +569,14 @@ export function TemplateForm({ template }: TemplateFormProps) {
           <div className="space-y-4">
             {/* Discord Role IDs Input */}
             <div className="space-y-2">
-              <Label htmlFor="newDiscordRoleId">Discord Role IDs</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="newDiscordRoleId">Discord Role IDs ({discordRoleIds.length})</Label>
+                {discordRoleIds.length > 0 && (
+                  <Badge variant="outline" className="ml-2">
+                    {discordRoleIds.length} role{discordRoleIds.length !== 1 ? "s" : ""}
+                  </Badge>
+                )}
+              </div>
               <div className="flex items-center">
                 <Shield className="mr-2 h-4 w-4 text-gray-500" />
                 <Input
@@ -612,22 +621,32 @@ export function TemplateForm({ template }: TemplateFormProps) {
                   ))}
                 </div>
               )}
+              {discordRoleIds.length === 0 && <div className="text-sm text-gray-400 mt-2">No Discord roles added</div>}
             </div>
 
             {/* Review Board Members Input */}
             <div className="space-y-2">
-              <Label htmlFor="memberSearch">Add Review Board Members</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="memberSearch">Add Review Board Members</Label>
+                {reviewBoardMembers.length > 0 && (
+                  <Badge variant="outline" className="ml-2">
+                    {reviewBoardMembers.length} member{reviewBoardMembers.length !== 1 ? "s" : ""}
+                  </Badge>
+                )}
+              </div>
               <div className="flex items-center">
                 <Users className="mr-2 h-4 w-4 text-gray-500" />
                 <Input
                   id="memberSearch"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search users by name (min 2 characters)..."
+                  placeholder="Search by name or Discord ID (min 2 characters)..."
                   disabled={isSubmitting}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to search for users</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Type at least 2 characters to search for users by name or Discord ID
+              </p>
             </div>
 
             {/* Search Results */}
@@ -648,7 +667,10 @@ export function TemplateForm({ template }: TemplateFormProps) {
                       className="flex items-center justify-between p-2 hover:bg-gray-700 rounded-md cursor-pointer"
                       onClick={() => addReviewBoardMember(user)}
                     >
-                      <span>{user.name}</span>
+                      <div className="flex flex-col">
+                        <span>{user.name}</span>
+                        {user.discordId && <span className="text-xs text-gray-400">Discord ID: {user.discordId}</span>}
+                      </div>
                       <Plus className="h-4 w-4 text-gray-400" />
                     </div>
                   ))}
@@ -669,7 +691,17 @@ export function TemplateForm({ template }: TemplateFormProps) {
                 <div className="flex flex-wrap gap-2 mt-2">
                   {reviewBoardMembers.map((member) => (
                     <Badge key={member.id} variant="secondary" className="flex items-center gap-1 px-2 py-1">
-                      {member.name}
+                      <div className="flex items-center">
+                        <span>{member.name}</span>
+                        {member.discordId && (
+                          <div className="ml-1 group relative">
+                            <Info className="h-3 w-3 text-gray-400 cursor-help" />
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                              Discord ID: {member.discordId}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <Button
                         type="button"
                         variant="ghost"

@@ -3,10 +3,12 @@ import { getServerSession } from "next-auth/next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { canOverrideRnRDecisions } from "@/lib/roles"
-import { ArrowLeft, Edit } from "lucide-react"
+import { ArrowLeft, Edit, Users, Shield } from "lucide-react"
+import { fetchDiscordRoleName } from "@/app/actions/discord"
 
 export default async function TemplatePage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -26,7 +28,7 @@ export default async function TemplatePage({ params }: { params: { id: string } 
     notFound()
   }
 
-  // Get the template with questions
+  // Get the template with questions and review board
   const template = await prisma.applicationTemplate.findUnique({
     where: { id: templateId },
     include: {
@@ -35,11 +37,36 @@ export default async function TemplatePage({ params }: { params: { id: string } 
           order: "asc",
         },
       },
+      reviewBoard: {
+        include: {
+          members: {
+            select: {
+              id: true,
+              name: true,
+              discordId: true,
+            },
+          },
+        },
+      },
     },
   })
 
   if (!template) {
     notFound()
+  }
+
+  // Fetch Discord role names if there are any
+  const discordRoleNames: Record<string, string> = {}
+  if (template.reviewBoard?.discordRoleIds) {
+    const roleIds = template.reviewBoard.discordRoleIds.split(",")
+    for (const roleId of roleIds) {
+      try {
+        discordRoleNames[roleId] = await fetchDiscordRoleName(roleId)
+      } catch (error) {
+        console.error(`Error fetching Discord role name for ${roleId}:`, error)
+        discordRoleNames[roleId] = "Unknown Role"
+      }
+    }
   }
 
   return (
@@ -70,6 +97,62 @@ export default async function TemplatePage({ params }: { params: { id: string } 
         </CardHeader>
         <CardContent>
           {template.description && <p className="mb-4">{template.description}</p>}
+
+          {/* Review Board Section */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-2">Review Board</h3>
+
+            {/* Discord Roles */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="h-4 w-4" />
+                <h4 className="font-medium">Discord Roles</h4>
+                {template.reviewBoard?.discordRoleIds && (
+                  <Badge variant="outline">{template.reviewBoard.discordRoleIds.split(",").length} role(s)</Badge>
+                )}
+              </div>
+
+              {template.reviewBoard?.discordRoleIds ? (
+                <div className="flex flex-wrap gap-2">
+                  {template.reviewBoard.discordRoleIds.split(",").map((roleId) => (
+                    <Badge key={roleId} variant="secondary">
+                      {discordRoleNames[roleId] || roleId}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No Discord roles assigned</p>
+              )}
+            </div>
+
+            {/* Review Board Members */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4" />
+                <h4 className="font-medium">Members</h4>
+                {template.reviewBoard?.members && (
+                  <Badge variant="outline">{template.reviewBoard.members.length} member(s)</Badge>
+                )}
+              </div>
+
+              {template.reviewBoard?.members && template.reviewBoard.members.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {template.reviewBoard.members.map((member) => (
+                    <div key={member.id} className="flex items-center p-2 border rounded-md">
+                      <div>
+                        <p className="font-medium">{member.name}</p>
+                        {member.discordId && (
+                          <p className="text-xs text-muted-foreground">Discord ID: {member.discordId}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No members assigned</p>
+              )}
+            </div>
+          </div>
 
           <h3 className="text-lg font-medium mb-2">Questions ({template.questions.length})</h3>
           {template.questions.length === 0 ? (

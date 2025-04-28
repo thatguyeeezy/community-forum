@@ -34,13 +34,9 @@ export async function GET(request: Request) {
     console.log(`GET /api/users: Fetching users from database${search ? ` with search: ${search}` : ""}`)
 
     try {
-      // If there's a search parameter, filter users by name or email
+      // If there's a search parameter, filter users by name, email, or Discord ID
       if (isSearchRequest) {
-        // Convert search to lowercase for case-insensitive comparison
-        const searchLower = search.toLowerCase()
-
         // Fetch all users and filter in memory for case-insensitive matching
-        // This is a workaround for Prisma versions that don't support mode: "insensitive"
         const allUsers = await prisma.user.findMany({
           where: {
             isBanned: false,
@@ -50,18 +46,23 @@ export async function GET(request: Request) {
             name: true,
             email: true,
             image: true,
+            discordId: true,
           },
           orderBy: {
             name: "asc",
           },
         })
 
+        // Convert search to lowercase for case-insensitive comparison
+        const searchLower = search.toLowerCase()
+
         // Filter users in memory
         const filteredUsers = allUsers
           .filter((user) => {
             const nameMatch = user.name?.toLowerCase().includes(searchLower) || false
             const emailMatch = user.email?.toLowerCase().includes(searchLower) || false
-            return nameMatch || emailMatch
+            const discordIdMatch = user.discordId?.toLowerCase().includes(searchLower) || false
+            return nameMatch || emailMatch || discordIdMatch
           })
           .slice(0, limit)
 
@@ -101,9 +102,6 @@ export async function GET(request: Request) {
         lastActive: user.lastActive ? user.lastActive.toISOString() : null,
         isBanned: user.isBanned || false,
       }))
-
-      // For users with Discord IDs, we'll fetch their Discord info in the frontend
-      // This avoids making too many API calls here and potentially hitting rate limits
 
       return NextResponse.json(formattedUsers)
     } catch (error) {
