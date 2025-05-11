@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth/next"
 import { AppSidebar } from "@/components/app-sidebar"
 import { authOptions } from "@/lib/auth"
 import { checkReviewBoardMembership } from "@/app/actions/review-board"
-import { hasRnRPermission } from "@/lib/utils"
+import { hasRnRPermission } from "@/lib/roles"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -24,33 +24,22 @@ export default async function ReviewBoardLayout({
   // Get the user's role
   const userRole = session.user.role as string
 
-  // Define roles that have direct access
-  const directAccessRoles = [
-    "WEBMASTER",
-    "HEAD_ADMIN",
-    "SENIOR_ADMIN",
-    "SPECIAL_ADVISOR",
-    "STAFF",
-    "RNR_ADMINISTRATION",
-    "RNR_STAFF",
-    "RNR_MEMBER",
-  ]
-
   // Check if user has direct access based on role
-  const hasDirectAccess = directAccessRoles.includes(userRole)
-
-  // Check if user has review board access
-  const hasRnRRole = hasRnRPermission(session.user.role as string)
+  const hasDirectAccess = hasRnRPermission(userRole)
 
   // If user doesn't have an R&R role, check if they're a review board member
   let isBoardMember = false
-  if (!hasRnRRole) {
-    isBoardMember = await checkReviewBoardMembership(Number(session.user.id))
-    console.log(`User ${session.user.id} is a review board member: ${isBoardMember}`)
+  if (!hasDirectAccess) {
+    try {
+      isBoardMember = await checkReviewBoardMembership(Number(session.user.id))
+      console.log(`User ${session.user.id} is a review board member: ${isBoardMember}`)
+    } catch (error) {
+      console.error("Error checking review board membership:", error)
+    }
   }
 
   // If user doesn't have R&R role and is not a board member, show access denied
-  if (!hasRnRRole && !isBoardMember) {
+  if (!hasDirectAccess && !isBoardMember) {
     return (
       <div className="flex min-h-screen flex-col">
         <div className="flex-1 p-8">

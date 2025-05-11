@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { getServerSession } from "next-auth/next"
 import Link from "next/link"
 import { authOptions } from "@/lib/auth"
@@ -17,12 +17,25 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {
-      redirect("/auth/signin")
-    }
-
-    // Check if user has R&R permissions
-    if (!hasRnRPermission(session.user.role as string)) {
-      redirect("/reviewboard")
+      return (
+        <div className="p-8">
+          <Card className="border-l-4 border-red-500 bg-gray-800 shadow">
+            <CardHeader>
+              <CardTitle className="text-gray-100">Authentication Required</CardTitle>
+              <CardDescription className="text-gray-400">You need to be logged in to view this page</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-300 mb-4">Please sign in to access the application details.</p>
+              <Button variant="outline" asChild>
+                <Link href="/auth/signin">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Sign In
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )
     }
 
     const applicationId = Number.parseInt(params.id)
@@ -63,8 +76,11 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
     const isAdmin = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "RNR_ADMINISTRATION"].includes(userRole)
     const userId = Number(session.user.id)
 
-    // If not admin, check if user is a member of the review board for this template
-    if (!isAdmin) {
+    // Check if user has R&R permissions
+    const hasRnRAccess = hasRnRPermission(userRole)
+
+    // If not admin or R&R role, check if user is a member of the review board for this template
+    if (!isAdmin && !hasRnRAccess) {
       // Get the template IDs the user has access to as a review board member
       const templateIds = await getUserReviewBoardTemplateIds(userId)
 
