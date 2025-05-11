@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth/next"
 import Link from "next/link"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { hasRnRPermission } from "@/lib/roles"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -13,35 +12,37 @@ import { ArrowLeft, Clock, User, Calendar, FileText, AlertTriangle } from "lucid
 import { getUserReviewBoardTemplateIds } from "@/lib/review-board"
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
+  // Get the session without redirecting
+  const session = await getServerSession(authOptions)
+
+  // If not authenticated, show login message
+  if (!session?.user) {
+    return (
+      <div className="p-8">
+        <Card className="border-l-4 border-red-500 bg-gray-800 shadow">
+          <CardHeader>
+            <CardTitle className="text-gray-100">Authentication Required</CardTitle>
+            <CardDescription className="text-gray-400">You need to be logged in to view this page</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-300 mb-4">Please sign in to access the application details.</p>
+            <Button variant="outline" asChild>
+              <Link href="/auth/signin">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Sign In
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return (
-        <div className="p-8">
-          <Card className="border-l-4 border-red-500 bg-gray-800 shadow">
-            <CardHeader>
-              <CardTitle className="text-gray-100">Authentication Required</CardTitle>
-              <CardDescription className="text-gray-400">You need to be logged in to view this page</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300 mb-4">Please sign in to access the application details.</p>
-              <Button variant="outline" asChild>
-                <Link href="/auth/signin">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Sign In
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    }
-
     const applicationId = Number.parseInt(params.id)
 
     if (isNaN(applicationId)) {
-      notFound()
+      return notFound()
     }
 
     // Get the application
@@ -68,19 +69,23 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
     })
 
     if (!application) {
-      notFound()
+      return notFound()
     }
 
     // Check if user has permission to view this application
     const userRole = session.user.role as string
-    const isAdmin = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "RNR_ADMINISTRATION"].includes(userRole)
     const userId = Number(session.user.id)
 
-    // Check if user has R&R permissions
-    const hasRnRAccess = hasRnRPermission(userRole)
+    // Define admin roles
+    const adminRoles = ["WEBMASTER", "HEAD_ADMIN", "SENIOR_ADMIN", "ADMIN", "RNR_ADMINISTRATION"]
+    const isAdmin = adminRoles.includes(userRole)
 
-    // If not admin or R&R role, check if user is a member of the review board for this template
-    if (!isAdmin && !hasRnRAccess) {
+    // Define R&R roles
+    const rnrRoles = ["RNR_STAFF", "RNR_MEMBER"]
+    const hasRnRRole = isAdmin || rnrRoles.includes(userRole)
+
+    // If not admin or R&R role, check if user is a review board member for this template
+    if (!hasRnRRole) {
       // Get the template IDs the user has access to as a review board member
       const templateIds = await getUserReviewBoardTemplateIds(userId)
 
@@ -116,6 +121,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
       }
     }
 
+    // If we get here, the user has permission to view the application
     return (
       <div className="space-y-6 p-8">
         <div className="flex items-center justify-between">

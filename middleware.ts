@@ -9,20 +9,6 @@ function getIP(request: NextRequest): string {
   return xff ? xff.split(",")[0] : "127.0.0.1"
 }
 
-// Add this function to check if user has RNR permissions
-function hasRnRPermission(role: string): boolean {
-  return [
-    "WEBMASTER",
-    "HEAD_ADMIN",
-    "SENIOR_ADMIN",
-    "SPECIAL_ADVISOR",
-    "STAFF",
-    "RNR_ADMINISTRATION",
-    "RNR_STAFF",
-    "RNR_MEMBER",
-  ].includes(role)
-}
-
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const session = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
@@ -107,27 +93,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Add this section for reviewboard route protection
+  // For reviewboard route protection - only check authentication, not permissions
   if (path.startsWith("/reviewboard")) {
     // Redirect to login if not authenticated
     if (!session) {
       return NextResponse.redirect(new URL("/auth/signin", request.url))
     }
 
-    // Check if user has appropriate role
-    const userRole = session?.role as string
-
-    // Admin and R&R roles always have access
-    if (!hasRnRPermission(userRole)) {
-      console.log(`Review Board access denied in middleware for role: ${userRole}`)
-
-      // Set a header to indicate that we need to check review board membership
-      // This will be used in the layout component
-      response.headers.set("x-check-review-membership", "true")
-
-      // We'll let the request continue and let the layout component handle the membership check
-      // Don't redirect here
-    }
+    // Let the page components handle permission checks
+    // Don't redirect or set headers here
   }
 
   // Handle first-time users from Main Discord
