@@ -16,7 +16,7 @@ function hasRnRPermission(role: string): boolean {
     "HEAD_ADMIN",
     "SENIOR_ADMIN",
     "SPECIAL_ADVISOR",
-    "ADMIN",
+    "STAFF",
     "RNR_ADMINISTRATION",
     "RNR_STAFF",
     "RNR_MEMBER",
@@ -117,15 +117,16 @@ export async function middleware(request: NextRequest) {
     // Check if user has appropriate role
     const userRole = session?.role as string
 
-    // Use the updated function to check permission
-    // Note: We're not checking review board membership here since that requires a DB query
-    // We'll do that check in the layout component instead
+    // Admin and R&R roles always have access
     if (!hasRnRPermission(userRole)) {
       console.log(`Review Board access denied in middleware for role: ${userRole}`)
 
-      // Instead of immediately redirecting, let the layout component handle the review board membership check
-      // We'll set a header to indicate that the role check failed, so the layout knows to check membership
+      // Set a header to indicate that we need to check review board membership
+      // This will be used in the layout component
       response.headers.set("x-check-review-membership", "true")
+
+      // We'll let the request continue and let the layout component handle the membership check
+      // Don't redirect here
     }
   }
 
