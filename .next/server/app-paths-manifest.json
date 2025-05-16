@@ -1,5 +1,7 @@
 {
+  "/profile/[id]/page": "app/profile/[id]/page.js",
+  "/applications/status/[id]/page": "app/applications/status/[id]/page.js",
   "/page": "app/page.js",
-  "/community/page": "app/community/page.js",
-  "/community/new-announcement/page": "app/community/new-announcement/page.js"
+  "/reviewboard/applications/[id]/page": "app/reviewboard/applications/[id]/page.js",
+  "/reviewboard/page": "app/reviewboard/page.js"
 }

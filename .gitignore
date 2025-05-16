@@ -1,7 +1,8 @@
-/node_modules
-.env
-/.next
-*.old
 /.next/cache
 /.next/cache/webpack
 /.next/cache/webpack/client-development
+/.next/cache/fetch-cache
+/.next/cache
+/.next
+*.old
+/node_modules
