@@ -15,21 +15,47 @@ function run(cmd) {
 }
 
 console.log("[UPDATE] Pulling latest changes from repository...");
-// For private repos: Setup PAT authentication on VPS (one-time):
-// 1. Create PAT on GitHub: Settings > Developer settings > Personal access tokens > Tokens (classic)
-// 2. On VPS, configure credential helper:
-//    git config --global credential.helper store
-// 3. Do one manual pull: git pull (enter username and PAT as password)
-//    This saves credentials for future use
+// Uses GITHUB_TOKEN environment variable if available for private repo authentication
+
+const githubToken = process.env.GITHUB_TOKEN;
+let pullCommand;
 
 try {
     // Try to get current branch
     const currentBranch = execSync("git rev-parse --abbrev-ref HEAD", { cwd: repoPath, encoding: "utf-8" }).trim();
-    run(`git pull origin ${currentBranch}`);
+    
+    if (githubToken) {
+        // Get remote URL and inject token for authentication
+        const remoteUrl = execSync("git config --get remote.origin.url", { cwd: repoPath, encoding: "utf-8" }).trim();
+        if (remoteUrl.startsWith("https://")) {
+            // Insert token into HTTPS URL
+            const urlWithToken = remoteUrl.replace("https://", `https://${githubToken}@`);
+            pullCommand = `git pull ${urlWithToken} ${currentBranch}`;
+        } else {
+            pullCommand = `git pull origin ${currentBranch}`;
+        }
+    } else {
+        pullCommand = `git pull origin ${currentBranch}`;
+    }
+    run(pullCommand);
 } catch (err) {
     // Fallback to main if branch detection fails
     console.log("[UPDATE] Could not detect branch, using 'main' as fallback");
-    run("git pull origin main");
+    if (githubToken) {
+        try {
+            const remoteUrl = execSync("git config --get remote.origin.url", { cwd: repoPath, encoding: "utf-8" }).trim();
+            if (remoteUrl.startsWith("https://")) {
+                const urlWithToken = remoteUrl.replace("https://", `https://${githubToken}@`);
+                run(`git pull ${urlWithToken} main`);
+            } else {
+                run("git pull origin main");
+            }
+        } catch (e) {
+            run("git pull origin main");
+        }
+    } else {
+        run("git pull origin main");
+    }
 }
 
 console.log("[UPDATE] Ensuring dependencies are installed...");
