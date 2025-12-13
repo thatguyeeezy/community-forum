@@ -1,54 +1,93 @@
 "use client"
 
-import { Suspense } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Copy, Check } from 'lucide-react'
+import { getUserErrorMessage } from "@/lib/error-codes"
 
 // Create a separate component that uses useSearchParams
 function AuthErrorContent() {
-  // Import useSearchParams inside the component
   const { useSearchParams } = require("next/navigation")
   const searchParams = useSearchParams()
-  const error = searchParams?.get("error")
+  const error = searchParams?.get("error") || "Unknown"
+  const [copied, setCopied] = useState(false)
+  const [errorId, setErrorId] = useState<number | null>(null)
 
-  let errorMessage = "An error occurred during authentication."
-  let errorDescription = "Please try again or contact support if the problem persists."
+  // Get user-friendly error message and code
+  const { code, message } = getUserErrorMessage(error)
 
-  // Handle specific error types
-  if (error === "OAuthCallback") {
-    errorMessage = "Discord authentication error"
-    errorDescription = "There was a problem with the Discord authentication. Please try again."
-  } else if (error === "OAuthAccountNotLinked") {
-    errorMessage = "Discord account not linked"
-    errorDescription = "This Discord account is not linked to any existing account. Please try signing up instead."
-  } else if (error === "OAuthSignin") {
-    errorMessage = "Discord sign in error"
-    errorDescription = "There was a problem starting the Discord sign in flow. Please try again."
-  } else if (error === "Callback") {
-    errorMessage = "Authentication callback error"
-    errorDescription = "There was a problem with the authentication callback. Please try again."
-  } else if (error === "AccessDenied") {
-    errorMessage = "Access denied"
-    errorDescription = "You do not have permission to access this resource. Admin access is required."
+  // Log error to backend
+  useEffect(() => {
+    const logError = async () => {
+      try {
+        const response = await fetch('/api/errors/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            error: error,
+            path: window.location.pathname,
+            details: `User encountered auth error page. Original error: ${error}`,
+          }),
+        })
+        const data = await response.json()
+        if (data.errorId) {
+          setErrorId(data.errorId)
+        }
+      } catch (e) {
+        console.error('Failed to log error:', e)
+      }
+    }
+    logError()
+  }, [error])
+
+  const copyErrorCode = () => {
+    const fullCode = errorId ? `${code}-${errorId}` : code
+    navigator.clipboard.writeText(fullCode)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
+
+  const displayCode = errorId ? `${code}-${errorId}` : code
 
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <div className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-red-500" />
-          <CardTitle className="text-2xl font-bold">{errorMessage}</CardTitle>
+          <CardTitle className="text-2xl font-bold">Something went wrong</CardTitle>
         </div>
-        <CardDescription>{errorDescription}</CardDescription>
+        <CardDescription className="text-base">{message}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Error Code Display */}
+        <div className="bg-muted/50 border rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Error Code</p>
+              <p className="font-mono text-lg font-semibold">{displayCode}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={copyErrorCode}
+              className="h-8 w-8 p-0"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+
         <p className="text-sm text-muted-foreground">
-          You can try signing in again or return to the home page.
+          If this problem persists, please contact support and provide the error code above.
         </p>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
+      <CardFooter className="flex flex-col space-y-3">
         <Button className="w-full" asChild>
           <Link href="/auth/signin">Try Again</Link>
         </Button>
@@ -65,19 +104,17 @@ function AuthErrorFallback() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Authentication Error</CardTitle>
-        <CardDescription>Loading error details...</CardDescription>
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-muted-foreground animate-pulse" />
+          <CardTitle className="text-2xl font-bold">Loading...</CardTitle>
+        </div>
+        <CardDescription>Please wait...</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Please wait while we load the error details.
-        </p>
+        <div className="h-[80px] flex items-center justify-center">
+          <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
-        <Button variant="outline" className="w-full" asChild>
-          <Link href="/">Return to Home</Link>
-        </Button>
-      </CardFooter>
     </Card>
   )
 }

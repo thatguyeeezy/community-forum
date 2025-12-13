@@ -1,12 +1,10 @@
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { compare } from "bcryptjs"
 import type { NextAuthOptions } from "next-auth"
 import { getServerSession } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
 import DiscordProvider from "next-auth/providers/discord"
 import { prisma } from "@/lib/prisma"
-// Import the syncUserRoleFromDiscord from our consolidated roles file
-import { syncUserRoleFromDiscord } from "@/lib/roles"
+// Import the syncUserRoleFromDiscord and fetchDiscordRoles from our consolidated roles file
+import { syncUserRoleFromDiscord, fetchDiscordRoles } from "@/lib/roles"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -19,11 +17,11 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   providers: [
+    // Discord-only authentication - most secure for community forums
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID || "",
       clientSecret: process.env.DISCORD_CLIENT_SECRET || "",
-      authorization: { params: { scope: "identify email guilds" } }, // Added guilds scope
-      callbackUrl: "http://198.154.99.127:3000/auth/discord/callback",
+      authorization: { params: { scope: "identify email guilds" } },
       profile(profile) {
         console.log("Discord profile received:", profile)
         return {
@@ -34,48 +32,24 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        })
-
-        if (!user || !user.password) {
-          return null
-        }
-
-        const isPasswordValid = await compare(credentials.password, user.password)
-
-        if (!isPasswordValid) {
-          return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-        }
-      },
-    }),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "discord" && profile) {
         try {
           console.log("Discord sign-in for user ID:", user.id)
+          
+          // SECURITY: Verify user is a member of the Discord server
+          const discordId = profile.id as string
+          const discordRoles = await fetchDiscordRoles(discordId)
+          
+          if (discordRoles.length === 0) {
+            // User is not in the Discord server - block sign-in
+            console.error(`Sign-in blocked: User ${discordId} is not a member of the Discord server`)
+            return false // This will redirect to error page
+          }
+          
+          console.log(`User ${discordId} verified as Discord server member with ${discordRoles.length} roles`)
 
           // First, update the user with the Discord ID directly from the profile
           const userId = Number.parseInt(user.id as string, 10)

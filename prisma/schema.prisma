@@ -342,3 +342,29 @@ enum InterviewStatus {
   INTERVIEW_COMPLETED
   INTERVIEW_FAILED
 }
+
+// Error logs for admin viewing
+model ErrorLog {
+  id          Int      @id @default(autoincrement())
+  code        String   // e.g., AUTH_001, DISCORD_001
+  category    String   // AUTH, DISCORD, DATABASE, PERMISSION, SYSTEM
+  severity    String   // low, medium, high, critical
+  userMessage String   @db.Text
+  adminMessage String  @db.Text
+  details     String?  @db.Text // Additional context, stack trace, etc.
+  userId      Int?     // User who encountered the error (if known)
+  discordId   String?  // Discord ID if available
+  ipAddress   String?  // IP address for tracking
+  userAgent   String?  @db.Text
+  path        String?  // URL path where error occurred
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  resolvedBy  Int?     // Admin who resolved it
+  createdAt   DateTime @default(now())
+
+  @@index([code])
+  @@index([category])
+  @@index([severity])
+  @@index([createdAt])
+  @@index([resolved])
+}
