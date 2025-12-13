@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronLeft, LayoutDashboard, Users } from "lucide-react"
+import { ChevronLeft, LayoutDashboard, Users, AlertCircle } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
 
 export function AdminSidebar() {
@@ -53,6 +53,17 @@ export function AdminSidebar() {
             >
               <Users size={18} />
               <span>Users</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/admin/errors"
+              className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+                isActive("/admin/errors") ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              } transition-colors`}
+            >
+              <AlertCircle size={18} />
+              <span>Error Logs</span>
             </Link>
           </li>
         </ul>
